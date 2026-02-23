@@ -2,8 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Speeky ID | Secure Access</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Speeky Ultra | Integrated System</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -11,126 +11,152 @@
             --bg: #050608;
             --glass: rgba(255, 255, 255, 0.03);
             --border: rgba(255, 255, 255, 0.1);
+            --card: #0f1117;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: #fff; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
 
-        /* КОНТЕЙНЕР ФОРМ */
-        .auth-container {
-            width: 100%; max-width: 380px; padding: 30px;
-            background: var(--glass); backdrop-filter: blur(20px);
-            border: 1px solid var(--border); border-radius: 40px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        /* --- ЭКРАНЫ АВТОРИЗАЦИИ --- */
+        #auth-layer {
+            position: fixed; inset: 0; z-index: 5000; background: var(--bg);
+            display: flex; align-items: center; justify-content: center; padding: 20px;
         }
-
-        .auth-form { display: none; animation: slideIn 0.4s ease; }
-        .auth-form.active { display: block; }
-
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        h2 { font-size: 28px; font-weight: 800; margin-bottom: 8px; letter-spacing: -1px; }
-        p { font-size: 14px; opacity: 0.5; margin-bottom: 25px; }
-
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.4; margin-bottom: 8px; margin-left: 5px; }
+        .auth-card {
+            width: 100%; max-width: 380px; padding: 35px; background: var(--glass);
+            backdrop-filter: blur(25px); border: 1px solid var(--border); border-radius: 40px;
+        }
+        .auth-form { display: none; }
+        .auth-form.active { display: block; animation: fadeIn 0.4s ease; }
         
         input {
             width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-            padding: 16px; border-radius: 18px; color: #fff; outline: none; transition: 0.3s;
+            padding: 16px; border-radius: 18px; color: #fff; outline: none; margin-bottom: 15px;
         }
-        input:focus { border-color: var(--accent); background: rgba(0, 242, 255, 0.02); }
-
-        .btn {
+        input:focus { border-color: var(--accent); }
+        .auth-btn {
             width: 100%; padding: 18px; border-radius: 18px; border: none;
             background: var(--accent); color: #000; font-weight: 800; cursor: pointer;
-            margin-top: 10px; transition: 0.3s;
         }
-        .btn:active { transform: scale(0.98); }
+        .link { color: var(--accent); cursor: pointer; display: block; text-align: center; margin-top: 15px; font-size: 13px; opacity: 0.7; }
 
-        .link-btn {
-            display: block; text-align: center; margin-top: 20px; font-size: 13px;
-            color: var(--accent); cursor: pointer; opacity: 0.8;
+        /* --- ГЛАВНОЕ ПРИЛОЖЕНИЕ --- */
+        #app { display: none; height: 100vh; flex-direction: column; }
+        .screen { display: none; flex: 1; padding: 20px; padding-bottom: 180px; overflow-y: auto; }
+        .screen.active { display: flex; flex-direction: column; }
+
+        /* ДИНАМИЧЕСКИЙ ОСТРОВОК */
+        .island-wrap {
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
+            width: 92%; max-width: 420px; z-index: 1000;
         }
-        
-        .error-msg { color: #ff4444; font-size: 12px; margin-top: 10px; display: none; text-align: center; }
+        .island-input {
+            background: rgba(15, 17, 23, 0.9); backdrop-filter: blur(20px);
+            border-radius: 30px; border: 1px solid var(--border);
+            padding: 8px 15px; display: none; align-items: center; margin-bottom: 12px;
+        }
+        .island-input.active { display: flex; }
+        .island-input input { margin-bottom: 0; background: none; border: none; flex: 1; }
 
-        /* СОСТОЯНИЕ "В СИСТЕМЕ" */
-        #logged-in { display: none; text-align: center; }
+        .island-nav {
+            background: rgba(15, 17, 23, 0.95); backdrop-filter: blur(30px);
+            border-radius: 40px; border: 1px solid var(--border);
+            padding: 10px; display: flex; justify-content: space-around;
+        }
+        .n-icon { font-size: 24px; opacity: 0.3; cursor: pointer; padding: 10px; transition: 0.3s; }
+        .n-icon.active { opacity: 1; color: var(--accent); transform: scale(1.1); }
+
+        /* ПРОФИЛЬ */
+        .profile-box { background: var(--card); border: 1px solid var(--border); border-radius: 30px; padding: 30px; text-align: center; margin-bottom: 20px; }
+        .avatar { width: 80px; height: 80px; background: var(--accent); color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800; margin: 0 auto 15px; }
+
+        /* ЧАТ */
+        #chat-flow { display: flex; flex-direction: column; gap: 10px; }
+        .msg { max-width: 80%; padding: 12px 16px; border-radius: 20px; background: var(--card); border: 1px solid var(--border); align-self: flex-start; }
+        .msg.me { align-self: flex-end; background: var(--accent); color: #000; border: none; font-weight: 600; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div class="auth-container" id="main-box">
-        
-        <div id="form-login" class="auth-form active">
-            <h2>Вход</h2>
-            <p>Добро пожаловать обратно</p>
-            <div class="input-group">
-                <label>Email</label>
-                <input type="email" id="log-email" placeholder="example@mail.com">
+    <div id="auth-layer">
+        <div class="auth-card">
+            <div id="auth-login" class="auth-form active">
+                <h2 style="margin-bottom: 20px;">Вход в Speeky</h2>
+                <input type="email" id="l-email" placeholder="Email">
+                <input type="password" id="l-pass" placeholder="Пароль">
+                <button class="auth-btn" onclick="login()">ВОЙТИ</button>
+                <span class="link" onclick="toggleAuth('auth-reg')">Создать новый аккаунт</span>
+                <span class="link" style="font-size: 11px; opacity: 0.4;" onclick="toggleAuth('auth-reset')">Забыли пароль?</span>
             </div>
-            <div class="input-group">
-                <label>Пароль</label>
-                <input type="password" id="log-pass" placeholder="••••••••">
+
+            <div id="auth-reg" class="auth-form">
+                <h2 style="margin-bottom: 20px;">Регистрация</h2>
+                <input type="text" id="r-nick" placeholder="Никнейм">
+                <input type="email" id="r-email" placeholder="Email">
+                <input type="password" id="r-pass" placeholder="Пароль">
+                <input type="text" id="r-secret" placeholder="Кодовое слово (для сброса)">
+                <button class="auth-btn" onclick="register()">ЗАРЕГИСТРИРОВАТЬСЯ</button>
+                <span class="link" onclick="toggleAuth('auth-login')">Уже есть аккаунт? Войти</span>
             </div>
-            <button class="btn" onclick="tryLogin()">ВОЙТИ</button>
-            <span class="link-btn" onclick="showForm('form-reg')">Создать аккаунт</span>
-            <span class="link-btn" style="font-size: 11px; margin-top: 10px; opacity: 0.5;" onclick="showForm('form-reset')">Забыли пароль?</span>
+
+            <div id="auth-reset" class="auth-form">
+                <h2 style="margin-bottom: 20px;">Сброс пароля</h2>
+                <input type="email" id="f-email" placeholder="Ваш Email">
+                <input type="text" id="f-secret" placeholder="Кодовое слово">
+                <button class="auth-btn" onclick="resetPass()">ПРОВЕРИТЬ</button>
+                <span class="link" onclick="toggleAuth('auth-login')">Назад</span>
+            </div>
         </div>
-
-        <div id="form-reg" class="auth-form">
-            <h2>Регистрация</h2>
-            <p>Станьте частью Speeky</p>
-            <div class="input-group">
-                <label>Никнейм</label>
-                <input type="text" id="reg-nick" placeholder="@username">
-            </div>
-            <div class="input-group">
-                <label>Email</label>
-                <input type="email" id="reg-email" placeholder="example@mail.com">
-            </div>
-            <div class="input-group">
-                <label>Пароль</label>
-                <input type="password" id="reg-pass" placeholder="Придумайте пароль">
-            </div>
-            <div class="input-group">
-                <label>Кодовое слово (для восстановления)</label>
-                <input type="text" id="reg-secret" placeholder="Имя кота или любимый город">
-            </div>
-            <button class="btn" onclick="tryRegister()">СОЗДАТЬ</button>
-            <span class="link-btn" onclick="showForm('form-login')">Уже есть аккаунт</span>
-        </div>
-
-        <div id="form-reset" class="auth-form">
-            <h2>Сброс пароля</h2>
-            <p>Проверка личности</p>
-            <div class="input-group">
-                <label>Ваш Email</label>
-                <input type="email" id="reset-email">
-            </div>
-            <div class="input-group">
-                <label>Кодовое слово</label>
-                <input type="text" id="reset-secret">
-            </div>
-            <button class="btn" onclick="tryReset()">ПРОВЕРИТЬ</button>
-            <span class="link-btn" onclick="showForm('form-login')">Назад</span>
-        </div>
-
-        <div id="error" class="error-msg">Ошибка данных</div>
-
     </div>
 
-    <div id="logged-in">
-        <h1 style="font-size: 40px;">Speeky Cloud</h1>
-        <p>Вы авторизованы как <b id="user-display">...</b></p>
-        <button class="btn" style="max-width: 200px;" onclick="logout()">ВЫЙТИ</button>
+    <div id="app">
+        <section id="sc-chat" class="screen active">
+            <h1 style="margin-bottom: 20px;">Сообщения</h1>
+            <div id="chat-flow">
+                <div class="msg">Безопасное соединение установлено.</div>
+            </div>
+        </section>
+
+        <section id="sc-contacts" class="screen">
+            <h1>Контакты</h1>
+            <p style="opacity: 0.5; margin-top: 10px;">Здесь будут ваши друзья</p>
+        </section>
+
+        <section id="sc-settings" class="screen">
+            <h1>Настройки</h1>
+            <div class="profile-box" style="margin-top: 20px;">
+                <div class="avatar" id="p-avatar">?</div>
+                <h2 id="p-nick">Nickname</h2>
+                <p id="p-email" style="opacity: 0.5; font-size: 14px;">email@example.com</p>
+            </div>
+            <div class="profile-box" style="padding: 20px; text-align: left;">
+                <p style="font-size: 12px; opacity: 0.4;">СТАТУС АККАУНТА</p>
+                <p style="color: #0f8; font-weight: 800; margin-top: 5px;">VERIFIED CLOUD USER</p>
+            </div>
+            <button onclick="logout()" style="color:#ff4444; background:none; border:none; width:100%; font-weight:800; cursor:pointer;">ВЫЙТИ ИЗ СИСТЕМЫ</button>
+        </section>
+
+        <div class="island-wrap">
+            <div class="island-input active" id="island-input">
+                <input type="text" id="m-text" placeholder="Сообщение...">
+                <button onclick="send()" style="background:var(--accent); border:none; width:35px; height:35px; border-radius:50%; font-weight:900;">></button>
+            </div>
+            <nav class="island-nav">
+                <div class="n-icon active" onclick="nav('chat', this)">💬</div>
+                <div class="n-icon" onclick="nav('contacts', this)">👤</div>
+                <div class="n-icon" onclick="nav('settings', this)">⚙️</div>
+            </nav>
+        </div>
     </div>
 
     <script>
         let db;
-        // 1. Инициализация БД
-        const request = indexedDB.open("SpeekyAuth", 1);
+        let currentUser = null;
+
+        // 1. Инициализация IndexedDB
+        const request = indexedDB.open("SpeekyDatabase", 1);
         request.onupgradeneeded = (e) => {
             db = e.target.result;
             db.createObjectStore("users", { keyPath: "email" });
@@ -140,105 +166,93 @@
             checkSession();
         };
 
-        // Переключение форм
-        function showForm(id) {
+        // 2. Логика Авторизации
+        function toggleAuth(id) {
             document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            document.getElementById('error').style.display = 'none';
         }
 
-        // РЕГИСТРАЦИЯ
-        function tryRegister() {
+        function register() {
             const user = {
-                nick: document.getElementById('reg-nick').value,
-                email: document.getElementById('reg-email').value,
-                pass: document.getElementById('reg-pass').value,
-                secret: document.getElementById('reg-secret').value.toLowerCase()
+                nick: document.getElementById('r-nick').value,
+                email: document.getElementById('r-email').value,
+                pass: document.getElementById('r-pass').value,
+                secret: document.getElementById('r-secret').value.toLowerCase()
             };
-
-            if(!user.nick || !user.email.includes('@') || user.pass.length < 6) {
-                showError("Данные заполнены неверно (пароль мин. 6 симв.)");
-                return;
-            }
+            if(!user.email.includes('@') || user.pass.length < 4) return alert("Ошибка валидации");
 
             const tx = db.transaction("users", "readwrite");
             const store = tx.objectStore("users");
-            
-            const check = store.get(user.email);
-            check.onsuccess = () => {
-                if(check.result) {
-                    showError("Email уже зарегистрирован");
-                } else {
-                    store.add(user);
-                    alert("Регистрация успешна!");
-                    showForm('form-login');
-                }
-            };
+            const req = store.add(user);
+            req.onsuccess = () => { alert("Регистрация завершена!"); toggleAuth('auth-login'); };
+            req.onerror = () => alert("Email уже занят");
         }
 
-        // ВХОД
-        function tryLogin() {
-            const email = document.getElementById('log-email').value;
-            const pass = document.getElementById('log-pass').value;
+        function login() {
+            const email = document.getElementById('l-email').value;
+            const pass = document.getElementById('l-pass').value;
 
             const tx = db.transaction("users", "readonly");
             const store = tx.objectStore("users");
-            const req = store.get(email);
-
-            req.onsuccess = () => {
-                const user = req.result;
+            store.get(email).onsuccess = (e) => {
+                const user = e.target.result;
                 if(user && user.pass === pass) {
-                    loginUser(user);
-                } else {
-                    showError("Неверный email или пароль");
-                }
+                    localStorage.setItem('speeky_session', JSON.stringify(user));
+                    checkSession();
+                } else alert("Неверные данные");
             };
         }
 
-        // ВОССТАНОВЛЕНИЕ
-        function tryReset() {
-            const email = document.getElementById('reset-email').value;
-            const secret = document.getElementById('reset-secret').value.toLowerCase();
-
+        function resetPass() {
+            const email = document.getElementById('f-email').value;
+            const secret = document.getElementById('f-secret').value.toLowerCase();
             const tx = db.transaction("users", "readonly");
-            const store = tx.objectStore("users");
-            const req = store.get(email);
-
-            req.onsuccess = () => {
-                const user = req.result;
-                if(user && user.secret === secret) {
-                    alert("Ваш пароль: " + user.pass);
-                    showForm('form-login');
-                } else {
-                    showError("Данные не совпадают");
-                }
+            tx.objectStore("users").get(email).onsuccess = (e) => {
+                const user = e.target.result;
+                if(user && user.secret === secret) alert("Ваш пароль: " + user.pass);
+                else alert("Данные не совпадают");
             };
         }
 
-        function loginUser(user) {
-            localStorage.setItem('current_user', JSON.stringify(user));
-            location.reload(); // Перезагружаем чтобы войти в интерфейс
-        }
-
+        // 3. Работа приложения
         function checkSession() {
-            const session = localStorage.getItem('current_user');
+            const session = localStorage.getItem('speeky_session');
             if(session) {
-                const user = JSON.parse(session);
-                document.getElementById('main-box').style.display = 'none';
-                document.getElementById('logged-in').style.display = 'block';
-                document.getElementById('user-display').innerText = user.nick;
+                currentUser = JSON.parse(session);
+                document.getElementById('auth-layer').style.display = 'none';
+                document.getElementById('app').style.display = 'flex';
+                // Подтягиваем данные в профиль
+                document.getElementById('p-nick').innerText = currentUser.nick;
+                document.getElementById('p-email').innerText = currentUser.email;
+                document.getElementById('p-avatar').innerText = currentUser.nick[0].toUpperCase();
             }
         }
 
-        function logout() {
-            localStorage.removeItem('current_user');
-            location.reload();
+        function nav(scr, el) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('sc-' + scr).classList.add('active');
+            document.querySelectorAll('.n-icon').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+            
+            // Скрываем ввод, если не в чате
+            document.getElementById('island-input').classList.toggle('active', scr === 'chat');
         }
 
-        function showError(text) {
-            const err = document.getElementById('error');
-            err.innerText = text;
-            err.style.display = 'block';
+        function send() {
+            const input = document.getElementById('m-text');
+            if(!input.value.trim()) return;
+            const flow = document.getElementById('chat-flow');
+            const div = document.createElement('div');
+            div.className = 'msg me';
+            div.innerText = input.value;
+            flow.appendChild(div);
+            input.value = '';
+            document.getElementById('sc-chat').scrollTop = flow.scrollHeight;
+        }
+
+        function logout() {
+            localStorage.removeItem('speeky_session');
+            location.reload();
         }
     </script>
 </body>
