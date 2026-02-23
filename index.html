@@ -2,252 +2,224 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Speeky OS | Database & Fix</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Speeky | Ultimate Interface</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --accent: #9d50ff;
-            --bg: #050505;
-            --glass: rgba(255, 255, 255, 0.03);
+            --accent: #00f2ff;
+            --bg: #050608;
+            --panel: #0f1117;
+            --island-bg: rgba(20, 24, 35, 0.9);
             --border: rgba(255, 255, 255, 0.08);
-            --island-h: 70px;
+            --safe-area-bottom: env(safe-area-inset-bottom);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; position: fixed; width: 100%; }
-
-        /* ЭКРАН ВХОДА */
-        #auth-layer {
-            position: fixed; inset: 0; z-index: 9999; background: var(--bg);
-            display: flex; align-items: center; justify-content: center; padding: 20px;
-        }
-        .auth-card {
-            width: 100%; max-width: 360px; background: var(--glass); 
-            padding: 40px 30px; border-radius: 35px; border: 1px solid var(--border);
-            backdrop-filter: blur(20px); text-align: center;
-        }
-        .auth-input {
-            width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-            padding: 16px; border-radius: 18px; color: #fff; outline: none; margin-bottom: 15px;
-        }
-        .auth-btn {
-            width: 100%; padding: 18px; background: var(--accent); border: none;
-            border-radius: 18px; color: #fff; font-weight: 700; cursor: pointer;
-        }
-
-        /* ОСНОВНОЙ ИНТЕРФЕЙС */
-        #app { display: none; height: 100vh; flex-direction: column; }
-        .header { padding: 20px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.5); }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
         
-        /* КОНТЕНТ */
-        .view-section { 
-            flex: 1; overflow-y: auto; padding: 20px; display: none; 
-            padding-bottom: 150px; /* Отступ под островок */
-        }
-        .view-section.active { display: flex; flex-direction: column; }
+        body { background: var(--bg); color: #fff; height: 100vh; width: 100vw; overflow: hidden; display: flex; }
 
-        /* СООБЩЕНИЯ */
-        .msg { max-width: 80%; padding: 12px 16px; border-radius: 20px; margin-bottom: 10px; font-size: 15px; line-height: 1.4; }
-        .msg.in { background: var(--glass); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid var(--border); }
-        .msg.out { background: var(--accent); align-self: flex-end; border-bottom-right-radius: 4px; }
+        /* --- БОКОВАЯ ПАНЕЛЬ (КАНАЛЫ) --- */
+        #sidebar {
+            width: 260px; background: var(--panel); border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; transition: 0.3s;
+        }
+        @media (max-width: 768px) { #sidebar { display: none; } } /* Скрываем на мобилках для чистоты */
 
-        /* ПОЛЕ ВВОДА (FIXED) */
-        .input-container {
-            padding: 15px 20px 30px; 
-            background: linear-gradient(transparent, var(--bg) 20%);
-            position: absolute; bottom: 85px; /* Над островком */
-            width: 100%; display: flex; gap: 10px; z-index: 100;
-        }
-        .m-field { 
-            flex: 1; background: #151515; border: 1px solid var(--border); 
-            padding: 14px 20px; border-radius: 25px; color: #fff; outline: none;
-        }
-        .m-field:focus ~ .island-wrap { opacity: 0.2; transform: translate(-50%, 20px); }
+        .side-header { padding: 25px 20px; font-weight: 800; font-size: 14px; color: var(--accent); letter-spacing: 1px; }
+        .channel-link { padding: 12px 20px; cursor: pointer; opacity: 0.6; display: flex; align-items: center; gap: 10px; }
+        .channel-link.active { opacity: 1; background: rgba(0, 242, 255, 0.05); border-left: 3px solid var(--accent); }
 
-        /* DYNAMIC ISLAND */
-        .island-wrap {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 380px; z-index: 200;
-            transition: 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
-        }
-        .island {
-            background: rgba(20, 20, 25, 0.9); border: 1px solid var(--border);
-            border-radius: 35px; padding: 10px; display: flex;
-            justify-content: space-around; align-items: center;
-            backdrop-filter: blur(30px);
-        }
-        .nav-icon { font-size: 22px; cursor: pointer; opacity: 0.4; transition: 0.3s; padding: 8px; }
-        .nav-icon.active { opacity: 1; color: var(--accent); }
+        /* --- ГЛАВНАЯ ЗОНА --- */
+        #main-container { flex: 1; display: flex; flex-direction: column; position: relative; background: var(--bg); }
 
-        /* СПИСКИ */
-        .list-card { background: var(--glass); padding: 15px; border-radius: 20px; margin-bottom: 10px; border: 1px solid var(--border); }
+        .chat-header { height: 60px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; background: rgba(0,0,0,0.2); }
+
+        #chat-scroller { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 180px; scroll-behavior: smooth; }
+
+        /* --- СООБЩЕНИЯ --- */
+        .msg-row { display: flex; flex-direction: column; margin-bottom: 15px; width: 100%; }
+        .msg-bubble { 
+            max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 15px; line-height: 1.4;
+            background: var(--panel); border: 1px solid var(--border); align-self: flex-start;
+        }
+        .msg-row.me .msg-bubble { background: var(--accent); color: #000; align-self: flex-end; font-weight: 500; }
+        .msg-meta { font-size: 10px; opacity: 0.4; margin-bottom: 4px; display: flex; gap: 10px; }
+
+        /* --- ИСПРАВЛЕННЫЙ ОСТРОВОК И ВВОД --- */
+        .island-controller {
+            position: fixed; bottom: calc(20px + var(--safe-area-bottom)); left: 50%; 
+            transform: translateX(-50%); width: 92%; max-width: 450px;
+            display: flex; flex-direction: column; gap: 10px; z-index: 999;
+        }
+
+        /* Поле ввода теперь часть структуры над островком */
+        .input-bar {
+            background: var(--island-bg); backdrop-filter: blur(20px);
+            border-radius: 25px; border: 1px solid var(--border);
+            padding: 8px 15px; display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .input-bar input {
+            flex: 1; background: none; border: none; color: #fff; padding: 10px 5px; outline: none; font-size: 15px;
+        }
+
+        /* Панель навигации (Островок) */
+        .island-nav {
+            background: var(--island-bg); backdrop-filter: blur(20px);
+            border-radius: 30px; border: 1px solid var(--border);
+            display: flex; justify-content: space-around; padding: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .nav-btn { padding: 10px; opacity: 0.4; transition: 0.2s; cursor: pointer; font-size: 20px; }
+        .nav-btn.active { opacity: 1; color: var(--accent); transform: scale(1.1); }
+
+        /* ЭКРАН РЕГИСТРАЦИИ */
+        #auth-layer {
+            position: fixed; inset: 0; z-index: 10000; background: var(--bg);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .auth-form { width: 320px; text-align: center; }
+        .auth-input { width: 100%; padding: 15px; border-radius: 15px; background: var(--panel); border: 1px solid var(--border); color: #fff; margin-bottom: 10px; outline: none; }
+        .auth-btn { width: 100%; padding: 15px; border-radius: 15px; background: var(--accent); color: #000; border: none; font-weight: 800; cursor: pointer; }
+
+        /* МОДАЛКИ (КОНТАКТЫ/НАСТРОЙКИ) */
+        .modal {
+            position: absolute; bottom: 150px; width: 100%; left: 0; padding: 20px;
+            display: none; flex-direction: column; gap: 10px; z-index: 998;
+            background: var(--bg); border-radius: 30px 30px 0 0; border-top: 1px solid var(--border);
+            max-height: 70vh; overflow-y: auto;
+        }
+        .modal.open { display: flex; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
     </style>
 </head>
 <body>
 
     <div id="auth-layer">
-        <div class="auth-card">
-            <h2 style="margin-bottom:20px">Speeky Cloud</h2>
-            <input type="email" id="email" class="auth-input" placeholder="Email">
-            <input type="text" id="nick" class="auth-input" placeholder="Nickname">
-            <button class="auth-btn" onclick="handleAuth()">Запустить ядро</button>
+        <div class="auth-form">
+            <h1 style="margin-bottom: 30px;">Speeky Cloud</h1>
+            <input type="email" id="a-email" class="auth-input" placeholder="Email">
+            <input type="text" id="a-nick" class="auth-input" placeholder="Никнейм">
+            <button class="auth-btn" onclick="initSystem()">ВОЙТИ</button>
         </div>
     </div>
 
-    <div id="app">
-        <header class="header">
-            <h2 id="view-title"># Основной канал</h2>
+    <aside id="sidebar">
+        <div class="side-header">КАНАЛЫ</div>
+        <div class="channel-link active"># основной-чат</div>
+        <div class="channel-link"># флудилка</div>
+        <div class="channel-link"># новости</div>
+        <div class="channel-link"># dev-logs</div>
+    </aside>
+
+    <main id="main-container">
+        <header class="chat-header">
+            <b id="chan-name"># основной-чат</b>
+            <div style="margin-left: auto; font-size: 10px; color: #0f8;">ONLINE</div>
         </header>
 
-        <div id="view-chat" class="view-section active">
-            <div id="messages-render"></div>
-        </div>
-
-        <div id="view-contacts" class="view-section">
-            <h3>Контакты из БД</h3>
-            <div id="contacts-render" style="margin-top:15px"></div>
-        </div>
-
-        <div id="view-settings" class="view-section">
-            <h3>Конфигурация системы</h3>
-            <div class="list-card" style="margin-top:15px">
-                <p>Версия БД: IndexedDB v1.0</p>
-                <p>Шифрование: AES-GCM</p>
+        <div id="chat-scroller">
             </div>
-            <button onclick="clearDB()" style="color:red; background:none; border:none; margin-top:20px">Очистить все данные</button>
+
+        <div id="modal-contacts" class="modal">
+            <h3>👤 Контакты</h3>
+            <div style="padding: 15px; background: var(--panel); border-radius: 15px;">Ярослав (Online)</div>
+            <div style="padding: 15px; background: var(--panel); border-radius: 15px;">Swimer (Offline)</div>
         </div>
 
-        <div class="input-container" id="input-container">
-            <input type="text" id="m-input" class="m-field" placeholder="Введите сообщение...">
-            <button onclick="sendMessage()" style="background:var(--accent); border:none; padding:10px 15px; border-radius:50%">🚀</button>
+        <div id="modal-settings" class="modal">
+            <h3>⚙️ Настройки</h3>
+            <p>Аккаунт: <span id="set-nick">...</span></p>
+            <button onclick="localStorage.clear(); location.reload();" style="color:red; background:none; border:none; text-align:left; padding:10px 0;">Удалить данные и выйти</button>
         </div>
 
-        <div class="island-wrap" id="island">
-            <div class="island">
-                <div class="nav-icon active" onclick="switchTab('chat', this)">💬</div>
-                <div class="nav-icon" onclick="switchTab('contacts', this)">👤</div>
-                <div class="nav-icon" onclick="switchTab('settings', this)">⚙️</div>
+        <div class="island-controller">
+            <div class="input-bar" id="input-zone">
+                <input type="text" id="m-text" placeholder="Сообщение..." autocomplete="off">
+                <button onclick="sendMsg()" style="background:var(--accent); border:none; width:35px; height:35px; border-radius:50%; font-weight:900;">></button>
             </div>
+
+            <nav class="island-nav">
+                <div class="nav-btn active" onclick="showView('chat', this)">💬</div>
+                <div class="nav-btn" onclick="showView('contacts', this)">👤</div>
+                <div class="nav-btn" onclick="showView('create', this)">⊕</div>
+                <div class="nav-btn" onclick="showView('settings', this)">⚙️</div>
+            </nav>
         </div>
-    </div>
+    </main>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let db;
-        let currentUser = null;
+        let user = JSON.parse(localStorage.getItem('user'));
 
-        // --- ИНИЦИАЛИЗАЦИЯ БАЗЫ ДАННЫХ (IndexedDB) ---
-        const request = indexedDB.open("SpeekyDB", 1);
-        request.onupgradeneeded = (e) => {
-            db = e.target.result;
-            db.createObjectStore("messages", { keyPath: "id", autoIncrement: true });
-            db.createObjectStore("user", { keyPath: "id" });
-        };
-        request.onsuccess = (e) => {
-            db = e.target.result;
-            checkSession();
-        };
+        if(user) hideAuth();
 
-        // ПРОВЕРКА СЕССИИ
-        function checkSession() {
-            const transaction = db.transaction(["user"], "readonly");
-            const store = transaction.objectStore("user");
-            store.get(1).onsuccess = (e) => {
-                if (e.target.result) {
-                    currentUser = e.target.result;
-                    showApp();
-                }
-            };
+        function initSystem() {
+            const email = document.getElementById('a-email').value;
+            const nick = document.getElementById('a-nick').value;
+            if(!email.includes('@')) return alert('Check Email!');
+            
+            user = { email, nick, id: Date.now() };
+            localStorage.setItem('user', JSON.stringify(user));
+            hideAuth();
         }
 
-        // РЕГИСТРАЦИЯ И СОХРАНЕНИЕ В БД
-        function handleAuth() {
-            const email = document.getElementById('email').value;
-            const nick = document.getElementById('nick').value;
-            if(!email.includes('@')) return alert("Неверный Email");
-
-            currentUser = { id: 1, email, nick };
-            const transaction = db.transaction(["user"], "readwrite");
-            transaction.objectStore("user").put(currentUser);
-            showApp();
-        }
-
-        function showApp() {
+        function hideAuth() {
             document.getElementById('auth-layer').style.display = 'none';
-            document.getElementById('app').style.display = 'flex';
-            socket.emit('authenticate', { username: currentUser.nick });
-            loadHistory();
+            document.getElementById('set-nick').innerText = user.nick;
+            socket.emit('authenticate', { username: user.nick });
         }
 
-        // ЗАГРУЗКА ИСТОРИИ ИЗ БД
-        function loadHistory() {
-            const transaction = db.transaction(["messages"], "readonly");
-            const store = transaction.objectStore("messages");
-            store.getAll().onsuccess = (e) => {
-                e.target.result.forEach(renderMessage);
-            };
-        }
-
-        // РАБОТА С СООБЩЕНИЯМИ
-        function sendMessage() {
-            const inp = document.getElementById('m-input');
-            if(!inp.value.trim()) return;
-            
-            const msgData = { name: currentUser.nick, text: inp.value, time: Date.now() };
-            socket.emit('message', msgData);
-            
-            // Сохраняем свое сообщение в БД
-            const transaction = db.transaction(["messages"], "readwrite");
-            transaction.objectStore("messages").add(msgData);
-            
-            inp.value = '';
-        }
-
-        socket.on('message', (m) => {
-            renderMessage(m);
-            // Сохраняем чужие сообщения тоже
-            const transaction = db.transaction(["messages"], "readwrite");
-            transaction.objectStore("messages").add(m);
-        });
-
-        function renderMessage(m) {
-            const wrap = document.getElementById('messages-render');
-            const isMe = m.name === currentUser.nick;
-            const div = document.createElement('div');
-            div.className = `msg ${isMe ? 'out' : 'in'}`;
-            div.innerHTML = isMe ? m.text : `<b>${m.name}</b><br>${m.text}`;
-            wrap.appendChild(div);
-            document.getElementById('view-chat').scrollTop = wrap.scrollHeight;
-        }
-
-        // НАВИГАЦИЯ
-        function switchTab(tab, el) {
-            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.nav-icon').forEach(i => i.classList.remove('active'));
-            document.getElementById('view-' + tab).classList.add('active');
+        // Логика Островка
+        function showView(type, el) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.modal').forEach(m => m.classList.remove('open'));
             el.classList.add('active');
-            
-            const inputContainer = document.getElementById('input-container');
-            inputContainer.style.display = (tab === 'chat') ? 'flex' : 'none';
+
+            if(type === 'contacts') document.getElementById('modal-contacts').classList.add('open');
+            if(type === 'settings') document.getElementById('modal-settings').classList.add('open');
+            if(type === 'chat') {
+                // Просто закрываем все модалки
+            }
         }
 
-        function clearDB() {
-            indexedDB.deleteDatabase("SpeekyDB");
-            location.reload();
+        // ЧАТ
+        function sendMsg() {
+            const input = document.getElementById('m-text');
+            if(input.value.trim()) {
+                socket.emit('message', { text: input.value, name: user.nick });
+                input.value = '';
+            }
         }
 
-        // Скрываем островок при вводе
-        const inputField = document.getElementById('m-input');
-        inputField.addEventListener('focus', () => {
-            document.getElementById('island').style.opacity = "0.1";
-            document.getElementById('island').style.pointerEvents = "none";
+        socket.on('message', m => {
+            const scroller = document.getElementById('chat-scroller');
+            const isMe = m.name === user.nick;
+            const div = document.createElement('div');
+            div.className = `msg-row ${isMe ? 'me' : ''}`;
+            div.innerHTML = `
+                <div class="msg-meta"><span>${m.name}</span> <span>${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span></div>
+                <div class="msg-bubble">${m.text}</div>
+            `;
+            scroller.appendChild(div);
+            scroller.scrollTop = scroller.scrollHeight;
         });
-        inputField.addEventListener('blur', () => {
-            document.getElementById('island').style.opacity = "1";
-            document.getElementById('island').style.pointerEvents = "all";
+
+        // Исправление для мобильной клавиатуры
+        const mInput = document.getElementById('m-text');
+        mInput.addEventListener('focus', () => {
+            if(window.innerWidth < 768) {
+                document.querySelector('.island-nav').style.display = 'none';
+            }
         });
+        mInput.addEventListener('blur', () => {
+            document.querySelector('.island-nav').style.display = 'flex';
+        });
+
+        document.getElementById('m-text').onkeypress = (e) => { if(e.key === 'Enter') sendMsg(); };
     </script>
 </body>
 </html>
