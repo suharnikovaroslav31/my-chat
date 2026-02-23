@@ -10,6 +10,22 @@ function joinChat() {
     }
 }
 
+// Отслеживание печати
+let typingTimeout;
+document.getElementById('msg-input').addEventListener('input', () => {
+    socket.emit('typing', { name: window.userName });
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => socket.emit('stop_typing'), 2000);
+});
+
+socket.on('display_typing', (data) => {
+    document.getElementById('typing-indicator').innerText = `${data.name} печатает...`;
+});
+
+socket.on('hide_typing', () => {
+    document.getElementById('typing-indicator').innerText = '';
+});
+
 function renderMessage(data) {
     if (!data.name || !data.text) return;
     const isMine = data.name === window.userName;
@@ -18,15 +34,24 @@ function renderMessage(data) {
     const div = document.createElement('div');
     div.className = `message ${isMine ? 'outgoing' : 'incoming'}`;
 
-    let media = '';
-    if (data.type === 'image') media = `<img src="${data.text}" style="width:100%; border-radius:10px; margin:5px 0;">`;
-    if (data.type === 'video') media = `<video src="${data.text}" controls style="width:100%; border-radius:10px; margin:5px 0;"></video>`;
+    let mediaHtml = '';
+    if (data.type === 'image' || data.type === 'video') {
+        const tag = data.type === 'image' ? 'img' : 'video';
+        mediaHtml = `<${tag} src="${data.text}" ${data.type==='video'?'controls':''} style="width:100%; border-radius:10px; margin-top:5px;"></${tag}>`;
+        
+        // Добавляем в галерею справа, если это картинка
+        if (data.type === 'image') {
+            const thumb = document.createElement('img');
+            thumb.src = data.text;
+            document.getElementById('media-gallery').prepend(thumb);
+        }
+    }
 
     div.innerHTML = `
         <div class="bubble">
-            <small style="color:var(--accent); display:block; margin-bottom:5px;">${data.name}</small>
-            ${media || `<span>${data.text}</span>`}
-            <div style="text-align:right; font-size:10px; opacity:0.5; margin-top:5px;">${data.time}</div>
+            <small style="color:var(--accent); font-weight:bold;">${data.name}</small>
+            ${mediaHtml || `<div style="margin-top:4px;">${data.text}</div>`}
+            <div style="text-align:right; font-size:9px; opacity:0.4; margin-top:4px;">${data.time}</div>
         </div>
     `;
     
@@ -46,6 +71,7 @@ document.getElementById('chat-form').onsubmit = (e) => {
     if (input.value.trim()) {
         socket.emit('message', { name: window.userName, text: input.value, type: 'text' });
         input.value = '';
+        socket.emit('stop_typing');
     }
 };
 
