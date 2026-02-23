@@ -5,33 +5,104 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ULTRA GLASS PRO</title>
     <style>
-        /* Оставляем все стили из предыдущего шага, они идеальны */
-        :root { --accent: #00d2ff; --glass-bg: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.1); --bg-dark: #05070a; }
+        :root {
+            --accent: #00d2ff;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --bg-dark: #05070a;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: white; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .ocean-bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(135deg, #05070a 0%, #0a0e17 100%); }
-        .wave { position: absolute; width: 100vw; height: 100vh; background: radial-gradient(circle at 50% 50%, rgba(0, 210, 255, 0.05) 0%, transparent 60%); filter: blur(100px); animation: drift 20s infinite alternate ease-in-out; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: white;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Фон */
+        .ocean-bg {
+            position: fixed; inset: 0; z-index: 1;
+            background: linear-gradient(135deg, #05070a 0%, #0a0e17 100%);
+        }
+        .wave {
+            position: absolute; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 210, 255, 0.05) 0%, transparent 60%);
+            filter: blur(100px);
+            animation: drift 20s infinite alternate ease-in-out;
+        }
+
         @keyframes drift { from { transform: translate(-10%, -10%); } to { transform: translate(10%, 10%); } }
-        #main-app { display: none; width: 98vw; height: 96vh; background: var(--glass-bg); backdrop-filter: blur(40px) saturate(180%); border: 1px solid var(--glass-border); border-radius: 24px; display: flex; }
+
+        /* Экран входа — всегда сверху (z-index: 100) */
+        #auth-screen {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            background: var(--bg-dark); /* Прячем чат за фоном пока не вошли */
+        }
+
+        .auth-card {
+            background: rgba(10, 12, 18, 0.9);
+            backdrop-filter: blur(50px);
+            padding: 50px;
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+            width: 400px;
+            text-align: center;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.5);
+        }
+
+        .auth-inputs input {
+            width: 100%; padding: 16px; margin-bottom: 15px;
+            border-radius: 14px; border: 1px solid var(--glass-border);
+            background: rgba(0,0,0,0.3); color: white; outline: none;
+        }
+
+        #auth-btn {
+            width: 100%; padding: 16px; background: var(--accent);
+            border: none; border-radius: 14px; color: black;
+            font-weight: 800; cursor: pointer; transition: 0.3s;
+        }
+
+        /* Основное приложение — изначально скрыто (display: none) */
+        #main-app {
+            display: none; 
+            position: relative;
+            z-index: 10;
+            width: 98vw; height: 96vh;
+            background: var(--glass-bg);
+            backdrop-filter: blur(40px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            overflow: hidden;
+        }
+
         .channels-nav { width: 280px; background: rgba(0,0,0,0.2); border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; }
         .nav-header { padding: 25px; font-weight: 800; color: var(--accent); border-bottom: 1px solid var(--glass-border); }
         .channel-list { padding: 15px; flex: 1; }
         .channel-item { padding: 12px 15px; border-radius: 12px; margin-bottom: 5px; cursor: pointer; transition: 0.3s; color: rgba(255,255,255,0.5); display: flex; align-items: center; gap: 10px; }
-        .channel-item:hover { background: rgba(255,255,255,0.05); color: white; }
         .channel-item.active { background: rgba(0, 210, 255, 0.1); color: var(--accent); border: 1px solid rgba(0, 210, 255, 0.2); }
+        
         .chat-main { flex: 1; display: flex; flex-direction: column; }
-        .chat-header { padding: 20px 30px; border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; gap: 15px; }
+        .chat-header { padding: 20px 30px; border-bottom: 1px solid var(--glass-border); }
         #messages { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        
         .bubble { padding: 14px 20px; border-radius: 20px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); max-width: 65%; }
         .outgoing { align-self: flex-end; }
         .outgoing .bubble { background: rgba(0, 210, 255, 0.1); border-color: rgba(0, 210, 255, 0.3); }
+
         .input-area { padding: 30px; }
         #chat-form { background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 18px; padding: 10px 20px; display: flex; align-items: center; gap: 15px; }
         #msg-input { flex: 1; background: none; border: none; color: white; outline: none; }
-        #auth-screen { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 100; }
-        .auth-card { background: rgba(10, 12, 18, 0.8); backdrop-filter: blur(50px); padding: 50px; border-radius: 30px; border: 1px solid var(--glass-border); width: 400px; text-align: center; }
-        .auth-inputs input { width: 100%; padding: 16px; margin-bottom: 15px; border-radius: 14px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; }
-        #auth-btn { width: 100%; padding: 16px; background: var(--accent); border: none; border-radius: 14px; color: black; font-weight: 800; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -39,26 +110,28 @@
 
     <div id="auth-screen">
         <div class="auth-card">
-            <h1 id="auth-title">ULTRA<span>GLASS</span></h1>
+            <h1 id="auth-title" style="margin-bottom: 30px;">ULTRA<span>GLASS</span></h1>
             <div class="auth-inputs">
                 <input type="text" id="username" placeholder="Логин">
                 <input type="password" id="password" placeholder="Пароль">
             </div>
-            <p id="error-msg" style="color: #ff4d4d; font-size: 12px; margin-bottom: 15px;"></p>
+            <p id="error-msg" style="color: #ff4d4d; font-size: 12px; margin-bottom: 15px; min-height:15px;"></p>
             <button onclick="handleAuth()" id="auth-btn">ВОЙТИ</button>
-            <div style="margin-top: 20px; font-size: 13px; color: #888; cursor: pointer;" onclick="toggleAuth()">Создать аккаунт</div>
+            <div style="margin-top: 20px; font-size: 13px; color: #888; cursor: pointer;" onclick="toggleAuth()" class="auth-toggle">Нет аккаунта? Создать</div>
         </div>
     </div>
 
-    <div id="main-app">
+    <div id="main-app" style="display: none;">
         <aside class="channels-nav">
             <div class="nav-header">ULTRA SERVER</div>
-            <div class="channel-list" id="room-list">
+            <div class="channel-list">
                 <div class="channel-item active" onclick="switchRoom('основной-чат', this)"><span>#</span> основной-чат</div>
                 <div class="channel-item" onclick="switchRoom('флудилка', this)"><span>#</span> флудилка</div>
                 <div class="channel-item" onclick="switchRoom('новости', this)"><span>#</span> новости</div>
             </div>
-            <div style="padding: 20px;"><div id="my-name-display" style="font-weight: 800; color: var(--accent);">User</div></div>
+            <div style="padding: 20px; border-top: 1px solid var(--glass-border);">
+                <div id="my-name-display" style="font-weight: 800; color: var(--accent);">User</div>
+            </div>
         </aside>
 
         <main class="chat-main">
@@ -81,8 +154,9 @@
 
         function toggleAuth() {
             isReg = !isReg;
-            document.getElementById('auth-title').innerText = isReg ? 'РЕГИСТРАЦИЯ' : 'ULTRA GLASS';
+            document.getElementById('auth-title').innerHTML = isReg ? 'РЕГИСТРАЦИЯ' : 'ULTRA<span>GLASS</span>';
             document.getElementById('auth-btn').innerText = isReg ? 'СОЗДАТЬ' : 'ВОЙТИ';
+            document.querySelector('.auth-toggle').innerText = isReg ? 'Есть аккаунт? Войти' : 'Нет аккаунта? Создать';
         }
 
         function handleAuth() {
@@ -101,10 +175,12 @@
             socket.emit('join_room', room);
         }
 
+        socket.on('auth_error', m => document.getElementById('error-msg').innerText = m);
+
         socket.on('auth_success', d => {
             window.userName = d.username;
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('main-app').style.display = 'flex';
+            document.getElementById('auth-screen').style.display = 'none'; // ПРЯЧЕМ ВХОД
+            document.getElementById('main-app').style.display = 'flex';   // ПОКАЗЫВАЕМ ЧАТ
             document.getElementById('my-name-display').innerText = d.username;
             socket.emit('join_room', currentRoom);
         });
@@ -132,7 +208,7 @@
             e.preventDefault();
             const i = document.getElementById('msg-input');
             if (i.value) {
-                socket.emit('message', { name: window.userName, text: i.value, room: currentRoom });
+                socket.emit('message', { name: window.userName, text: i.value });
                 i.value = '';
             }
         };
