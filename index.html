@@ -2,255 +2,244 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Speeky | Deep Interface</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Speeky ID | Secure Access</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --accent: #00f2ff;
-            --bg: #030406;
-            --card: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 255, 255, 0.07);
+            --bg: #050608;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: #fff; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+
+        /* КОНТЕЙНЕР ФОРМ */
+        .auth-container {
+            width: 100%; max-width: 380px; padding: 30px;
+            background: var(--glass); backdrop-filter: blur(20px);
+            border: 1px solid var(--border); border-radius: 40px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        .auth-form { display: none; animation: slideIn 0.4s ease; }
+        .auth-form.active { display: block; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        h2 { font-size: 28px; font-weight: 800; margin-bottom: 8px; letter-spacing: -1px; }
+        p { font-size: 14px; opacity: 0.5; margin-bottom: 25px; }
+
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.4; margin-bottom: 8px; margin-left: 5px; }
         
-        /* ЖИВОЙ ЗАДНИЙ ФОН */
-        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; position: relative; }
-        .bg-glow { 
-            position: absolute; width: 300px; height: 300px; background: var(--accent); 
-            filter: blur(150px); opacity: 0.1; border-radius: 50%; z-index: -1; animation: move 20s infinite alternate;
+        input {
+            width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+            padding: 16px; border-radius: 18px; color: #fff; outline: none; transition: 0.3s;
         }
-        @keyframes move { from { top: 10%; left: 10%; } to { top: 60%; left: 70%; } }
+        input:focus { border-color: var(--accent); background: rgba(0, 242, 255, 0.02); }
 
-        /* ЭКРАНЫ */
-        .screen { display: none; flex: 1; flex-direction: column; padding: 25px; padding-bottom: 180px; overflow-y: auto; z-index: 1; }
-        .screen.active { display: flex; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } }
-
-        .screen-header h1 { font-size: 34px; font-weight: 800; letter-spacing: -1.5px; }
-        .screen-header p { opacity: 0.4; margin-bottom: 30px; font-size: 14px; }
-
-        /* ЭЛЕМЕНТЫ ИНТЕРФЕЙСА */
-        .glass-card { 
-            background: var(--card); border: 1px solid var(--border); 
-            backdrop-filter: blur(15px); border-radius: 28px; padding: 20px; margin-bottom: 15px; 
+        .btn {
+            width: 100%; padding: 18px; border-radius: 18px; border: none;
+            background: var(--accent); color: #000; font-weight: 800; cursor: pointer;
+            margin-top: 10px; transition: 0.3s;
         }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .stat-item { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 20px; text-align: center; }
-        .stat-item span { display: block; font-size: 20px; font-weight: 800; color: var(--accent); }
-        .stat-item label { font-size: 10px; opacity: 0.5; text-transform: uppercase; }
+        .btn:active { transform: scale(0.98); }
 
-        .ui-input { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); padding: 16px; border-radius: 18px; color: #fff; margin: 8px 0; outline: none; }
-        .ui-btn { width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 800; background: var(--accent); color: #000; cursor: pointer; transition: 0.3s; }
-        .ui-btn:active { transform: scale(0.97); }
-
-        /* ЧАТ */
-        .msg { max-width: 80%; padding: 14px 18px; border-radius: 22px; background: var(--card); border: 1px solid var(--border); margin-bottom: 12px; align-self: flex-start; position: relative; }
-        .msg.me { align-self: flex-end; background: var(--accent); color: #000; font-weight: 600; }
-
-        /* ОСТРОВОК (DYNAMIC ISLAND) */
-        .island-box { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 420px; z-index: 1000; }
+        .link-btn {
+            display: block; text-align: center; margin-top: 20px; font-size: 13px;
+            color: var(--accent); cursor: pointer; opacity: 0.8;
+        }
         
-        .island-input-zone { 
-            background: rgba(10, 12, 18, 0.8); backdrop-filter: blur(20px); 
-            border: 1px solid var(--border); border-radius: 30px; padding: 10px 20px;
-            display: none; align-items: center; margin-bottom: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        .island-input-zone.show { display: flex; }
-        .island-input-zone input { flex: 1; background: none; border: none; color: #fff; outline: none; font-size: 16px; }
+        .error-msg { color: #ff4444; font-size: 12px; margin-top: 10px; display: none; text-align: center; }
 
-        .island-nav { 
-            background: rgba(15, 18, 25, 0.95); backdrop-filter: blur(30px);
-            border: 1px solid var(--border); border-radius: 40px; 
-            padding: 12px; display: flex; justify-content: space-around; align-items: center;
-        }
-        .n-icon { font-size: 24px; opacity: 0.3; transition: 0.3s; cursor: pointer; padding: 10px; }
-        .n-icon.active { opacity: 1; color: var(--accent); background: rgba(255,255,255,0.05); border-radius: 50%; }
-
-        /* AUTH */
-        #auth-gate { position: fixed; inset: 0; background: var(--bg); z-index: 5000; display: flex; align-items: center; justify-content: center; }
+        /* СОСТОЯНИЕ "В СИСТЕМЕ" */
+        #logged-in { display: none; text-align: center; }
     </style>
 </head>
 <body>
 
-    <div class="bg-glow"></div>
-
-    <div id="auth-gate">
-        <div style="width: 85%; max-width: 350px;">
-            <h1 style="font-size: 48px; letter-spacing: -2px;">Speeky</h1>
-            <p style="opacity: 0.5; margin-bottom: 40px;">Система готова к дешифровке.</p>
-            <input type="email" id="in-email" class="ui-input" placeholder="Ваша почта">
-            <input type="text" id="in-nick" class="ui-input" placeholder="@nickname">
-            <button class="ui-btn" onclick="initApp()">ВОЙТИ</button>
+    <div class="auth-container" id="main-box">
+        
+        <div id="form-login" class="auth-form active">
+            <h2>Вход</h2>
+            <p>Добро пожаловать обратно</p>
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="log-email" placeholder="example@mail.com">
+            </div>
+            <div class="input-group">
+                <label>Пароль</label>
+                <input type="password" id="log-pass" placeholder="••••••••">
+            </div>
+            <button class="btn" onclick="tryLogin()">ВОЙТИ</button>
+            <span class="link-btn" onclick="showForm('form-reg')">Создать аккаунт</span>
+            <span class="link-btn" style="font-size: 11px; margin-top: 10px; opacity: 0.5;" onclick="showForm('form-reset')">Забыли пароль?</span>
         </div>
+
+        <div id="form-reg" class="auth-form">
+            <h2>Регистрация</h2>
+            <p>Станьте частью Speeky</p>
+            <div class="input-group">
+                <label>Никнейм</label>
+                <input type="text" id="reg-nick" placeholder="@username">
+            </div>
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="reg-email" placeholder="example@mail.com">
+            </div>
+            <div class="input-group">
+                <label>Пароль</label>
+                <input type="password" id="reg-pass" placeholder="Придумайте пароль">
+            </div>
+            <div class="input-group">
+                <label>Кодовое слово (для восстановления)</label>
+                <input type="text" id="reg-secret" placeholder="Имя кота или любимый город">
+            </div>
+            <button class="btn" onclick="tryRegister()">СОЗДАТЬ</button>
+            <span class="link-btn" onclick="showForm('form-login')">Уже есть аккаунт</span>
+        </div>
+
+        <div id="form-reset" class="auth-form">
+            <h2>Сброс пароля</h2>
+            <p>Проверка личности</p>
+            <div class="input-group">
+                <label>Ваш Email</label>
+                <input type="email" id="reset-email">
+            </div>
+            <div class="input-group">
+                <label>Кодовое слово</label>
+                <input type="text" id="reset-secret">
+            </div>
+            <button class="btn" onclick="tryReset()">ПРОВЕРИТЬ</button>
+            <span class="link-btn" onclick="showForm('form-login')">Назад</span>
+        </div>
+
+        <div id="error" class="error-msg">Ошибка данных</div>
+
     </div>
 
-    <section id="sc-chat" class="screen active">
-        <div class="screen-header">
-            <h1>Speeky Чат</h1>
-            <p>Сквозное шифрование активно</p>
-        </div>
-        <div id="chat-flow" style="display: flex; flex-direction: column;">
-            <div class="msg">Добро пожаловать. Ваша сессия защищена протоколом Speeky-V3.</div>
-        </div>
-    </section>
-
-    <section id="sc-contacts" class="screen">
-        <div class="screen-header">
-            <h1>Связи</h1>
-            <p>Управление вашим кругом общения</p>
-        </div>
-        <div class="glass-card">
-            <input type="text" class="ui-input" placeholder="Поиск по ID или нику...">
-        </div>
-        <div class="glass-card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <div style="width:45px; height:45px; background:linear-gradient(45deg, #00f2ff, #9d50ff); border-radius:15px;"></div>
-                    <div><b>Служба поддержки</b><br><small style="opacity:0.5">Всегда онлайн</small></div>
-                </div>
-                <button style="background:none; border:1px solid var(--accent); color:var(--accent); padding:5px 12px; border-radius:10px; font-size:12px;">ЧАТ</button>
-            </div>
-        </div>
-    </section>
-
-    <section id="sc-create" class="screen">
-        <div class="screen-header">
-            <h1>Новый узел</h1>
-            <p>Создайте канал или группу</p>
-        </div>
-        <div class="glass-card">
-            <label style="font-size:12px; opacity:0.5;">НАЗВАНИЕ</label>
-            <input type="text" id="room-name" class="ui-input" placeholder="Напр. Crypto-Family">
-            
-            <label style="font-size:12px; opacity:0.5; margin-top:15px; display:block;">КАТЕГОРИЯ</label>
-            <div style="display:flex; gap:10px; margin-top:10px; overflow-x:auto;">
-                <span style="background:var(--accent); color:#000; padding:8px 15px; border-radius:20px; font-size:12px; font-weight:800;">IT</span>
-                <span style="background:var(--card); border:1px solid var(--border); padding:8px 15px; border-radius:20px; font-size:12px;">Игры</span>
-                <span style="background:var(--card); border:1px solid var(--border); padding:8px 15px; border-radius:20px; font-size:12px;">Музыка</span>
-            </div>
-
-            <button class="ui-btn" style="margin-top:25px;" onclick="doCreate()">СОЗДАТЬ ПРОСТРАНСТВО</button>
-        </div>
-    </section>
-
-    <section id="sc-settings" class="screen">
-        <div class="screen-header">
-            <h1>Кабинет</h1>
-            <p>Конфигурация вашей личности</p>
-        </div>
-        
-        <div class="glass-card" style="text-align:center;">
-            <div style="width:90px; height:90px; background:var(--card); border:2px solid var(--accent); border-radius:50%; margin: 0 auto 15px; display:flex; align-items:center; justify-content:center; font-size:40px;" id="p-avatar">?</div>
-            <h2 id="p-nick">User</h2>
-            <div class="stat-grid">
-                <div class="stat-item"><span id="msg-count">0</span><label>Сообщений</label></div>
-                <div class="stat-item"><span>Cloud</span><label>Тариф</label></div>
-            </div>
-        </div>
-
-        <div class="glass-card">
-            <h3>Внешний вид</h3>
-            <div style="display:flex; justify-content:space-between; margin-top:15px;">
-                <span>Темный режим</span>
-                <input type="checkbox" checked>
-            </div>
-            <div style="display:flex; justify-content:space-between; margin-top:15px;">
-                <span>Звуки уведомлений</span>
-                <input type="checkbox" checked>
-            </div>
-        </div>
-
-        <button class="ui-btn" style="background:#ff4444; color:#fff;" onclick="logout()">УДАЛИТЬ АККАУНТ</button>
-    </section>
-
-    <div class="island-box">
-        <div class="island-input-zone show" id="input-zone">
-            <input type="text" id="m-field" placeholder="Написать в Speeky...">
-            <button onclick="pushMsg()" style="background:var(--accent); border:none; width:35px; height:35px; border-radius:50%; font-weight:900;">></button>
-        </div>
-        
-        <nav class="island-nav">
-            <div class="n-icon active" onclick="go('chat', this)">💬</div>
-            <div class="n-icon" onclick="go('contacts', this)">👤</div>
-            <div class="n-icon" onclick="go('create', this)">⊕</div>
-            <div class="n-icon" onclick="go('settings', this)">⚙️</div>
-        </nav>
+    <div id="logged-in">
+        <h1 style="font-size: 40px;">Speeky Cloud</h1>
+        <p>Вы авторизованы как <b id="user-display">...</b></p>
+        <button class="btn" style="max-width: 200px;" onclick="logout()">ВЫЙТИ</button>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io();
-        let session = JSON.parse(localStorage.getItem('spk_v4'));
-        let mCount = localStorage.getItem('m_count') || 0;
+        let db;
+        // 1. Инициализация БД
+        const request = indexedDB.open("SpeekyAuth", 1);
+        request.onupgradeneeded = (e) => {
+            db = e.target.result;
+            db.createObjectStore("users", { keyPath: "email" });
+        };
+        request.onsuccess = (e) => {
+            db = e.target.result;
+            checkSession();
+        };
 
-        if(session) renderSession();
-
-        function initApp() {
-            const nick = document.getElementById('in-nick').value;
-            const email = document.getElementById('in-email').value;
-            if(!nick || !email.includes('@')) return alert("Данные не валидны");
-
-            session = { nick, email, date: new Date().toLocaleDateString() };
-            localStorage.setItem('spk_v4', JSON.stringify(session));
-            renderSession();
+        // Переключение форм
+        function showForm(id) {
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.getElementById('error').style.display = 'none';
         }
 
-        function renderSession() {
-            document.getElementById('auth-gate').style.display = 'none';
-            document.getElementById('p-nick').innerText = session.nick;
-            document.getElementById('p-avatar').innerText = session.nick[1].toUpperCase();
-            document.getElementById('msg-count').innerText = mCount;
-            socket.emit('authenticate', { username: session.nick });
-        }
+        // РЕГИСТРАЦИЯ
+        function tryRegister() {
+            const user = {
+                nick: document.getElementById('reg-nick').value,
+                email: document.getElementById('reg-email').value,
+                pass: document.getElementById('reg-pass').value,
+                secret: document.getElementById('reg-secret').value.toLowerCase()
+            };
 
-        function go(scr, el) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('sc-' + scr).classList.add('active');
+            if(!user.nick || !user.email.includes('@') || user.pass.length < 6) {
+                showError("Данные заполнены неверно (пароль мин. 6 симв.)");
+                return;
+            }
+
+            const tx = db.transaction("users", "readwrite");
+            const store = tx.objectStore("users");
             
-            document.querySelectorAll('.n-icon').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
-
-            const iz = document.getElementById('input-zone');
-            if(scr === 'chat') iz.classList.add('show');
-            else iz.classList.remove('show');
+            const check = store.get(user.email);
+            check.onsuccess = () => {
+                if(check.result) {
+                    showError("Email уже зарегистрирован");
+                } else {
+                    store.add(user);
+                    alert("Регистрация успешна!");
+                    showForm('form-login');
+                }
+            };
         }
 
-        function pushMsg() {
-            const f = document.getElementById('m-field');
-            if(f.value.trim()) {
-                socket.emit('message', { name: session.nick, text: f.value });
-                f.value = '';
-                mCount++;
-                localStorage.setItem('m_count', mCount);
-                document.getElementById('msg-count').innerText = mCount;
+        // ВХОД
+        function tryLogin() {
+            const email = document.getElementById('log-email').value;
+            const pass = document.getElementById('log-pass').value;
+
+            const tx = db.transaction("users", "readonly");
+            const store = tx.objectStore("users");
+            const req = store.get(email);
+
+            req.onsuccess = () => {
+                const user = req.result;
+                if(user && user.pass === pass) {
+                    loginUser(user);
+                } else {
+                    showError("Неверный email или пароль");
+                }
+            };
+        }
+
+        // ВОССТАНОВЛЕНИЕ
+        function tryReset() {
+            const email = document.getElementById('reset-email').value;
+            const secret = document.getElementById('reset-secret').value.toLowerCase();
+
+            const tx = db.transaction("users", "readonly");
+            const store = tx.objectStore("users");
+            const req = store.get(email);
+
+            req.onsuccess = () => {
+                const user = req.result;
+                if(user && user.secret === secret) {
+                    alert("Ваш пароль: " + user.pass);
+                    showForm('form-login');
+                } else {
+                    showError("Данные не совпадают");
+                }
+            };
+        }
+
+        function loginUser(user) {
+            localStorage.setItem('current_user', JSON.stringify(user));
+            location.reload(); // Перезагружаем чтобы войти в интерфейс
+        }
+
+        function checkSession() {
+            const session = localStorage.getItem('current_user');
+            if(session) {
+                const user = JSON.parse(session);
+                document.getElementById('main-box').style.display = 'none';
+                document.getElementById('logged-in').style.display = 'block';
+                document.getElementById('user-display').innerText = user.nick;
             }
         }
 
-        socket.on('message', m => {
-            const flow = document.getElementById('chat-flow');
-            const isMe = m.name === session.nick;
-            const div = document.createElement('div');
-            div.className = `msg ${isMe ? 'me' : ''}`;
-            div.innerHTML = isMe ? m.text : `<b>${m.name}</b><br>${m.text}`;
-            flow.appendChild(div);
-            document.getElementById('sc-chat').scrollTop = flow.scrollHeight;
-        });
-
-        function doCreate() {
-            const name = document.getElementById('room-name').value;
-            if(!name) return;
-            alert(`Узел ${name} успешно развернут в облаке!`);
-            go('chat', document.querySelector('.n-icon'));
-        }
-
         function logout() {
-            localStorage.clear();
+            localStorage.removeItem('current_user');
             location.reload();
         }
 
-        document.getElementById('m-field').onkeypress = (e) => { if(e.key === 'Enter') pushMsg(); };
+        function showError(text) {
+            const err = document.getElementById('error');
+            err.innerText = text;
+            err.style.display = 'block';
+        }
     </script>
 </body>
 </html>
