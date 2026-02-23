@@ -3,99 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ULTRA CORE | FINAL STABLE</title>
+    <title>ULTRA CORE | V5 PRO</title>
     <style>
         :root {
             --accent: #00d2ff;
-            --accent-glow: rgba(0, 210, 255, 0.4);
-            --bg: #020406;
-            --glass: rgba(15, 20, 25, 0.8);
-            --border: rgba(255, 255, 255, 0.08);
+            --accent-soft: rgba(0, 210, 255, 0.15);
+            --bg: #010204;
+            --panel: rgba(10, 15, 25, 0.8);
+            --border: rgba(255, 255, 255, 0.06);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; transition: all 0.2s ease; }
         body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
 
-        /* Живой фон */
-        #canvas-bg { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at center, #0a111a 0%, #020406 100%); }
-        .nebula { position: absolute; width: 100%; height: 100%; background: url('https://www.transparenttextures.com/patterns/stardust.png'); opacity: 0.1; animation: drift 100s linear infinite; }
-        @keyframes drift { from { background-position: 0 0; } to { background-position: 1000px 1000px; } }
+        /* Живой фон (глубокий космос) */
+        .space-bg { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 30% 30%, #0d1a2a 0%, #010204 100%); }
+        .stars { position: absolute; inset: 0; background: url('https://www.transparenttextures.com/patterns/stardust.png'); opacity: 0.15; animation: slowDrift 80s linear infinite; }
+        @keyframes slowDrift { from { background-position: 0 0; } to { background-position: 1000px 1000px; } }
 
         /* Экраны */
-        .screen { position: fixed; inset: 0; z-index: 1000; background: var(--bg); display: flex; align-items: center; justify-content: center; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
-        .hidden { opacity: 0; pointer-events: none; transform: scale(1.05); filter: blur(10px); }
+        .screen { position: fixed; inset: 0; z-index: 1000; background: var(--bg); display: flex; align-items: center; justify-content: center; }
+        .hidden { opacity: 0; pointer-events: none; transform: scale(1.05); filter: blur(20px); }
 
-        /* Авторизация */
-        .auth-card { background: var(--glass); backdrop-filter: blur(30px); padding: 40px; border-radius: 35px; border: 1px solid var(--border); width: 380px; text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
-        input { width: 100%; padding: 16px; margin-bottom: 15px; border-radius: 14px; border: 1px solid var(--border); background: rgba(0,0,0,0.4); color: #fff; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
-        .btn-main { width: 100%; padding: 16px; background: var(--accent); color: #000; border: none; border-radius: 14px; font-weight: 900; cursor: pointer; transition: 0.3s; }
-        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 10px 20px var(--accent-glow); }
+        /* Карточка входа */
+        .auth-card { background: var(--panel); backdrop-filter: blur(40px); padding: 50px; border-radius: 40px; border: 1px solid var(--border); width: 400px; text-align: center; }
+        input { width: 100%; padding: 18px; margin-bottom: 15px; border-radius: 16px; border: 1px solid var(--border); background: rgba(0,0,0,0.5); color: #fff; outline: none; }
+        input:focus { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-soft); }
+        .btn-main { width: 100%; padding: 18px; background: var(--accent); color: #000; border: none; border-radius: 16px; font-weight: 900; cursor: pointer; }
 
-        /* ГЛАВНЫЙ ИНТЕРФЕЙС */
-        #app { display: flex; width: 100vw; height: 100vh; }
+        /* ОСНОВНОЙ ИНТЕРФЕЙС */
+        #app { display: grid; grid-template-columns: 80px 320px 1fr; width: 100vw; height: 100vh; }
 
-        /* Левая узкая панель */
-        .rail { width: 75px; background: rgba(0,0,0,0.5); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 25px 0; gap: 20px; flex-shrink: 0; }
-        .r-btn { width: 50px; height: 50px; border-radius: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; font-size: 20px; border: 1px solid transparent; }
-        .r-btn:hover { background: rgba(255,255,255,0.05); }
-        .r-btn.active { background: var(--accent); color: #000; box-shadow: 0 0 20px var(--accent-glow); }
+        .rail { background: rgba(0,0,0,0.6); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 30px 0; gap: 20px; }
+        .r-icon { width: 54px; height: 54px; border-radius: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 22px; }
+        .r-icon:hover { background: var(--accent-soft); color: var(--accent); }
+        .r-icon.active { background: var(--accent); color: #000; box-shadow: 0 0 30px var(--accent-soft); }
 
-        /* Список чатов */
-        .sidebar { width: 300px; background: rgba(5, 8, 15, 0.4); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
-        .search-area { padding: 20px; }
-        .c-item { padding: 15px 20px; margin: 0 10px 5px; border-radius: 15px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s; }
-        .c-item:hover { background: rgba(255,255,255,0.03); }
-        .c-item.active { background: var(--accent-glow); border: 1px solid rgba(0,210,255,0.2); }
-        .avatar { width: 45px; height: 45px; border-radius: 14px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 900; color: #000; }
+        .sidebar { background: rgba(5, 10, 20, 0.4); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+        .c-item { padding: 18px 25px; margin: 5px 15px; border-radius: 20px; display: flex; align-items: center; gap: 15px; cursor: pointer; }
+        .c-item.active { background: var(--accent-soft); border: 1px solid rgba(0,210,255,0.1); }
 
-        /* ЧАТ */
-        .viewport { flex-grow: 1; display: flex; flex-direction: column; background: rgba(0,0,0,0.1); }
-        .v-header { height: 75px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 30px; justify-content: space-between; backdrop-filter: blur(10px); }
+        .viewport { display: flex; flex-direction: column; position: relative; }
+        .v-header { height: 85px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 40px; justify-content: space-between; backdrop-filter: blur(15px); }
         
-        #messages { flex-grow: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 15px; }
-        .bubble { padding: 14px 18px; border-radius: 20px; background: var(--glass); border: 1px solid var(--border); max-width: 70%; line-height: 1.5; animation: slideUp 0.4s ease-out; }
-        .bubble.me { align-self: flex-end; background: rgba(0, 210, 255, 0.05); border-color: rgba(0, 210, 255, 0.2); }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px) scale(0.95); } }
+        #messages { flex: 1; overflow-y: auto; padding: 40px; display: flex; flex-direction: column; gap: 20px; }
+        .bubble { padding: 16px 22px; border-radius: 24px; background: var(--panel); border: 1px solid var(--border); max-width: 65%; animation: msgIn 0.3s ease-out; }
+        .bubble.me { align-self: flex-end; background: rgba(0,210,255,0.08); border-color: rgba(0,210,255,0.2); }
+        @keyframes msgIn { from { opacity: 0; transform: translateY(15px); } }
 
-        .input-area { padding: 25px 35px; }
-        .i-box { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 20px; padding: 10px 25px; display: flex; align-items: center; gap: 15px; }
-        #msg-input { flex-grow: 1; background: none; border: none; color: #fff; padding: 10px 0; outline: none; font-size: 16px; }
+        .v-input { padding: 30px 50px; }
+        .i-wrap { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 25px; padding: 12px 30px; display: flex; align-items: center; gap: 20px; }
+        #msg-field { flex: 1; background: none; border: none; color: #fff; outline: none; font-size: 16px; }
 
-        /* Настройки выезжающие */
-        #settings-side { position: fixed; left: -400px; top: 0; bottom: 0; width: 350px; background: #05080c; z-index: 2000; border-right: 1px solid var(--border); transition: 0.5s cubic-bezier(0.8, 0, 0.2, 1); padding: 40px; box-shadow: 20px 0 50px rgba(0,0,0,0.5); }
-        #settings-side.open { left: 0; }
+        /* ГИГАНТСКИЕ НАСТРОЙКИ (Side Panel) */
+        #settings-panel {
+            position: fixed; right: -450px; top: 0; bottom: 0; width: 420px; 
+            background: #080c14; z-index: 2000; border-left: 1px solid var(--border);
+            padding: 40px; overflow-y: auto; transition: 0.6s cubic-bezier(0.85, 0, 0.15, 1);
+        }
+        #settings-panel.open { right: 0; box-shadow: -50px 0 100px rgba(0,0,0,0.8); }
+
+        .set-section { margin-bottom: 35px; }
+        .set-section h4 { font-size: 12px; color: var(--accent); letter-spacing: 2px; margin-bottom: 20px; text-transform: uppercase; }
+        .set-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+        .toggle { width: 40px; height: 20px; background: #333; border-radius: 20px; position: relative; cursor: pointer; }
+        .toggle.on { background: var(--accent); }
+        .toggle::after { content: ''; position: absolute; width: 16px; height: 16px; background: #fff; border-radius: 50%; top: 2px; left: 2px; transition: 0.3s; }
+        .toggle.on::after { left: 22px; }
     </style>
 </head>
 <body>
 
-    <div id="canvas-bg"><div class="nebula"></div></div>
+    <div class="space-bg"><div class="stars"></div></div>
 
     <div id="screen-auth" class="screen">
         <div class="auth-card">
-            <h1 style="letter-spacing: 4px; margin-bottom: 30px; font-weight: 200;">ULTRA CORE</h1>
-            <input type="text" id="username" placeholder="Имя пользователя">
-            <input type="password" id="password" placeholder="Пароль">
-            <button class="btn-main" onclick="auth()">ПОДКЛЮЧИТЬСЯ</button>
+            <h2 style="margin-bottom: 30px; letter-spacing: 5px;">ULTRA CORE</h2>
+            <input type="text" id="in-name" placeholder="Логин">
+            <input type="password" id="in-pass" placeholder="Пароль">
+            <button class="btn-main" onclick="startSession()">ИНИЦИАЛИЗАЦИЯ</button>
         </div>
     </div>
 
     <div id="app" class="hidden">
         <nav class="rail">
-            <div class="r-btn active">💬</div>
-            <div class="r-btn" onclick="toggleSettings()">⚙️</div>
-            <div class="r-btn" style="margin-top: auto;" onclick="location.reload()">🚪</div>
+            <div class="r-icon active">💬</div>
+            <div class="r-icon" onclick="openSettings()">⚙️</div>
+            <div class="r-icon" style="margin-top: auto;">🔒</div>
         </nav>
 
         <aside class="sidebar">
-            <div class="search-area">
-                <input type="text" placeholder="Поиск..." style="margin-bottom: 0; padding: 10px; font-size: 14px;">
-            </div>
+            <div style="padding: 30px 25px; font-weight: 900; font-size: 12px; letter-spacing: 2px; opacity: 0.5;">СЕКТОРЫ ЧАТА</div>
             <div class="c-item active">
-                <div class="avatar">#</div>
+                <div style="width: 45px; height: 45px; background: var(--accent); border-radius: 15px; color:#000; display:flex; align-items:center; justify-content:center; font-weight:900;">#</div>
                 <div>
-                    <div style="font-weight: 700;">основной-чат</div>
-                    <div style="font-size: 12px; color: #00ff88;">публичный сектор</div>
+                    <div style="font-weight: 700;">Основной поток</div>
+                    <div style="font-size: 11px; opacity: 0.4;">Публичный доступ</div>
                 </div>
             </div>
         </aside>
@@ -103,97 +106,124 @@
         <main class="viewport">
             <header class="v-header">
                 <div>
-                    <h3 id="chat-title"># основной-чат</h3>
-                    <p style="font-size: 12px; color: #00ff88;">● <span id="online-count">1</span> в сети</p>
+                    <h3 id="current-chat-name"># основной-поток</h3>
+                    <p style="font-size: 12px; color: #00ff88;">● <span id="counter">0</span> активных узлов</p>
                 </div>
-                <div style="opacity: 0.3; font-size: 12px;">v4.0 STABLE</div>
+                <div style="font-size: 11px; padding: 6px 12px; background: var(--accent-soft); border-radius: 8px; color: var(--accent);">V5.0 STABLE</div>
             </header>
 
             <div id="messages"></div>
 
-            <div class="input-area">
-                <form id="chat-form" class="i-box">
-                    <input type="text" id="msg-input" placeholder="Напишите сообщение..." autocomplete="off">
-                    <button type="submit" style="background:none; border:none; color:var(--accent); font-weight:900; cursor:pointer;">ОТПРАВИТЬ</button>
+            <div class="v-input">
+                <form id="send-form" class="i-wrap">
+                    <input type="text" id="msg-field" placeholder="Введите сигнал в систему..." autocomplete="off">
+                    <button type="submit" style="background:none; border:none; color:var(--accent); font-weight:900; cursor:pointer;">ПЕРЕДАТЬ</button>
                 </form>
             </div>
         </main>
     </div>
 
-    <div id="settings-side">
-        <h2 style="margin-bottom: 30px;">Профиль</h2>
-        <div style="text-align: center; margin-bottom: 30px;">
-            <div style="width: 80px; height: 80px; background: var(--accent); border-radius: 25px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; font-weight: 900;" id="user-avatar">?</div>
-            <h3 id="user-name-display">User</h3>
+    <div id="settings-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+            <h2>Настройки</h2>
+            <button onclick="openSettings()" style="background:none; border:none; color:#ff4444; cursor:pointer;">ЗАКРЫТЬ</button>
         </div>
-        <div style="display: grid; gap: 15px;">
-            <div style="padding: 15px; background: rgba(255,255,255,0.03); border-radius: 12px; font-size: 14px;">🔔 Уведомления: Активны</div>
-            <div style="padding: 15px; background: rgba(255,255,255,0.03); border-radius: 12px; font-size: 14px;">🎨 Тема: Deep Space</div>
+
+        <div class="set-section">
+            <h4>Аккаунт</h4>
+            <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 20px;">
+                <div style="width: 70px; height: 70px; background: var(--accent); border-radius: 25px;"></div>
+                <div>
+                    <h3 id="set-username">User</h3>
+                    <p style="font-size: 12px; opacity: 0.5;">ID: <span id="my-id">---</span></p>
+                </div>
+            </div>
+            <input type="text" placeholder="Изменить био..." style="padding: 12px; font-size: 13px;">
         </div>
-        <button class="btn-main" style="margin-top: 40px; background: #ff4444; color: #fff;" onclick="toggleSettings()">ЗАКРЫТЬ</button>
+
+        <div class="set-section">
+            <h4>Персонализация</h4>
+            <div class="set-row">
+                <span>Анимированный фон</span>
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="set-row">
+                <span>Эффекты размытия</span>
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="set-row">
+                <span>Звуки уведомлений</span>
+                <div class="toggle" onclick="this.classList.toggle('on')"></div>
+            </div>
+        </div>
+
+        <div class="set-section">
+            <h4>Безопасность и данные</h4>
+            <div class="set-row" style="cursor: pointer; color: #00d2ff;">Просмотр сессий</div>
+            <div class="set-row" style="cursor: pointer; color: #ff4444;">Очистить историю сообщений</div>
+            <div class="set-row" style="cursor: pointer; color: #ff4444;" onclick="location.reload()">Выйти из аккаунта</div>
+        </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let myNick = "";
+        let myName = "";
 
-        // АВТОРИЗАЦИЯ
-        function auth() {
-            const u = document.getElementById('username').value;
-            const p = document.getElementById('password').value;
-            if(!u) return alert("Введите имя!");
-            
-            myNick = u;
-            socket.emit('authenticate', { username: u, password: p, isRegister: true });
+        function startSession() {
+            const val = document.getElementById('in-name').value;
+            if(!val) return;
+            myName = val;
+            socket.emit('authenticate', { username: val, password: '123', isRegister: true });
         }
 
         socket.on('auth_success', data => {
             document.getElementById('screen-auth').classList.add('hidden');
             document.getElementById('app').classList.remove('hidden');
-            document.getElementById('user-name-display').innerText = myNick;
-            document.getElementById('user-avatar').innerText = myNick[0].toUpperCase();
+            document.getElementById('set-username').innerText = myName;
+            document.getElementById('my-id').innerText = socket.id || "GEN-CORE-1";
             socket.emit('join_room', 'main');
         });
 
-        // СЧЕТЧИК ОНЛАЙНА
-        socket.on('room_users', (users) => {
-            document.getElementById('online-count').innerText = Object.keys(users).length;
+        // --- ФИКС СЧЕТЧИКА ---
+        // Слушаем разные варианты событий от сервера
+        function updateCounter(num) {
+            document.getElementById('counter').innerText = num;
+        }
+
+        socket.on('room_users', (data) => {
+            // Если сервер шлет объект с пользователями
+            const count = typeof data === 'object' ? Object.keys(data).length : data;
+            updateCounter(count);
         });
 
-        // ЧАТ (ОТПРАВКА)
-        const form = document.getElementById('chat-form');
+        socket.on('update_online', (count) => {
+            updateCounter(count);
+        });
+
+        // --- ЛОГИКА ЧАТА ---
+        const form = document.getElementById('send-form');
         form.onsubmit = (e) => {
             e.preventDefault();
-            const input = document.getElementById('msg-input');
-            if(input.value.trim()) {
-                socket.emit('message', { text: input.value });
-                input.value = '';
+            const inp = document.getElementById('msg-field');
+            if(inp.value.trim()) {
+                socket.emit('message', { text: inp.value });
+                inp.value = '';
             }
         };
 
-        // ЧАТ (ПРИЕМ)
         socket.on('message', m => {
             const container = document.getElementById('messages');
             const div = document.createElement('div');
-            const isMe = m.name === myNick;
-            
+            const isMe = m.name === myName;
             div.className = `bubble ${isMe ? 'me' : ''}`;
-            div.innerHTML = `
-                <div style="font-size: 10px; font-weight: 900; color: var(--accent); margin-bottom: 4px; text-transform: uppercase;">
-                    ${m.name}
-                </div>
-                <div>${m.text}</div>
-            `;
-            
+            div.innerHTML = `<small style="color:var(--accent); font-weight:800; font-size:10px; display:block; margin-bottom:5px;">${m.name}</small>${m.text}`;
             container.appendChild(div);
-            // Плавная прокрутка вниз
             container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
         });
 
-        // ИНТЕРФЕЙС
-        function toggleSettings() {
-            document.getElementById('settings-side').classList.toggle('open');
+        function openSettings() {
+            document.getElementById('settings-panel').classList.toggle('open');
         }
     </script>
 </body>
