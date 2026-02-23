@@ -7,10 +7,11 @@ const path = require('path');
 const app = express();
 const server = http.createServer(app);
 
-// Настройка Socket.io для работы через прокси Render
+// Настройка Socket.io для стабильной работы на Render
 const io = new Server(server, {
     cors: { origin: "*" },
-    connectionStateRecovery: {} // Поможет не терять сообщения при плохом 4G
+    maxHttpBufferSize: 1e8, // Увеличиваем лимит до 100Мб для видео
+    connectionStateRecovery: {}
 });
 
 const HISTORY_FILE = path.join(__dirname, 'history.json');
@@ -26,16 +27,13 @@ function saveMessage(msg) {
     try {
         let history = loadHistory();
         history.push(msg);
-        fs.writeFileSync(HISTORY_FILE, JSON.stringify(history.slice(-50), null, 2));
-    } catch (e) { console.log("Ошибка записи истории"); }
+        fs.writeFileSync(HISTORY_FILE, JSON.stringify(history.slice(-30), null, 2));
+    } catch (e) { console.log("Ошибка истории"); }
 }
 
 app.use(express.static(__dirname));
 
 io.on('connection', (socket) => {
-    console.log('🔌 Кто-то подключился');
-
-    // Отправляем историю сразу при входе
     socket.emit('load_history', loadHistory());
 
     socket.on('message', (data) => {
@@ -46,12 +44,10 @@ io.on('connection', (socket) => {
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
         saveMessage(messageData);
-        // io.emit отправляет ВСЕМ подключенным устройствам
         io.emit('message', messageData); 
     });
 });
 
-// ПОРТ для Render должен быть именно таким!
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 СЕРВЕР ЗАПУЩЕН НА ПОРТУ ${PORT}`);
