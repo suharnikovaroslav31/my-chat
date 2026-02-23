@@ -3,56 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultra Glass Chat</title>
+    <title>Ultra Glass Pro</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="auth-screen">
         <div class="glass-card">
-            <h1>UltraChat</h1>
-            <input type="text" id="username-input" placeholder="Введите ваш ник...">
-            <button onclick="joinChat()">ВОЙТИ</button>
+            <h1>UltraChat PRO</h1>
+            <p>Добро пожаловать в будущее мессенджеров</p>
+            <input type="text" id="username-input" placeholder="Ваше имя...">
+            <button onclick="joinChat()">ПОДКЛЮЧИТЬСЯ</button>
         </div>
     </div>
 
     <div id="main-app" style="display: none;">
-        <div id="sidebar">
-            <div class="sidebar-header">
-                <h3>Чаты</h3>
-            </div>
+        <div id="sidebar-left">
+            <div class="panel-header">Чаты</div>
             <div class="chat-list">
                 <div class="chat-item active">
-                    <div class="avatar">#</div>
-                    <div class="chat-info">
-                        <span class="chat-name">Общий чат</span>
-                        <span class="chat-status">online</span>
+                    <div class="avatar-circle">#</div>
+                    <div class="chat-text">
+                        <strong>Общий канал</strong>
+                        <small>Online сейчас</small>
                     </div>
                 </div>
             </div>
-            <div class="user-profile">
-                <div class="avatar user-avatar">👤</div>
-                <span id="my-name">User</span>
+            <div class="bottom-user">
+                <div class="avatar-circle user-av">👤</div>
+                <div class="user-meta">
+                    <span id="my-name">User</span>
+                    <div class="status-dot"></div>
+                </div>
             </div>
         </div>
 
-        <div id="chat-area">
-            <div id="chat-header">
-                <div class="header-info">
-                    <span class="current-chat-name">Общий чат</span>
-                    <small>32 участника</small>
+        <div id="chat-center">
+            <div class="chat-header">
+                <div class="header-main">
+                    <h2># GENERAL_CHANNEL</h2>
+                    <div id="typing-indicator"></div>
                 </div>
             </div>
             
             <div id="messages"></div>
 
             <form id="chat-form">
-                <label class="attach-btn">
+                <label class="icon-btn">
                     📎
                     <input type="file" id="file-input" accept="image/*,video/*" style="display:none;">
                 </label>
-                <input type="text" id="msg-input" placeholder="Написать сообщение..." autocomplete="off">
-                <button type="submit" id="send-btn">➤</button>
+                <input type="text" id="msg-input" placeholder="Написать в #general..." autocomplete="off">
+                <button type="submit" id="send-btn">ОТПРАВИТЬ</button>
             </form>
+        </div>
+
+        <div id="sidebar-right">
+            <div class="panel-header">Информация</div>
+            <div class="info-box">
+                <div class="media-preview-grid">
+                    <p>Последние вложения:</p>
+                    <div id="media-gallery"></div>
+                </div>
+            </div>
+            <div class="members-box">
+                <p>Участники:</p>
+                <ul id="user-list">
+                    <li><div class="status-dot"></div> Вы</li>
+                </ul>
+            </div>
         </div>
     </div>
 
