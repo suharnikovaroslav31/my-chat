@@ -9,29 +9,49 @@
 <body>
     <div id="auth-screen">
         <div class="glass-card">
-            <h2>Вход в UltraChat</h2>
-            <input type="text" id="username-input" placeholder="Твой никнейм...">
-            <button onclick="joinChat()">Войти</button>
+            <h1>UltraChat</h1>
+            <input type="text" id="username-input" placeholder="Введите ваш ник...">
+            <button onclick="joinChat()">ВОЙТИ</button>
         </div>
     </div>
 
     <div id="main-app" style="display: none;">
         <div id="sidebar">
-            <div class="user-info">
-                <div class="avatar"></div>
-                <p id="my-name">User</p>
-                <small>Online</small>
+            <div class="sidebar-header">
+                <h3>Чаты</h3>
+            </div>
+            <div class="chat-list">
+                <div class="chat-item active">
+                    <div class="avatar">#</div>
+                    <div class="chat-info">
+                        <span class="chat-name">Общий чат</span>
+                        <span class="chat-status">online</span>
+                    </div>
+                </div>
+            </div>
+            <div class="user-profile">
+                <div class="avatar user-avatar">👤</div>
+                <span id="my-name">User</span>
             </div>
         </div>
+
         <div id="chat-area">
+            <div id="chat-header">
+                <div class="header-info">
+                    <span class="current-chat-name">Общий чат</span>
+                    <small>32 участника</small>
+                </div>
+            </div>
+            
             <div id="messages"></div>
+
             <form id="chat-form">
-                <label class="file-label">
+                <label class="attach-btn">
                     📎
                     <input type="file" id="file-input" accept="image/*,video/*" style="display:none;">
                 </label>
-                <input type="text" id="msg-input" placeholder="Сообщение..." autocomplete="off">
-                <button type="submit">SEND</button>
+                <input type="text" id="msg-input" placeholder="Написать сообщение..." autocomplete="off">
+                <button type="submit" id="send-btn">➤</button>
             </form>
         </div>
     </div>
