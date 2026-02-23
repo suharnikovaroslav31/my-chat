@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ULTRA_CHAT | NEON</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    
+    <div id="auth-screen" class="modal-overlay">
+        <div class="glass-card auth-card">
+            <h2>ВХОД В СЕТЬ</h2>
+            <input type="text" id="username-input" placeholder="Твой никнейм..." autocomplete="off">
+            <button onclick="joinChat()">ПОДКЛЮЧИТЬСЯ</button>
+        </div>
+    </div>
+
+    <div class="app-container" id="main-app" style="display: none;">
+        <aside class="sidebar">
+            <div class="user-info">
+                <div class="avatar-mini"></div>
+                <span id="my-name">User</span>
+            </div>
+            <div class="status-box">
+                <span class="dot"></span> Online
+            </div>
+        </aside>
+
+        <main class="chat-window">
+            <header class="chat-header">
+                <h3># GENERAL_CHANNEL</h3>
+            </header>
+            
+            <div id="messages" class="messages-area">
+                </div>
+
+            <form id="chat-form" class="input-area">
+                <input type="text" id="msg-input" placeholder="Введите сообщение..." autocomplete="off">
+                <button type="submit">SEND</button>
+            </form>
+        </main>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+
+    <script>
+        // Небольшая логика для переключения экранов
+        function joinChat() {
+            const name = document.getElementById('username-input').value;
+            if (name.trim() !== "") {
+                document.getElementById('my-name').innerText = name;
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'flex';
+                
+                // Сохраняем имя в глобальную переменную (скрипт его подхватит)
+                window.userName = name;
+            }
+        }
+    </script>
+</body>
+</html>
