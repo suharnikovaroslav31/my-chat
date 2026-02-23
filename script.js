@@ -1,81 +1,75 @@
-// Умное подключение: само определяет IP сервера
-const socket = io(); 
+// Важно: форсируем использование Websocket для стабильности на Render
+const socket = io({ transports: ['websocket'] }); 
 
 const messageForm = document.getElementById('chat-form');
 const messageInput = document.getElementById('msg-input');
 const messageContainer = document.getElementById('messages');
-// Создаем индикатор "печатает" программно, если его нет в HTML
-let typingIndicator = document.getElementById('typing-indicator');
+const fileInput = document.getElementById('file-input');
 
 function joinChat() {
-    const nameInput = document.getElementById('username-input');
-    const name = nameInput.value.trim();
-    
-    if (name !== "") {
+    const name = document.getElementById('username-input').value.trim();
+    if (name) {
         window.userName = name;
         document.getElementById('my-name').innerText = name;
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('main-app').style.display = 'flex';
-        
-        socket.emit('user_joined', name);
-        socket.emit('request_history');
     }
 }
 
 function renderMessage(data) {
-    if (!data.name || !data.text) return; // Защита от пустых данных
-
-    const item = document.createElement('div');
-    const isMine = data.name === window.userName;
+    if (!data.name || !data.text) return;
     
+    const isMine = data.name === window.userName;
+    const item = document.createElement('div');
     item.className = `message ${isMine ? 'outgoing' : 'incoming'}`;
+
+    let content = data.type === 'image' 
+        ? `<img src="${data.text}" style="max-width:250px; border-radius:10px;">` 
+        : `<div>${data.text}</div>`;
+
     item.innerHTML = `
         <div class="bubble" data-sender="${data.name}">
-            ${data.text}
+            ${content}
             <span class="time">${data.time || ''}</span>
         </div>
     `;
-    
     messageContainer.appendChild(item);
-    messageContainer.scrollTo({ top: messageContainer.scrollHeight, behavior: 'smooth' });
+    messageContainer.scrollTop = messageContainer.scrollHeight;
 }
 
-// Слушаем историю
+// Слушаем сервер
+socket.on('message', (data) => renderMessage(data));
+
 socket.on('load_history', (history) => {
-    messageContainer.innerHTML = ''; 
-    if (Array.isArray(history)) {
-        history.forEach(msg => renderMessage(msg));
-    }
+    messageContainer.innerHTML = '';
+    history.forEach(msg => renderMessage(msg));
 });
 
-// Новое сообщение
-socket.on('message', (data) => {
-    renderMessage(data);
-});
-
-// Печатает...
-messageInput.addEventListener('input', () => {
-    socket.emit('typing', window.userName);
-});
-
-let typingTimeout;
-socket.on('display_typing', (name) => {
-    if (typingIndicator) {
-        typingIndicator.innerText = `${name} печатает...`;
-        clearTimeout(typingTimeout);
-        typingTimeout = setTimeout(() => { typingIndicator.innerText = ''; }, 2000);
-    }
-});
-
-// Отправка
+// Отправка текста
 messageForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    const text = messageInput.value.trim();
-    if (text) {
-        socket.emit('message', {
-            name: window.userName,
-            text: text
+    if (messageInput.value.trim() && window.userName) {
+        socket.emit('message', { 
+            name: window.userName, 
+            text: messageInput.value, 
+            type: 'text' 
         });
         messageInput.value = '';
+    }
+});
+
+// Отправка фото
+fileInput.addEventListener('change', function() {
+    const file = this.files[0];
+    if (file && window.userName) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            socket.emit('message', { 
+                name: window.userName, 
+                text: e.target.result, 
+                type: 'image' 
+            });
+        };
+        reader.readAsDataURL(file);
     }
 });
