@@ -2,226 +2,201 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ULTRA CORE | TIKTOK EDITION</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ULTRA MOBILE</title>
     <style>
         :root {
             --accent: #00f2ff;
-            --accent-glow: rgba(0, 242, 255, 0.3);
             --bg: #050505;
-            --panel: rgba(20, 20, 20, 0.6);
-            --border: rgba(255, 255, 255, 0.08);
+            --panel: rgba(25, 25, 25, 0.9);
+            --border: rgba(0, 242, 255, 0.2);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        body { 
-            background: var(--bg); 
-            color: #fff; 
-            height: 100vh; 
-            overflow: hidden;
-            background-image: radial-gradient(circle at 50% -20%, #003c4a, #050505);
-        }
+        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; position: fixed; width: 100%; }
 
-        /* Анимированный фон (Сетка) */
-        .bg-grid {
+        /* Живой фон (Сетка для мобилок полегче) */
+        .grid {
             position: fixed; inset: 0; z-index: -1;
             background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
-            background-size: 50px 50px;
-            transform: perspective(500px) rotateX(60deg) translateY(-100px);
-            animation: gridMove 5s linear infinite;
+            background-size: 40px 40px;
+            transform: perspective(300px) rotateX(60deg) translateY(-50px);
+            animation: move 4s linear infinite;
         }
-        @keyframes gridMove { from { background-position: 0 0; } to { background-position: 0 50px; } }
+        @keyframes move { from { background-position: 0 0; } to { background-position: 0 40px; } }
 
-        /* ЭКРАН РЕГИСТРАЦИИ */
+        /* ЭКРАН ВХОДА */
         #auth-screen {
-            position: fixed; inset: 0; z-index: 9999; background: var(--bg);
-            display: flex; align-items: center; justify-content: center; transition: 1s;
+            position: fixed; inset: 0; z-index: 1000; background: var(--bg);
+            display: flex; align-items: center; justify-content: center; padding: 30px;
         }
         .auth-card {
-            background: var(--panel); backdrop-filter: blur(20px);
-            padding: 50px; border-radius: 30px; border: 1px solid var(--border);
-            width: 400px; text-align: center; box-shadow: 0 0 50px rgba(0,0,0,1);
+            width: 100%; max-width: 320px; text-align: center;
+            background: var(--panel); padding: 40px 25px; border-radius: 30px; border: 1px solid var(--border);
         }
-        .auth-card h1 { font-weight: 200; letter-spacing: 10px; margin-bottom: 30px; color: var(--accent); }
-        .input-tg {
-            width: 100%; padding: 15px; background: rgba(0,0,0,0.5);
-            border: 1px solid var(--border); border-radius: 12px; color: #fff;
-            margin-bottom: 20px; outline: none; transition: 0.3s;
+        .input-m {
+            width: 100%; padding: 18px; background: #000; border: 1px solid var(--border);
+            border-radius: 15px; color: #fff; margin-bottom: 20px; outline: none; font-size: 16px;
         }
-        .input-tg:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
-        .btn-neon {
-            width: 100%; padding: 15px; background: var(--accent); color: #000;
-            border: none; border-radius: 12px; font-weight: 900; cursor: pointer;
-            text-transform: uppercase; box-shadow: 0 0 20px var(--accent-glow);
+        .btn-m {
+            width: 100%; padding: 18px; background: var(--accent); color: #000;
+            border: none; border-radius: 15px; font-weight: 900; font-size: 14px; letter-spacing: 2px;
         }
 
-        /* ПРИВЕТСТВИЕ СНИЗУ */
-        #welcome-popup {
-            position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
-            background: var(--accent); color: #000; padding: 20px 40px;
-            border-radius: 50px 50px 0 0; font-weight: 900; z-index: 10000;
-            transition: 0.6s cubic-bezier(0.17, 0.89, 0.32, 1.2);
+        /* ОСНОВНОЙ КОНТЕЙНЕР */
+        #app { height: 100vh; display: flex; flex-direction: column; opacity: 0; transition: 0.5s; }
+
+        /* ШАПКА */
+        .header {
+            height: 70px; display: flex; align-items: center; padding: 0 20px;
+            background: var(--panel); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border);
+            justify-content: space-between;
         }
-        #welcome-popup.show { bottom: 0; }
+        .status-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; display: inline-block; margin-right: 5px; box-shadow: 0 0 10px var(--accent); }
 
-        /* ГЛАВНЫЙ ИНТЕРФЕЙС (ТОЧЬ-В-ТОЧЬ) */
-        #app { display: grid; grid-template-columns: 80px 300px 1fr; height: 100vh; opacity: 0; transition: 1s; }
-        
-        /* Левая панель */
-        .rail { background: rgba(0,0,0,0.8); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 20px 0; }
-        .r-item { width: 50px; height: 50px; border-radius: 15px; margin-bottom: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
-        .r-item.active { background: var(--accent-glow); border: 1px solid var(--accent); color: var(--accent); }
-
-        /* Список чатов */
-        .sidebar { background: rgba(10, 10, 10, 0.5); backdrop-filter: blur(15px); border-right: 1px solid var(--border); }
-        .side-head { padding: 30px 20px; font-size: 12px; letter-spacing: 2px; color: var(--accent); font-weight: 900; }
-        .chat-item { padding: 15px 25px; display: flex; align-items: center; gap: 15px; cursor: pointer; border-bottom: 1px solid var(--border); }
-        .chat-item:hover { background: rgba(255,255,255,0.03); }
-        .avatar { width: 45px; height: 45px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; color: #000; font-weight: 900; }
-
-        /* Окно чата */
-        .main-chat { display: flex; flex-direction: column; background: rgba(0,0,0,0.2); }
-        .chat-head { height: 70px; border-bottom: 1px solid var(--border); padding: 0 30px; display: flex; align-items: center; justify-content: space-between; }
-        
-        #messages { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 15px; }
-        .bubble { 
-            max-width: 60%; padding: 12px 20px; border-radius: 20px; font-size: 14px; 
-            background: var(--panel); border: 1px solid var(--border); animation: msgSlide 0.4s ease;
+        /* СПИСОК ЧАТОВ (ГЛАВНЫЙ ЭКРАН) */
+        .chat-list { flex: 1; overflow-y: auto; padding: 15px; }
+        .chat-card {
+            background: var(--panel); padding: 20px; border-radius: 20px;
+            border: 1px solid var(--border); margin-bottom: 15px;
+            display: flex; align-items: center; gap: 15px;
         }
-        .bubble.me { align-self: flex-end; border-color: var(--accent); background: var(--accent-glow); }
-        @keyframes msgSlide { from { opacity: 0; transform: translateX(20px); } }
+        .ava { width: 50px; height: 50px; border-radius: 15px; background: var(--accent); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 900; }
 
-        .input-bar { padding: 25px 40px; }
-        .input-box { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 15px; padding: 10px 20px; display: flex; align-items: center; gap: 15px; }
-        #m-input { flex: 1; background: none; border: none; color: #fff; outline: none; }
-
-        /* НАСТРОЙКИ */
-        #settings {
-            position: fixed; left: -350px; top: 0; bottom: 0; width: 320px;
-            background: #0a0a0a; z-index: 5000; padding: 40px; border-right: 2px solid var(--accent);
-            transition: 0.5s cubic-bezier(0.8, 0, 0.2, 1);
+        /* ОКНО ЧАТА (ВЫЕЗЖАЕТ) */
+        #chat-window {
+            position: fixed; inset: 0; background: var(--bg); z-index: 500;
+            transform: translateX(100%); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; flex-direction: column;
         }
-        #settings.open { left: 0; }
-        .set-row { display: flex; justify-content: space-between; margin-bottom: 25px; align-items: center; }
-        .sw { width: 40px; height: 20px; background: #333; border-radius: 20px; position: relative; cursor: pointer; }
-        .sw.on { background: var(--accent); }
-        .sw::after { content: ''; position: absolute; width: 16px; height: 16px; background: #fff; border-radius: 50%; top: 2px; left: 2px; transition: 0.2s; }
-        .sw.on::after { left: 22px; }
+        #chat-window.open { transform: translateX(0); }
+
+        #messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; padding-bottom: 100px; }
+        .msg { max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 15px; line-height: 1.4; }
+        .msg.in { align-self: flex-start; background: #1a1a1a; border: 1px solid var(--border); }
+        .msg.out { align-self: flex-end; background: var(--accent); color: #000; font-weight: 500; }
+
+        /* ВВОД СООБЩЕНИЯ (MOBILE BOTTOM) */
+        .input-area {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 15px 20px 30px; background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px); display: flex; gap: 10px;
+        }
+        .m-field { flex: 1; background: #000; border: 1px solid var(--border); padding: 15px; border-radius: 25px; color: #fff; outline: none; }
+
+        /* ПРИВЕТСТВИЕ */
+        #welcome-notif {
+            position: fixed; top: -100px; left: 20px; right: 20px;
+            background: var(--accent); color: #000; padding: 15px;
+            border-radius: 15px; text-align: center; font-weight: 900;
+            z-index: 2000; transition: 0.5s; box-shadow: 0 10px 30px rgba(0, 242, 255, 0.3);
+        }
+        #welcome-notif.active { top: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="bg-grid"></div>
+    <div class="grid"></div>
 
     <div id="auth-screen">
         <div class="auth-card">
-            <h1>ULTRA</h1>
-            <input type="text" id="reg-name" class="input-tg" placeholder="ИМЯ ПОЛЬЗОВАТЕЛЯ">
-            <button class="btn-neon" onclick="startSystem()">ИНИЦИАЛИЗАЦИЯ</button>
+            <h1 style="color: var(--accent); letter-spacing: 5px; margin-bottom: 30px;">ULTRA</h1>
+            <input type="text" id="m-name" class="input-m" placeholder="ВАШ НИКНЕЙМ">
+            <button class="btn-m" onclick="initMobile()">ПОДКЛЮЧИТЬСЯ</button>
         </div>
     </div>
 
-    <div id="welcome-popup">СИСТЕМА АКТИВИРОВАНА. ДОБРО ПОЖАЛОВАТЬ!</div>
+    <div id="welcome-notif">СИСТЕМА АКТИВИРОВАНА</div>
 
     <div id="app">
-        <nav class="rail">
-            <div class="r-item active">💬</div>
-            <div class="r-icon r-item" onclick="toggleSets()" style="font-size: 20px;">⚙️</div>
-        </nav>
+        <header class="header">
+            <div style="font-weight: 900; letter-spacing: 2px;">ULTRA CORE</div>
+            <div onclick="toggleSettings()" style="font-size: 20px;">⚙️</div>
+        </header>
 
-        <aside class="sidebar">
-            <div class="side-head">АКТИВНЫЕ КАНАЛЫ</div>
-            <div class="chat-item">
-                <div class="avatar">#</div>
-                <div>
-                    <div style="font-weight: 700;">main_core</div>
-                    <div style="font-size: 11px; color: var(--accent);">онлайн: <span id="online-count">0</span></div>
+        <div class="chat-list">
+            <div style="font-size: 10px; opacity: 0.5; letter-spacing: 2px; margin-bottom: 20px;">ДОСТУПНЫЕ КАНАЛЫ</div>
+            <div class="chat-card" onclick="openChat()">
+                <div class="ava">#</div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 700;">MAIN_STREAM</div>
+                    <div style="font-size: 12px; color: var(--accent);"><span class="status-dot"></span> <span id="online-count">0</span> Online</div>
                 </div>
+                <div style="opacity: 0.3;">❯</div>
             </div>
-        </aside>
-
-        <main class="main-chat">
-            <header class="chat-head">
-                <h3 style="letter-spacing: 2px;"># MAIN_CORE</h3>
-                <div style="font-size: 10px; opacity: 0.5;">CRYPTO_PROTECTED</div>
-            </header>
-            <div id="messages"></div>
-            <div class="input-bar">
-                <form id="chat-form" class="input-box">
-                    <input type="text" id="m-input" placeholder="Введите сообщение..." autocomplete="off">
-                    <button type="submit" style="background:none; border:none; color:var(--accent); font-weight:900; cursor:pointer;">SEND</button>
-                </form>
-            </div>
-        </main>
+        </div>
     </div>
 
-    <div id="settings">
-        <h2 style="margin-bottom: 40px; color: var(--accent);">SETTINGS</h2>
-        <div class="set-row">
-            <span>Grid Background</span>
-            <div class="sw on" onclick="this.classList.toggle('on')"></div>
-        </div>
-        <div class="set-row">
-            <span>Neon Effects</span>
-            <div class="sw on" onclick="this.classList.toggle('on')"></div>
-        </div>
-        <button class="btn-neon" style="margin-top: 40px; background: #ff4444;" onclick="location.reload()">TERMINATE</button>
+    <div id="chat-window">
+        <header class="header">
+            <div onclick="closeChat()" style="font-size: 24px; color: var(--accent);">❮</div>
+            <div style="font-weight: 700;"># MAIN_STREAM</div>
+            <div style="width: 24px;"></div>
+        </header>
+
+        <div id="messages"></div>
+
+        <form class="input-area" id="m-form">
+            <input type="text" id="msg-input" class="m-field" placeholder="Сообщение..." autocomplete="off">
+            <button type="submit" style="background: var(--accent); border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 20px; cursor: pointer;">🚀</button>
+        </form>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let myName = "";
+        let myNick = "";
 
-        function startSystem() {
-            const name = document.getElementById('reg-name').value;
-            if(!name) return;
-            myName = name;
+        function initMobile() {
+            const n = document.getElementById('m-name').value;
+            if(!n) return;
+            myNick = n;
 
-            // Скрываем вход
+            // Анимация входа
             document.getElementById('auth-screen').style.opacity = '0';
-            setTimeout(() => document.getElementById('auth-screen').style.display = 'none', 1000);
-
-            // Показываем приветствие снизу
-            const pop = document.getElementById('welcome-popup');
-            pop.classList.add('show');
-            setTimeout(() => pop.classList.remove('show'), 3000);
-
-            // Показываем приложение
             setTimeout(() => {
+                document.getElementById('auth-screen').style.display = 'none';
                 document.getElementById('app').style.opacity = '1';
-                socket.emit('authenticate', { username: myName });
-            }, 800);
+                
+                // Приветствие сверху
+                const notif = document.getElementById('welcome-notif');
+                notif.innerText = `ДОБРО ПОЖАЛОВАТЬ, ${myNick.toUpperCase()}`;
+                notif.classList.add('active');
+                setTimeout(() => notif.classList.remove('active'), 3000);
+                
+                socket.emit('authenticate', { username: myNick });
+            }, 500);
         }
+
+        function openChat() { document.getElementById('chat-window').classList.add('open'); }
+        function closeChat() { document.getElementById('chat-window').classList.remove('open'); }
 
         socket.on('update_online', count => {
             document.getElementById('online-count').innerText = count;
         });
 
-        document.getElementById('chat-form').onsubmit = (e) => {
+        document.getElementById('m-form').onsubmit = (e) => {
             e.preventDefault();
-            const input = document.getElementById('m-input');
-            if(input.value) {
-                socket.emit('message', { text: input.value });
-                input.value = '';
+            const inp = document.getElementById('msg-input');
+            if(inp.value) {
+                socket.emit('message', { text: inp.value });
+                inp.value = '';
             }
         };
 
         socket.on('message', m => {
             const wrap = document.getElementById('messages');
-            const isMe = m.name === myName;
+            const isMe = m.name === myNick;
             const div = document.createElement('div');
-            div.className = `bubble ${isMe ? 'me' : ''}`;
+            div.className = `msg ${isMe ? 'out' : 'in'}`;
             div.innerHTML = `
-                <div style="font-size:10px; color:var(--accent); margin-bottom:5px;">${m.name}</div>
+                ${!isMe ? `<div style="font-size:10px; color:var(--accent); margin-bottom:4px;">${m.name}</div>` : ''}
                 ${m.text}
             `;
             wrap.appendChild(div);
             wrap.scrollTop = wrap.scrollHeight;
         });
-
-        function toggleSets() { document.getElementById('settings').classList.toggle('open'); }
     </script>
 </body>
 </html>
