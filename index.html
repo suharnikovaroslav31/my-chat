@@ -3,131 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ULTRA CHAT PRO</title>
+    <title>ULTRA GLASS CHAT</title>
     <style>
         :root {
             --accent: #00d2ff;
-            --reg-color: #00ff88;
-            --bg: #05070a;
-            --glass: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --bg-dark: #05070a;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg-dark);
             color: white;
             height: 100vh;
-            overflow: hidden;
             display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* ЖИВОЙ ФОН - Движущиеся туманности */
-        .bg-vibe {
-            position: fixed; inset: 0; z-index: -1;
-            background: radial-gradient(circle at 50% 50%, #0a0c14 0%, #05070a 100%);
-        }
-        .blob {
-            position: absolute; width: 700px; height: 700px;
-            background: radial-gradient(circle, rgba(0, 210, 255, 0.1) 0%, transparent 70%);
-            filter: blur(80px);
-            animation: move 20s infinite alternate ease-in-out;
-        }
-        .blob-2 {
-            background: radial-gradient(circle, rgba(157, 80, 187, 0.08) 0%, transparent 70%);
-            right: -100px; bottom: -100px;
-            animation: move 25s infinite alternate-reverse ease-in-out;
-        }
-        @keyframes move {
-            from { transform: translate(-15%, -15%) scale(1); }
-            to { transform: translate(15%, 15%) scale(1.2); }
-        }
-
-        /* ЭКРАН ВХОДА */
-        .auth-card {
-            background: rgba(15, 15, 25, 0.8);
-            backdrop-filter: blur(30px);
-            padding: 40px; border-radius: 24px;
-            border: 1px solid var(--border);
-            width: 360px; text-align: center;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
-            z-index: 10;
-        }
-        .auth-card h1 { font-size: 28px; margin-bottom: 25px; letter-spacing: 2px; }
-        .auth-card h1 span { color: var(--accent); }
-        .auth-inputs input {
-            width: 100%; padding: 14px; margin-bottom: 12px;
-            background: rgba(0,0,0,0.4); border: 1px solid var(--border);
-            border-radius: 12px; color: white; outline: none;
-        }
-        #auth-btn {
-            width: 100%; padding: 14px; background: var(--accent);
-            border: none; border-radius: 12px; color: black;
-            font-weight: 800; cursor: pointer; transition: 0.3s;
-        }
-        .auth-toggle { margin-top: 20px; font-size: 13px; color: #888; cursor: pointer; }
-
-        /* ОСНОВНОЙ ЧАТ */
-        #main-app {
-            display: none; width: 95vw; height: 90vh;
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(20px);
-            border-radius: 24px; border: 1px solid var(--border);
+            align-items: center; justify-content: center;
             overflow: hidden;
         }
-        .side-bar { width: 260px; background: rgba(0,0,0,0.3); border-right: 1px solid var(--border); padding: 20px; }
-        .chat-area { flex: 1; display: flex; flex-direction: column; background: rgba(0,0,0,0.1); }
-        #messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+
+        /* АНИМИРОВАННЫЙ ЖИВОЙ ФОН */
+        .ocean-bg {
+            position: fixed; inset: 0; z-index: -1;
+            background: linear-gradient(135deg, #05070a 0%, #0a0e17 100%);
+        }
+        .wave {
+            position: absolute; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 210, 255, 0.05) 0%, transparent 60%);
+            filter: blur(100px);
+            animation: drift 20s infinite alternate ease-in-out;
+        }
+        .wave-2 {
+            background: radial-gradient(circle at 20% 80%, rgba(157, 80, 187, 0.05) 0%, transparent 50%);
+            animation-duration: 25s;
+        }
+        @keyframes drift {
+            from { transform: translate(-10%, -10%) scale(1); }
+            to { transform: translate(10%, 10%) scale(1.2); }
+        }
+
+        /* ГЛАВНЫЙ КОНТЕЙНЕР */
+        #main-app {
+            display: none; /* Скрыт до авторизации */
+            width: 98vw; height: 96vh;
+            background: var(--glass-bg);
+            backdrop-filter: blur(40px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            display: flex;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.5);
+            animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+
+        /* ЛЕВАЯ ПАНЕЛЬ (КАНАЛЫ) */
+        .channels-nav {
+            width: 280px;
+            background: rgba(0,0,0,0.2);
+            border-right: 1px solid var(--glass-border);
+            display: flex; flex-direction: column;
+        }
+        .nav-header { padding: 25px; font-weight: 800; letter-spacing: 1px; color: var(--accent); border-bottom: 1px solid var(--glass-border); }
+        .channel-list { padding: 15px; flex: 1; }
+        .channel-item {
+            padding: 12px 15px; border-radius: 12px; margin-bottom: 5px;
+            cursor: pointer; transition: 0.3s; color: rgba(255,255,255,0.5);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .channel-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .channel-item.active { background: rgba(0, 210, 255, 0.1); color: var(--accent); border: 1px solid rgba(0, 210, 255, 0.2); }
+
+        /* ОКНО ЧАТА */
+        .chat-main { flex: 1; display: flex; flex-direction: column; }
+        .chat-header { padding: 20px 30px; border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; gap: 15px; }
+        .status-dot { width: 8px; height: 8px; background: #00ff88; border-radius: 50%; box-shadow: 0 0 10px #00ff88; }
+
+        #messages { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
         
+        .msg-anim { animation: msgIn 0.4s ease-out forwards; opacity: 0; transform: translateY(10px); }
+        @keyframes msgIn { to { opacity: 1; transform: translateY(0); } }
+
         .bubble { 
-            padding: 12px 16px; border-radius: 16px; 
-            background: var(--glass); border: 1px solid var(--border);
-            max-width: 70%; position: relative;
+            padding: 14px 20px; border-radius: 20px; 
+            background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
+            max-width: 65%; position: relative;
         }
         .outgoing { align-self: flex-end; }
-        .outgoing .bubble { background: rgba(0, 210, 255, 0.1); border-color: var(--accent); }
+        .outgoing .bubble { background: linear-gradient(135deg, rgba(0, 210, 255, 0.15), rgba(0, 210, 255, 0.05)); border-color: rgba(0, 210, 255, 0.3); }
 
-        .input-box { padding: 20px; }
+        /* ЗОНА ВВОДА */
+        .input-area { padding: 30px; }
         #chat-form { 
-            display: flex; gap: 10px; background: rgba(255,255,255,0.05); 
-            padding: 8px; border-radius: 14px; border: 1px solid var(--border);
+            background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border);
+            border-radius: 18px; padding: 10px 20px; display: flex; align-items: center; gap: 15px;
         }
-        #msg-input { flex: 1; background: none; border: none; color: white; outline: none; padding: 10px; }
+        #msg-input { flex: 1; background: none; border: none; color: white; font-size: 16px; outline: none; }
+        .send-btn { background: var(--accent); border: none; width: 45px; height: 45px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        .send-btn:hover { transform: scale(1.05); filter: brightness(1.2); }
+
+        /* ЭКРАН ВХОДА */
+        #auth-screen { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 100; }
+        .auth-card { 
+            background: rgba(10, 12, 18, 0.8); backdrop-filter: blur(50px);
+            padding: 50px; border-radius: 30px; border: 1px solid var(--glass-border);
+            width: 400px; text-align: center; box-shadow: 0 100px 200px rgba(0,0,0,0.8);
+        }
+        .auth-inputs input { width: 100%; padding: 16px; margin-bottom: 15px; border-radius: 14px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; }
+        #auth-btn { width: 100%; padding: 16px; background: var(--accent); border: none; border-radius: 14px; color: black; font-weight: 800; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="bg-vibe"><div class="blob"></div><div class="blob-2"></div></div>
+    <div class="ocean-bg">
+        <div class="wave"></div>
+        <div class="wave wave-2"></div>
+    </div>
 
     <div id="auth-screen">
         <div class="auth-card">
-            <h1 id="auth-title">ULTRA<span>CHAT</span></h1>
+            <h1 id="auth-title" style="margin-bottom: 30px; font-size: 32px;">ULTRA<span>GLASS</span></h1>
             <div class="auth-inputs">
-                <input type="text" id="username" placeholder="Логин">
+                <input type="text" id="username" placeholder="Имя пользователя">
                 <input type="password" id="password" placeholder="Пароль">
             </div>
-            <p id="error-msg" style="color: #ff4d4d; font-size: 12px; margin-bottom: 10px;"></p>
+            <p id="error-msg" style="color: #ff4d4d; font-size: 12px; margin-bottom: 15px;"></p>
             <button onclick="handleAuth()" id="auth-btn">ВОЙТИ</button>
-            <div class="auth-toggle" onclick="toggleAuth()">Нет аккаунта? Создать</div>
+            <div style="margin-top: 20px; font-size: 13px; color: #888; cursor: pointer;" onclick="toggleAuth()" class="auth-toggle">Нет аккаунта? Создать</div>
         </div>
     </div>
 
-    <div id="main-app">
-        <aside class="side-bar">
-            <h3 style="color: var(--accent); margin-bottom: 15px;">В СЕТИ</h3>
-            <div id="online-list"></div>
-        </aside>
-        <main class="chat-area">
-            <div id="messages"></div>
-            <div class="input-box">
-                <form id="chat-form">
-                    <input type="text" id="msg-input" placeholder="Написать..." autocomplete="off">
-                    <button type="submit" style="background: var(--accent); border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold;">➤</button>
-                </form>
+    <div id="main-app" style="display: none;">
+        <aside class="channels-nav">
+            <div class="nav-header">ULTRA SERVER</div>
+            <div class="channel-list">
+                <div class="channel-item active"><span>#</span> основной-чат</div>
+                <div class="channel-item"><span>#</span> флудилка</div>
+                <div class="channel-item"><span>#</span> новости</div>
+                <div class="channel-item"><span>#</span> медиа-архив</div>
             </div>
+            <div style="padding: 20px; border-top: 1px solid var(--glass-border);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 40px; height: 40px; background: var(--accent); border-radius: 10px;"></div>
+                    <div id="my-name-display" style="font-weight: 600;">User</div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="chat-main">
+            <header class="chat-header">
+                <div class="status-dot"></div>
+                <h3 id="current-ch"># основной-чат</h3>
+            </header>
+            
+            <div id="messages"></div>
+
+            <footer class="input-area">
+                <form id="chat-form">
+                    <input type="text" id="msg-input" placeholder="Написать сообщение в #основной-чат..." autocomplete="off">
+                    <button type="submit" class="send-btn">➤</button>
+                </form>
+            </footer>
         </main>
     </div>
 
@@ -138,10 +175,9 @@
 
         function toggleAuth() {
             isReg = !isReg;
-            document.getElementById('auth-title').innerHTML = isReg ? 'РЕГИСТРАЦИЯ' : 'ULTRA<span>CHAT</span>';
-            document.getElementById('auth-btn').innerText = isReg ? 'СОЗДАТЬ' : 'ВОЙТИ';
-            document.getElementById('auth-btn').style.background = isReg ? '#00ff88' : '#00d2ff';
-            document.querySelector('.auth-toggle').innerText = isReg ? 'Есть аккаунт? Войти' : 'Нет аккаунта? Создать';
+            document.getElementById('auth-title').innerHTML = isReg ? 'РЕГИСТРАЦИЯ' : 'ULTRA<span>GLASS</span>';
+            document.getElementById('auth-btn').innerText = isReg ? 'ЗАРЕГИСТРИРОВАТЬСЯ' : 'ВОЙТИ';
+            document.querySelector('.auth-toggle').innerText = isReg ? 'Уже есть аккаунт? Войти' : 'Нет аккаунта? Создать';
         }
 
         function handleAuth() {
@@ -155,6 +191,7 @@
             window.userName = d.username;
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'flex';
+            document.getElementById('my-name-display').innerText = d.username;
             socket.emit('user_join', d.username);
             socket.emit('get_history');
         });
@@ -168,15 +205,16 @@
         function renderMsg(data) {
             const div = document.createElement('div');
             const isMine = data.name === window.userName;
-            div.className = `message ${isMine ? 'outgoing' : 'incoming'}`;
-            div.innerHTML = `<div class="bubble"><small style="color:var(--accent)">${data.name}</small><br>${data.text}</div>`;
+            div.className = `message msg-anim ${isMine ? 'outgoing' : 'incoming'}`;
+            div.innerHTML = `
+                <div class="bubble">
+                    <small style="color:var(--accent); font-weight:800; font-size:10px; text-transform:uppercase">${data.name}</small>
+                    <div style="margin-top:4px">${data.text}</div>
+                </div>
+            `;
             document.getElementById('messages').appendChild(div);
             document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
         }
-
-        socket.on('update_users', l => {
-            document.getElementById('online-list').innerHTML = l.map(u => `<div>● ${u}</div>`).join('');
-        });
 
         document.getElementById('chat-form').onsubmit = (e) => {
             e.preventDefault();
