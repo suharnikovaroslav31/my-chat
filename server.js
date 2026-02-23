@@ -2,66 +2,51 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const fs = require('fs');
-const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" }, maxHttpBufferSize: 1e8 });
+const io = new Server(server);
 
-const USERS_FILE = path.join(__dirname, 'users.json');
-const HISTORY_FILE = path.join(__dirname, 'history.json');
+const USERS_FILE = './users.json';
+const HISTORY_FILE = './history.json';
 
-const getData = (f) => {
-    try { return fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')) : (f === USERS_FILE ? {} : []); }
-    catch { return f === USERS_FILE ? {} : []; }
-};
-const saveData = (f, d) => fs.writeFileSync(f, JSON.stringify(d, null, 2));
+if (!fs.existsSync(USERS_FILE)) fs.writeFileSync(USERS_FILE, '{}');
+if (!fs.existsSync(HISTORY_FILE)) fs.writeFileSync(HISTORY_FILE, '{}');
 
 app.use(express.static(__dirname));
 
-let onlineUsers = new Set();
-
 io.on('connection', (socket) => {
-    socket.on('authenticate', (data) => {
-        const users = getData(USERS_FILE);
-        const { username, password, isRegister } = data;
+    let userRoom = 'основной-чат';
 
-        if (isRegister) {
-            if (users[username]) return socket.emit('auth_error', 'Ник занят!');
-            users[username] = { password };
-            saveData(USERS_FILE, users);
-            socket.emit('auth_success', { username });
+    socket.on('authenticate', (data) => {
+        const users = JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
+        if (data.isRegister) {
+            users[data.username] = { password: data.password };
+            fs.writeFileSync(USERS_FILE, JSON.stringify(users));
+            socket.emit('auth_success', { username: data.username });
+        } else if (users[data.username]?.password === data.password) {
+            socket.emit('auth_success', { username: data.username });
         } else {
-            if (users[username] && users[username].password === password) {
-                socket.emit('auth_success', { username });
-            } else {
-                socket.emit('auth_error', 'Ошибка входа!');
-            }
+            socket.emit('auth_error', 'Ошибка!');
         }
     });
 
-    socket.on('user_join', (name) => {
-        socket.userName = name;
-        onlineUsers.add(name);
-        io.emit('update_users', Array.from(onlineUsers));
+    socket.on('join_room', (room) => {
+        socket.leave(userRoom);
+        socket.join(room);
+        userRoom = room;
+        const history = JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf8'));
+        socket.emit('load_history', history[room] || []);
     });
-
-    socket.on('get_history', () => socket.emit('load_history', getData(HISTORY_FILE)));
 
     socket.on('message', (data) => {
-        const msg = { ...data, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
-        let history = getData(HISTORY_FILE);
-        history.push(msg);
-        saveData(HISTORY_FILE, history.slice(-50));
-        io.emit('message', msg);
-    });
-
-    socket.on('disconnect', () => {
-        if (socket.userName) {
-            onlineUsers.delete(socket.userName);
-            io.emit('update_users', Array.from(onlineUsers));
-        }
+        const history = JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf8'));
+        if (!history[userRoom]) history[userRoom] = [];
+        const msg = { name: data.name, text: data.text, time: new Date().toLocaleTimeString() };
+        history[userRoom].push(msg);
+        fs.writeFileSync(HISTORY_FILE, JSON.stringify(history));
+        io.to(userRoom).emit('message', msg);
     });
 });
 
-server.listen(process.env.PORT || 3000, '0.0.0.0', () => console.log("🚀 Live"));
+server.listen(process.env.PORT || 3000);
