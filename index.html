@@ -3,157 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ULTRA GLASS FIXED</title>
+    <title>ULTRA GLASS ELITE</title>
     <style>
-        :root { --accent: #00d2ff; --glass: rgba(255, 255, 255, 0.03); --border: rgba(255, 255, 255, 0.1); }
+        :root {
+            --accent: #00d2ff;
+            --accent-glow: rgba(0, 210, 255, 0.3);
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
-        body { 
-            background: #05070a; color: white; font-family: 'Inter', sans-serif; 
-            height: 100vh; overflow: hidden; display: flex; align-items: center; justify-content: center;
-        }
-
-        /* Живой фон */
-        .bg { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 50% 50%, #0a0e17, #05070a); }
-        .blob { position: absolute; width: 600px; height: 600px; background: rgba(0, 210, 255, 0.05); filter: blur(100px); animation: move 20s infinite alternate; }
-        @keyframes move { from { transform: translate(-10%, -10%); } to { transform: translate(10%, 10%); } }
-
-        /* ЭКРАН ВХОДА */
-        #auth-screen {
-            position: absolute; width: 100%; height: 100%;
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #05070a; color: white;
+            height: 100vh; overflow: hidden;
             display: flex; align-items: center; justify-content: center;
-            z-index: 9999; background: #05070a; /* Полностью закрывает чат */
-        }
-        .auth-card {
-            background: rgba(15, 17, 26, 0.95); backdrop-filter: blur(40px);
-            padding: 40px; border-radius: 24px; border: 1px solid var(--border);
-            width: 350px; text-align: center; box-shadow: 0 40px 80px rgba(0,0,0,0.6);
-        }
-        .auth-card input {
-            width: 100%; padding: 14px; margin-bottom: 10px; border-radius: 12px;
-            border: 1px solid var(--border); background: #000; color: #fff; outline: none;
-        }
-        #auth-btn {
-            width: 100%; padding: 14px; background: var(--accent); border: none;
-            border-radius: 12px; font-weight: 800; cursor: pointer; color: #000;
         }
 
-        /* ГЛАВНЫЙ ЧАТ (СКРЫТ ПО УМОЛЧАНИЮ) */
+        /* Живой фон с глубоким параллаксом */
+        .bg-layer {
+            position: fixed; inset: 0; z-index: -1;
+            background: radial-gradient(circle at 20% 30%, #0a111a 0%, #05070a 100%);
+        }
+        .glow {
+            position: absolute; width: 800px; height: 800px;
+            background: radial-gradient(circle, rgba(0, 210, 255, 0.07) 0%, transparent 70%);
+            filter: blur(120px); animation: move 25s infinite alternate ease-in-out;
+        }
+        @keyframes move { from { transform: translate(-20%, -20%); } to { transform: translate(20%, 20%); } }
+
+        /* ОСНОВНОЙ КОНТЕЙНЕР */
         #main-app {
-            display: none; /* Скрыт пока не войдешь */
-            width: 98vw; height: 96vh; background: var(--glass);
-            backdrop-filter: blur(40px); border-radius: 20px; border: 1px solid var(--border);
+            display: none;
+            width: 98vw; height: 96vh;
+            background: var(--glass);
+            backdrop-filter: blur(50px) saturate(200%);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            display: grid;
+            grid-template-columns: 280px 1fr 240px; /* Три панели теперь! */
+            box-shadow: 0 50px 100px rgba(0,0,0,0.6);
         }
-        
-        /* Сетка чата */
-        .container { display: flex; width: 100%; height: 100%; }
-        .sidebar { width: 260px; background: rgba(0,0,0,0.3); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-        .chat { flex: 1; display: flex; flex-direction: column; }
-        
-        .nav-item { padding: 15px 20px; cursor: pointer; color: #888; transition: 0.2s; }
-        .nav-item.active { color: var(--accent); background: rgba(0, 210, 255, 0.1); font-weight: bold; }
-        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
 
-        #messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .bubble { padding: 12px 18px; border-radius: 18px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); max-width: 70%; }
-        .mine { align-self: flex-end; border-color: var(--accent); background: rgba(0, 210, 255, 0.05); }
+        /* ЛЕВАЯ ПАНЕЛЬ (КАНАЛЫ) */
+        .sidebar-left { background: rgba(0,0,0,0.2); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+        .nav-header { padding: 30px; font-weight: 900; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; font-size: 14px; }
+        .channel-item {
+            padding: 14px 25px; margin: 2px 15px; border-radius: 12px;
+            cursor: pointer; transition: 0.3s; color: #666; display: flex; align-items: center; gap: 12px;
+        }
+        .channel-item:hover { background: rgba(255,255,255,0.03); color: #fff; }
+        .channel-item.active { background: var(--accent-glow); color: var(--accent); border: 1px solid rgba(0, 210, 255, 0.2); }
 
-        .footer { padding: 20px; }
-        #chat-form { display: flex; gap: 10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 15px; border: 1px solid var(--border); }
-        #msg-input { flex: 1; background: none; border: none; color: #fff; outline: none; }
+        /* ЦЕНТРАЛЬНЫЙ ЧАТ */
+        .chat-area { display: flex; flex-direction: column; background: rgba(255,255,255,0.01); }
+        .chat-header { padding: 20px 30px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        
+        #messages { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+        
+        /* Сообщения */
+        .msg-wrap { display: flex; gap: 15px; max-width: 80%; }
+        .msg-wrap.mine { align-self: flex-end; flex-direction: row-reverse; }
+        
+        .avatar { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(45deg, var(--accent), #7000ff); flex-shrink: 0; }
+        
+        .bubble {
+            padding: 15px 20px; border-radius: 20px;
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            position: relative; line-height: 1.5;
+        }
+        .mine .bubble { background: var(--accent-glow); border-color: rgba(0, 210, 255, 0.4); }
+
+        /* ПРАВАЯ ПАНЕЛЬ (ЛЮДИ) */
+        .sidebar-right { background: rgba(0,0,0,0.2); border-left: 1px solid var(--border); padding: 25px; }
+        .user-card { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; opacity: 0.8; }
+        .status-dot { width: 8px; height: 8px; background: #00ff88; border-radius: 50%; box-shadow: 0 0 10px #00ff88; }
+
+        /* ВВОД */
+        .input-wrap { padding: 30px; }
+        #chat-form { 
+            background: rgba(0,0,0,0.3); border: 1px solid var(--border); 
+            padding: 10px 20px; border-radius: 20px; display: flex; gap: 15px; 
+        }
+        #msg-input { flex: 1; background: none; border: none; color: white; outline: none; font-size: 16px; }
+
+        /* ЭКРАН ВХОДА (Изначально виден) */
+        #auth-screen { position: fixed; inset: 0; z-index: 1000; background: #05070a; display: flex; align-items: center; justify-content: center; }
+        .auth-card { background: rgba(15, 20, 30, 0.9); padding: 50px; border-radius: 32px; border: 1px solid var(--border); width: 400px; text-align: center; }
+        .auth-card input { width: 100%; padding: 16px; margin-bottom: 15px; border-radius: 16px; border: 1px solid var(--border); background: #000; color: #fff; outline: none; }
+        .auth-btn { width: 100%; padding: 16px; background: var(--accent); border: none; border-radius: 16px; font-weight: 800; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="bg"><div class="blob"></div></div>
+    <div class="bg-layer"><div class="glow"></div></div>
 
     <div id="auth-screen">
         <div class="auth-card">
-            <h1 id="auth-title" style="margin-bottom: 20px;">ULTRA<span>PRO</span></h1>
-            <input type="text" id="username" placeholder="Логин">
+            <h1 style="margin-bottom: 30px; letter-spacing: 5px;">ULTRA<span style="color:var(--accent)">PRO</span></h1>
+            <input type="text" id="username" placeholder="Никнейм">
             <input type="password" id="password" placeholder="Пароль">
-            <p id="error" style="color: red; font-size: 12px; margin-bottom: 10px;"></p>
-            <button onclick="auth()" id="auth-btn">ВОЙТИ</button>
-            <p style="margin-top: 15px; font-size: 12px; cursor: pointer; opacity: 0.6;" onclick="swap()">Создать аккаунт</p>
+            <button class="auth-btn" onclick="handleAuth()">ВОЙТИ В СИСТЕМУ</button>
+            <p style="margin-top: 20px; font-size: 12px; cursor: pointer; opacity: 0.5;" onclick="toggleReg()">Создать новый аккаунт</p>
         </div>
     </div>
 
-    <div id="main-app">
-        <div class="container">
-            <aside class="sidebar">
-                <div style="padding: 25px; font-weight: 900; color: var(--accent);">CHANNELS</div>
-                <div id="rooms">
-                    <div class="nav-item active" onclick="chRoom('основной-чат', this)"># основной-чат</div>
-                    <div class="nav-item" onclick="chRoom('флудилка', this)"># флудилка</div>
-                    <div class="nav-item" onclick="chRoom('новости', this)"># новости</div>
+    <div id="main-app" style="display: none;">
+        <aside class="sidebar-left">
+            <div class="nav-header">КАНАЛЫ</div>
+            <div class="channel-item active"><span>#</span> основной-чат</div>
+            <div class="channel-item"><span>#</span> идеи-проекта</div>
+            <div class="channel-item"><span>#</span> медиа</div>
+            <div style="margin-top: auto; padding: 25px; border-top: 1px solid var(--border);">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div class="avatar"></div>
+                    <div id="user-tag" style="font-weight: 700;">User</div>
                 </div>
-                <div style="margin-top: auto; padding: 20px; border-top: 1px solid var(--border);" id="my-name">User</div>
-            </aside>
-            <main class="chat">
-                <div id="messages"></div>
-                <div class="footer">
-                    <form id="chat-form">
-                        <input type="text" id="msg-input" placeholder="Введите сообщение..." autocomplete="off">
-                        <button type="submit" style="background:var(--accent); border:none; padding:8px 15px; border-radius:10px; cursor:pointer;">➤</button>
-                    </form>
-                </div>
-            </main>
-        </div>
+            </div>
+        </aside>
+
+        <main class="chat-area">
+            <header class="chat-header">
+                <div><span style="opacity: 0.5;">#</span> <strong id="room-name">основной-чат</strong></div>
+                <div style="font-size: 12px; color: #00ff88;">● 124 онлайн</div>
+            </header>
+            <div id="messages"></div>
+            <div class="input-wrap">
+                <form id="chat-form">
+                    <input type="text" id="msg-input" placeholder="Написать сообщение..." autocomplete="off">
+                    <button type="submit" style="background:none; border:none; color:var(--accent); font-weight:900; cursor:pointer;">ОТПРАВИТЬ</button>
+                </form>
+            </div>
+        </main>
+
+        <aside class="sidebar-right">
+            <div style="font-size: 12px; font-weight: 800; color: #444; margin-bottom: 25px; letter-spacing: 1px;">В СЕТИ</div>
+            <div id="online-list">
+                <div class="user-card"><div class="status-dot"></div> <span>ярослав</span></div>
+                <div class="user-card" style="opacity: 0.4;"><div class="status-dot" style="background:#444; box-shadow:none;"></div> <span>gemini_ai</span></div>
+            </div>
+        </aside>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let isReg = false;
-        let room = 'основной-чат';
+        let isRegister = false;
 
-        function swap() {
-            isReg = !isReg;
-            document.getElementById('auth-title').innerText = isReg ? 'РЕГИСТРАЦИЯ' : 'ULTRA PRO';
-            document.getElementById('auth-btn').innerText = isReg ? 'СОЗДАТЬ' : 'ВОЙТИ';
+        function toggleReg() {
+            isRegister = !isRegister;
+            document.querySelector('.auth-btn').innerText = isRegister ? 'ЗАРЕГИСТРИРОВАТЬСЯ' : 'ВОЙТИ В СИСТЕМУ';
         }
 
-        function auth() {
+        function handleAuth() {
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
-            if(u && p) socket.emit('authenticate', { username: u, password: p, isRegister: isReg });
+            if(u && p) socket.emit('authenticate', { username: u, password: p, isRegister });
         }
 
-        function chRoom(n, el) {
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
-            room = n;
-            document.getElementById('messages').innerHTML = '';
-            socket.emit('join_room', n);
-        }
-
-        socket.on('auth_error', m => document.getElementById('error').innerText = m);
         socket.on('auth_success', d => {
-            window.me = d.username;
-            document.getElementById('auth-screen').style.setProperty('display', 'none', 'important');
-            document.getElementById('main-app').style.display = 'block';
-            document.getElementById('my-name').innerText = d.username;
-            socket.emit('join_room', room);
+            window.myNick = d.username;
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'grid';
+            document.getElementById('user-tag').innerText = d.username;
+            socket.emit('join_room', 'основной-чат');
         });
 
-        socket.on('message', m => render(m));
-        socket.on('load_history', h => {
-            document.getElementById('messages').innerHTML = '';
-            h.forEach(render);
-        });
-
-        function render(m) {
-            const d = document.createElement('div');
-            d.className = `bubble ${m.name === window.me ? 'mine' : ''}`;
-            d.innerHTML = `<small style="color:var(--accent)">${m.name}</small><br>${m.text}`;
-            document.getElementById('messages').appendChild(d);
+        socket.on('message', m => {
+            const wrap = document.createElement('div');
+            const isMe = m.name === window.myNick;
+            wrap.className = `msg-wrap ${isMe ? 'mine' : ''}`;
+            wrap.innerHTML = `
+                <div class="avatar" style="background:${isMe ? 'var(--accent)' : '#333'}"></div>
+                <div class="bubble">
+                    <small style="color:var(--accent); font-weight:800; font-size:10px;">${m.name}</small><br>
+                    ${m.text}
+                </div>
+            `;
+            document.getElementById('messages').appendChild(wrap);
             document.getElementById('messages').scrollTop = 99999;
-        }
+        });
 
         document.getElementById('chat-form').onsubmit = (e) => {
             e.preventDefault();
             const i = document.getElementById('msg-input');
             if(i.value) {
-                socket.emit('message', { name: window.me, text: i.value });
+                socket.emit('message', { name: window.myNick, text: i.value });
                 i.value = '';
             }
         };
