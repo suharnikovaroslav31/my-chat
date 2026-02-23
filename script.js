@@ -1,69 +1,49 @@
 const socket = io({ transports: ['websocket'] });
+let isRegisterMode = false;
 
-function joinChat() {
-    const name = document.getElementById('username-input').value.trim();
-    if (name) {
-        window.userName = name;
-        document.getElementById('my-name').innerText = name;
-        document.getElementById('auth-screen').style.display = 'none';
-        document.getElementById('main-app').style.display = 'flex';
+function toggleAuth() {
+    isRegisterMode = !isRegisterMode;
+    document.getElementById('auth-title').innerText = isRegisterMode ? 'РЕГИСТРАЦИЯ' : 'ВХОД';
+    document.getElementById('auth-btn').innerText = isRegisterMode ? 'СОЗДАТЬ' : 'ВОЙТИ';
+    document.querySelector('.toggle-text').innerText = isRegisterMode ? 'Уже есть аккаунт? Войти' : 'Нет аккаунта? Зарегистрироваться';
+}
+
+function handleAuth() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    if (username && password) {
+        socket.emit('authenticate', { username, password, isRegister: isRegisterMode });
     }
 }
 
-// Отслеживание печати
-let typingTimeout;
-document.getElementById('msg-input').addEventListener('input', () => {
-    socket.emit('typing', { name: window.userName });
-    clearTimeout(typingTimeout);
-    typingTimeout = setTimeout(() => socket.emit('stop_typing'), 2000);
+socket.on('auth_error', (msg) => {
+    document.getElementById('error-msg').innerText = msg;
 });
 
-socket.on('display_typing', (data) => {
-    document.getElementById('typing-indicator').innerText = `${data.name} печатает...`;
-});
-
-socket.on('hide_typing', () => {
-    document.getElementById('typing-indicator').innerText = '';
+socket.on('auth_success', (data) => {
+    window.userName = data.username;
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('main-app').style.display = 'flex';
+    document.getElementById('user-display').innerText = '👤 ' + data.username;
+    socket.emit('get_history');
 });
 
 function renderMessage(data) {
-    if (!data.name || !data.text) return;
     const isMine = data.name === window.userName;
-    const container = document.getElementById('messages');
-    
     const div = document.createElement('div');
     div.className = `message ${isMine ? 'outgoing' : 'incoming'}`;
-
-    let mediaHtml = '';
-    if (data.type === 'image' || data.type === 'video') {
-        const tag = data.type === 'image' ? 'img' : 'video';
-        mediaHtml = `<${tag} src="${data.text}" ${data.type==='video'?'controls':''} style="width:100%; border-radius:10px; margin-top:5px;"></${tag}>`;
-        
-        // Добавляем в галерею справа, если это картинка
-        if (data.type === 'image') {
-            const thumb = document.createElement('img');
-            thumb.src = data.text;
-            document.getElementById('media-gallery').prepend(thumb);
-        }
-    }
-
-    div.innerHTML = `
-        <div class="bubble">
-            <small style="color:var(--accent); font-weight:bold;">${data.name}</small>
-            ${mediaHtml || `<div style="margin-top:4px;">${data.text}</div>`}
-            <div style="text-align:right; font-size:9px; opacity:0.4; margin-top:4px;">${data.time}</div>
-        </div>
-    `;
     
-    container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
+    let content = `<span>${data.text}</span>`;
+    if (data.type === 'image') content = `<img src="${data.text}" style="width:100%; border-radius:10px;">`;
+    if (data.type === 'video') content = `<video src="${data.text}" controls style="width:100%; border-radius:10px;"></video>`;
+
+    div.innerHTML = `<div class="bubble"><small style="color:var(--accent); font-weight:bold;">${data.name}</small><br>${content}<div style="text-align:right; font-size:9px; opacity:0.3;">${data.time}</div></div>`;
+    document.getElementById('messages').appendChild(div);
+    document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
 }
 
-socket.on('message', data => renderMessage(data));
-socket.on('load_history', history => {
-    document.getElementById('messages').innerHTML = '';
-    history.forEach(m => renderMessage(m));
-});
+socket.on('message', renderMessage);
+socket.on('load_history', h => h.forEach(renderMessage));
 
 document.getElementById('chat-form').onsubmit = (e) => {
     e.preventDefault();
@@ -71,7 +51,6 @@ document.getElementById('chat-form').onsubmit = (e) => {
     if (input.value.trim()) {
         socket.emit('message', { name: window.userName, text: input.value, type: 'text' });
         input.value = '';
-        socket.emit('stop_typing');
     }
 };
 
