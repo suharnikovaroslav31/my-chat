@@ -3,75 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultra Glass Pro</title>
+    <title>Ultra PRO Chat</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="bg-animate"><div class="circle"></div><div class="circle"></div></div>
+
     <div id="auth-screen">
         <div class="glass-card">
-            <h1>UltraChat PRO</h1>
-            <p>Добро пожаловать в будущее мессенджеров</p>
-            <input type="text" id="username-input" placeholder="Ваше имя...">
-            <button onclick="joinChat()">ПОДКЛЮЧИТЬСЯ</button>
+            <h1 id="auth-title">ВХОД</h1>
+            <input type="text" id="username" placeholder="Логин">
+            <input type="password" id="password" placeholder="Пароль">
+            <p id="error-msg" style="color: #ff4d4d; font-size: 12px;"></p>
+            <button onclick="handleAuth()" id="auth-btn">ВОЙТИ</button>
+            <p class="toggle-text" onclick="toggleAuth()">Нет аккаунта? Зарегистрироваться</p>
         </div>
     </div>
 
     <div id="main-app" style="display: none;">
-        <div id="sidebar-left">
-            <div class="panel-header">Чаты</div>
-            <div class="chat-list">
-                <div class="chat-item active">
-                    <div class="avatar-circle">#</div>
-                    <div class="chat-text">
-                        <strong>Общий канал</strong>
-                        <small>Online сейчас</small>
-                    </div>
-                </div>
-            </div>
-            <div class="bottom-user">
-                <div class="avatar-circle user-av">👤</div>
-                <div class="user-meta">
-                    <span id="my-name">User</span>
-                    <div class="status-dot"></div>
-                </div>
-            </div>
-        </div>
+        <aside id="left-panel">
+            <div class="brand">UC</div>
+            <div class="srv-icon active">#</div>
+        </aside>
 
-        <div id="chat-center">
-            <div class="chat-header">
-                <div class="header-main">
-                    <h2># GENERAL_CHANNEL</h2>
-                    <div id="typing-indicator"></div>
-                </div>
-            </div>
-            
+        <section id="chat-window">
+            <header><h2># general-channel</h2></header>
             <div id="messages"></div>
+            <footer>
+                <form id="chat-form">
+                    <label class="attach">📎<input type="file" id="file-input" accept="image/*,video/*" style="display:none;"></label>
+                    <input type="text" id="msg-input" placeholder="Ваше сообщение..." autocomplete="off">
+                    <button type="submit">➤</button>
+                </form>
+            </footer>
+        </section>
 
-            <form id="chat-form">
-                <label class="icon-btn">
-                    📎
-                    <input type="file" id="file-input" accept="image/*,video/*" style="display:none;">
-                </label>
-                <input type="text" id="msg-input" placeholder="Написать в #general..." autocomplete="off">
-                <button type="submit" id="send-btn">ОТПРАВИТЬ</button>
-            </form>
-        </div>
-
-        <div id="sidebar-right">
-            <div class="panel-header">Информация</div>
-            <div class="info-box">
-                <div class="media-preview-grid">
-                    <p>Последние вложения:</p>
-                    <div id="media-gallery"></div>
-                </div>
-            </div>
-            <div class="members-box">
-                <p>Участники:</p>
-                <ul id="user-list">
-                    <li><div class="status-dot"></div> Вы</li>
-                </ul>
-            </div>
-        </div>
+        <aside id="right-panel">
+            <div class="section-title">МЕДИА</div>
+            <div id="media-gallery"></div>
+            <div class="section-title">ВЫ ВОШЛИ КАК:</div>
+            <div id="user-display" style="color: var(--accent); font-weight: bold;"></div>
+        </aside>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
