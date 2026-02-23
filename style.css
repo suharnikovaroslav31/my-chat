@@ -1,100 +1,96 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
-
-:root {
-    --bg: #08080a;
-    --glass: rgba(255, 255, 255, 0.03);
-    --border: rgba(255, 255, 255, 0.07);
-    --accent: #00f2ff;
-    --text: #ffffff;
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Живой анимированный фон */
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-* { box-sizing: border-box; }
-body, html {
-    margin: 0; padding: 0; height: 100%;
-    background-color: var(--bg); color: var(--text);
-    font-family: 'Inter', sans-serif;
-    display: flex; justify-content: center; align-items: center;
+@keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Эффект жидкого стекла */
+#main-app {
+    width: 90%;
+    max-width: 1000px;
+    height: 85vh;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    display: flex;
     overflow: hidden;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
 }
 
-/* Авторизация */
-.modal-overlay {
-    position: fixed; inset: 0; background: #000;
-    display: flex; justify-content: center; align-items: center; z-index: 1000;
-}
-.auth-card {
-    background: var(--glass); backdrop-filter: blur(25px);
-    padding: 40px; border-radius: 30px; border: 1px solid var(--border);
-    text-align: center; width: 340px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+#messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
-/* Контейнер приложения */
-.app-container {
-    width: 96vw; height: 94vh; display: flex;
-    background: var(--glass); border: 1px solid var(--border);
-    border-radius: 30px; overflow: hidden;
-    backdrop-filter: blur(10px);
-}
-
-/* Сайдбар */
-.sidebar {
-    width: 280px; border-right: 1px solid var(--border);
-    padding: 30px 20px; background: rgba(0,0,0,0.2);
-    display: flex; flex-direction: column; gap: 20px;
-}
-.avatar-mini {
-    width: 48px; height: 48px; background: var(--accent);
-    border-radius: 15px; box-shadow: 0 0 20px rgba(0,242,255,0.2);
-}
-.dot { width: 8px; height: 8px; background: #00ff88; border-radius: 50%; box-shadow: 0 0 10px #00ff88; }
-
-/* Чат */
-.chat-window { flex: 1; display: flex; flex-direction: column; }
-.messages-area {
-    flex: 1; padding: 30px; overflow-y: auto;
-    display: flex; flex-direction: column; gap: 25px;
-    background: radial-gradient(circle at top right, rgba(0,242,255,0.03), transparent);
-}
-
-/* Сообщения */
-.message { display: flex; width: 100%; animation: msgIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
-@keyframes msgIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-.message.outgoing { justify-content: flex-end; }
+/* Сообщения в стиле стекла */
 .bubble {
-    padding: 14px 20px; border-radius: 22px; max-width: 65%;
-    font-size: 0.95rem; position: relative; line-height: 1.4;
-}
-.outgoing .bubble { background: var(--accent); color: #000; border-bottom-right-radius: 4px; font-weight: 500; }
-.incoming .bubble { background: rgba(255,255,255,0.08); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
-
-.bubble::before {
-    content: attr(data-sender); position: absolute; top: -22px;
-    font-size: 0.75rem; opacity: 0.4; font-weight: 600; letter-spacing: 0.5px;
-}
-.outgoing .bubble::before { right: 8px; }
-.incoming .bubble::before { left: 8px; }
-
-.time { display: block; font-size: 0.65rem; opacity: 0.5; margin-top: 6px; text-align: right; }
-
-/* Системные сообщения */
-.system-msg {
-    align-self: center; background: rgba(255,255,255,0.05);
-    padding: 6px 15px; border-radius: 20px;
-    font-size: 0.75rem; opacity: 0.4; margin: 10px 0;
-    border: 1px solid var(--border);
+    padding: 12px 18px;
+    border-radius: 15px;
+    max-width: 70%;
+    position: relative;
+    color: white;
+    font-weight: 500;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-/* Поле ввода */
-.input-area { padding: 25px; display: flex; gap: 12px; border-top: 1px solid var(--border); }
-input { 
-    flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--border);
-    padding: 16px; border-radius: 18px; color: #fff; outline: none; transition: 0.3s;
+.incoming .bubble {
+    background: rgba(255, 255, 255, 0.2);
+    align-self: flex-start;
+    border-bottom-left-radius: 2px;
 }
-input:focus { border-color: var(--accent); background: rgba(255,255,255,0.07); }
-button { 
-    background: var(--accent); color: #000; border: none; padding: 0 30px; 
-    border-radius: 18px; font-weight: 700; cursor: pointer; transition: 0.3s;
+
+.outgoing .bubble {
+    background: rgba(0, 150, 255, 0.4);
+    align-self: flex-end;
+    border-bottom-right-radius: 2px;
 }
-button:hover { box-shadow: 0 0 30px rgba(0,242,255,0.4); transform: translateY(-2px); }
+
+#chat-form {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    gap: 10px;
+}
+
+input {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    color: white;
+    outline: none;
+}
+
+input::placeholder { color: rgba(255, 255, 255, 0.6); }
+
+button {
+    background: #00d2ff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover { transform: scale(1.05); background: #3a7bd5; }
