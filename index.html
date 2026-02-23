@@ -3,212 +3,277 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ULTRA CORE | V7 INFINITY</title>
+    <title>ULTRA CORE | ELITE BUSINESS</title>
     <style>
         :root {
             --accent: #00d2ff;
-            --bg: #05080c;
-            --side: #0a0f16;
-            --panel: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 255, 255, 0.08);
-            --anim-speed: 0.4s;
+            --bg: #020406;
+            --side: rgba(10, 15, 25, 0.7);
+            --border: rgba(255, 255, 255, 0.07);
+            --glass: blur(25px);
         }
 
-        /* СОСТОЯНИЯ НАСТРОЕК */
-        body.no-anim * { transition: none !important; animation: none !important; }
-        body.glass-mode .sidebar, body.glass-mode .rail, body.glass-mode .viewport-header { 
-            backdrop-filter: blur(20px); background: rgba(10, 15, 22, 0.7); 
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
+
+        /* Живой фон */
+        #canvas-bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+
+        /* Экраны */
+        .screen { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 1000; transition: 1s cubic-bezier(0.8, 0, 0.2, 1); }
+        .hidden { opacity: 0; pointer-events: none; transform: translateY(-50px); }
+
+        /* Приветствие (Business Style) */
+        #welcome-overlay { 
+            position: fixed; inset: 0; background: var(--bg); z-index: 2000; 
+            display: none; flex-direction: column; align-items: center; justify-content: center;
         }
+        .welcome-text { 
+            font-size: 48px; font-weight: 200; letter-spacing: 15px; text-transform: uppercase;
+            transform: translateY(100px); opacity: 0; transition: 1.5s;
+        }
+        .welcome-text.show { transform: translateY(0); opacity: 1; }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', sans-serif; }
-        body { background: var(--bg); color: #fff; height: 100vh; display: flex; overflow: hidden; }
+        /* Форма входа */
+        .auth-card { 
+            background: var(--side); backdrop-filter: var(--glass); 
+            padding: 60px; border-radius: 40px; border: 1px solid var(--border); 
+            width: 450px; text-align: center; box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+        }
+        .tg-input { 
+            width: 100%; padding: 20px; background: rgba(0,0,0,0.3); 
+            border: 1px solid var(--border); border-radius: 15px; color: #fff; 
+            margin-bottom: 20px; outline: none; transition: 0.3s;
+        }
+        .tg-input:focus { border-color: var(--accent); box-shadow: 0 0 30px rgba(0, 210, 255, 0.1); }
+        .btn-elite { 
+            width: 100%; padding: 20px; background: #fff; color: #000; 
+            border: none; border-radius: 15px; font-weight: 800; cursor: pointer; 
+            transition: 0.3s; letter-spacing: 2px;
+        }
+        .btn-elite:hover { background: var(--accent); transform: scale(1.02); }
 
-        /* ЭКРАН РЕГИСТРАЦИИ (ТГ-STYLE) */
-        #auth-screen { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: flex; align-items: center; justify-content: center; transition: 0.5s; }
-        .auth-card { width: 380px; text-align: center; animation: slideUp 0.6s ease; }
-        .auth-logo { font-size: 50px; margin-bottom: 20px; text-shadow: 0 0 20px var(--accent); }
-        .tg-input { width: 100%; padding: 15px; background: var(--side); border: 1px solid var(--border); border-radius: 12px; color: #fff; margin-bottom: 15px; outline: none; font-size: 16px; }
-        .tg-input:focus { border-color: var(--accent); }
-        .btn-start { width: 100%; padding: 15px; background: var(--accent); border: none; border-radius: 12px; color: #000; font-weight: 800; cursor: pointer; text-transform: uppercase; }
+        /* Главный интерфейс */
+        #app { display: grid; grid-template-columns: 80px 300px 1fr 280px; height: 100vh; opacity: 0; transition: 2s; }
+        #app.visible { opacity: 1; }
 
-        /* ОСНОВНАЯ СЕТКА (КАК НА СКРИНАХ) */
-        .rail { width: 80px; background: var(--side); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 25px 0; gap: 20px; z-index: 100; }
-        .r-icon { width: 50px; height: 50px; border-radius: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; transition: 0.3s; }
-        .r-icon:hover { background: var(--panel); }
-        .r-icon.active { background: var(--accent); color: #000; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); }
+        .rail { background: rgba(0,0,0,0.4); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; py: 30px; }
+        .sidebar { background: var(--side); backdrop-filter: var(--glass); border-right: 1px solid var(--border); }
+        .viewport { background: rgba(5, 8, 15, 0.3); display: flex; flex-direction: column; }
+        .users { background: var(--side); backdrop-filter: var(--glass); border-left: 1px solid var(--border); padding: 20px; }
 
-        .sidebar { width: 280px; background: var(--side); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-        .sidebar-title { padding: 25px; font-size: 11px; letter-spacing: 2px; color: var(--accent); font-weight: 800; }
-        .sector-item { padding: 12px 25px; display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 14px; opacity: 0.6; }
-        .sector-item.active { opacity: 1; background: var(--panel); border-left: 3px solid var(--accent); }
+        /* Сообщения */
+        #messages { flex: 1; overflow-y: auto; padding: 40px; display: flex; flex-direction: column; gap: 15px; }
+        .bubble { 
+            max-width: 60%; padding: 15px 20px; border-radius: 25px; font-size: 14px; 
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            animation: bubbleUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .bubble.me { align-self: flex-end; background: var(--accent); color: #000; font-weight: 500; }
+        @keyframes bubbleUp { from { opacity: 0; transform: translateY(20px) scale(0.9); } }
 
-        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; background: radial-gradient(circle at center, #0a121d 0%, #05080c 100%); }
-        .viewport-header { height: 70px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 30px; justify-content: space-between; }
-
-        #messages { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 12px; }
-        .msg { max-width: 70%; padding: 12px 18px; border-radius: 18px; font-size: 14px; line-height: 1.5; position: relative; animation: msgFade 0.3s ease; }
-        @keyframes msgFade { from { opacity: 0; transform: translateY(10px); } }
-        .msg.in { align-self: flex-start; background: #1a2432; border-bottom-left-radius: 4px; }
-        .msg.out { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; font-weight: 500; }
-
-        .input-area { padding: 20px 40px; }
-        .input-wrap { background: var(--side); border: 1px solid var(--border); border-radius: 15px; padding: 10px 20px; display: flex; align-items: center; gap: 15px; }
-        #m-field { flex: 1; background: none; border: none; color: #fff; outline: none; font-size: 15px; }
-
-        /* ПАНЕЛЬ УЧАСТНИКОВ (СПРАВА) */
-        .users-panel { width: 240px; background: var(--side); border-left: 1px solid var(--border); padding: 20px; }
-        .u-item { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; font-size: 14px; }
-        .u-status { width: 8px; height: 8px; background: #00ff88; border-radius: 50%; box-shadow: 0 0 10px #00ff88; }
-
-        /* НАСТРОЙКИ (ВЫЕЗЖАЮТ) */
-        #settings-menu { position: fixed; right: -350px; top: 0; bottom: 0; width: 320px; background: #0d121a; z-index: 5000; padding: 40px 25px; transition: 0.5s cubic-bezier(0.8, 0, 0.2, 1); border-left: 1px solid var(--border); }
-        #settings-menu.open { right: 0; box-shadow: -20px 0 60px rgba(0,0,0,0.8); }
-        .set-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--border); }
+        /* Настройки */
+        #settings-panel {
+            position: fixed; right: -400px; top: 0; bottom: 0; width: 380px;
+            background: #05070a; z-index: 5000; border-left: 1px solid var(--border);
+            padding: 50px 40px; transition: 0.6s cubic-bezier(0.8, 0, 0.2, 1);
+        }
+        #settings-panel.open { right: 0; box-shadow: -50px 0 100px rgba(0,0,0,0.9); }
+        .set-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         
-        /* КНОПКА-ПЕРЕКЛЮЧАТЕЛЬ */
-        .sw { width: 42px; height: 22px; background: #333; border-radius: 20px; position: relative; cursor: pointer; transition: 0.3s; }
-        .sw.on { background: var(--accent); }
-        .sw::after { content: ''; position: absolute; width: 18px; height: 18px; background: #fff; border-radius: 50%; top: 2px; left: 2px; transition: 0.3s; }
-        .sw.on::after { left: 22px; }
+        /* Стилизация свитчей */
+        .toggle { width: 45px; height: 24px; background: #222; border-radius: 20px; position: relative; cursor: pointer; }
+        .toggle.on { background: var(--accent); }
+        .toggle::after { content: ''; position: absolute; width: 20px; height: 20px; background: #fff; border-radius: 50%; top: 2px; left: 2px; transition: 0.3s; }
+        .toggle.on::after { left: 23px; }
     </style>
 </head>
-<body class="glass-mode">
+<body>
 
-    <div id="auth-screen">
+    <canvas id="canvas-bg"></canvas>
+
+    <div id="screen-auth" class="screen">
         <div class="auth-card">
-            <div class="auth-logo">💎</div>
-            <h2 style="margin-bottom: 10px;">ULTRA CORE</h2>
-            <p style="color: #666; font-size: 14px; margin-bottom: 30px;">Введите данные для доступа к ядру</p>
-            <input type="text" id="reg-name" class="tg-input" placeholder="Имя пользователя">
-            <input type="password" id="reg-pass" class="tg-input" placeholder="Ключ доступа">
-            <button class="btn-start" onclick="doAuth()">Инициализация</button>
+            <h1 style="font-weight: 200; letter-spacing: 10px; margin-bottom: 40px;">CORE</h1>
+            <input type="text" id="in-name" class="tg-input" placeholder="USERNAME">
+            <button class="btn-elite" onclick="startEliteSession()">ENTER SYSTEM</button>
         </div>
     </div>
 
-    <div id="settings-menu">
-        <h2 style="margin-bottom: 30px;">Центр управления</h2>
-        <div style="text-align: center; margin-bottom: 40px;">
-            <div id="u-ava" style="width: 70px; height: 70px; background: var(--accent); border-radius: 20px; margin: 0 auto 15px; color:#000; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:900;">?</div>
-            <h3 id="u-name">User</h3>
-            <p style="font-size: 12px; color: var(--accent); margin-top: 5px;">ID: <span id="u-id">000</span></p>
-        </div>
+    <div id="welcome-overlay">
+        <div class="welcome-text" id="w-msg">HELLO, USER</div>
+    </div>
 
-        <div class="set-row">
-            <span>Эффект размытия (Glass)</span>
-            <div class="sw on" id="sw-glass" onclick="toggleOption('glass')"></div>
-        </div>
-        <div class="set-row">
-            <span>Анимации интерфейса</span>
-            <div class="sw on" id="sw-anim" onclick="toggleOption('anim')"></div>
-        </div>
+    <div id="app">
+        <nav class="rail">
+            <div style="margin: 30px 0; font-weight: 900; color: var(--accent);">UC</div>
+            <div onclick="toggleSettings()" style="cursor:pointer; font-size: 20px;">⚙️</div>
+        </nav>
+
+        <aside class="sidebar">
+            <div style="padding: 40px 30px; font-size: 10px; letter-spacing: 3px; opacity: 0.4;">CHANNELS</div>
+            <div style="padding: 15px 30px; background: rgba(255,255,255,0.05); border-left: 3px solid var(--accent);"># general_stream</div>
+        </aside>
+
+        <main class="viewport">
+            <header style="height: 80px; display:flex; align-items:center; px: 40px; border-bottom: 1px solid var(--border); padding: 0 40px;">
+                <h2 style="font-weight: 300; font-size: 18px;">/ main_core</h2>
+                <div style="margin-left: auto; font-size: 12px; color: var(--accent);" id="online-counter">Nodes Online: 0</div>
+            </header>
+            <div id="messages"></div>
+            <div style="padding: 30px 40px;">
+                <form id="chat-form" style="display:flex; gap: 20px; background: rgba(255,255,255,0.03); padding: 15px 25px; border-radius: 20px; border: 1px solid var(--border);">
+                    <input type="text" id="m-input" placeholder="Type a message..." style="background:none; border:none; color:#fff; flex:1; outline:none;">
+                    <button type="submit" style="background:none; border:none; color:var(--accent); font-weight:800; cursor:pointer;">SEND</button>
+                </form>
+            </div>
+        </main>
+
+        <aside class="users">
+            <div style="font-size: 10px; letter-spacing: 2px; opacity: 0.4; margin-bottom: 20px;">MEMBERS</div>
+            <div id="user-list"></div>
+        </aside>
+    </div>
+
+    <div id="settings-panel">
+        <h2 style="font-weight: 200; margin-bottom: 40px;">System Settings</h2>
         
-        <button class="btn-start" style="margin-top: 50px; background: #ff4444; color: #fff;" onclick="toggleMenu()">ЗАКРЫТЬ</button>
-    </div>
-
-    <nav class="rail">
-        <div class="r-icon active">💬</div>
-        <div class="r-icon" onclick="toggleMenu()">⚙️</div>
-        <div class="r-icon" style="margin-top: auto;" onclick="location.reload()">🚪</div>
-    </nav>
-
-    <aside class="sidebar">
-        <div class="sidebar-title">СЕКТОРЫ</div>
-        <div class="sector-item active"># main_stream</div>
-        <div class="sector-item"># dev_logs</div>
-        <div class="sector-item"># dark_matter</div>
-    </aside>
-
-    <main class="main-content">
-        <header class="viewport-header">
-            <div>
-                <h3 id="chat-title"># main_stream</h3>
-                <span style="font-size: 12px; color: #00ff88;">● соединение активно</span>
-            </div>
-            <div style="font-size: 12px; opacity: 0.5;">v7.0 Stable</div>
-        </header>
-
-        <div id="messages"></div>
-
-        <div class="input-area">
-            <form id="chat-form" class="input-wrap">
-                <input type="text" id="m-field" placeholder="Передать сигнал в туманность..." autocomplete="off">
-                <button type="submit" style="background:none; border:none; color:var(--accent); font-weight:900; cursor:pointer;">SEND</button>
-            </form>
+        <div class="set-row">
+            <span>Dynamic Background</span>
+            <div class="toggle on" id="sw-bg" onclick="toggleSetting('bg')"></div>
         </div>
-    </main>
+        <div class="set-row">
+            <span>Glass Reflections</span>
+            <div class="toggle on" id="sw-glass" onclick="toggleSetting('glass')"></div>
+        </div>
+        <div class="set-row">
+            <span>Ultra Animations</span>
+            <div class="toggle on" id="sw-anim" onclick="toggleSetting('anim')"></div>
+        </div>
 
-    <aside class="users-panel">
-        <div style="font-size: 11px; letter-spacing: 1px; margin-bottom: 20px; opacity: 0.5;">УЧАСТНИКИ — <span id="online-count">0</span></div>
-        <div id="users-list">
-            </div>
-    </aside>
+        <button class="btn-elite" style="margin-top: 40px; background: transparent; color: #ff4444; border: 1px solid #ff4444;" onclick="location.reload()">TERMINATE SESSION</button>
+    </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let myData = null;
+        let myName = "";
 
-        // РЕГИСТРАЦИЯ
-        function doAuth() {
-            const name = document.getElementById('reg-name').value;
-            if(!name) return;
-            socket.emit('authenticate', { username: name });
+        // ФОН (ЧАСТИЦЫ)
+        const canvas = document.getElementById('canvas-bg');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let config = { active: true };
+
+        function initBg() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particles = [];
+            for(let i=0; i<80; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5
+                });
+            }
         }
 
-        socket.on('auth_success', data => {
-            myData = data;
-            document.getElementById('auth-screen').style.opacity = '0';
-            setTimeout(() => document.getElementById('auth-screen').style.display = 'none', 500);
+        function drawBg() {
+            if(!config.active) return;
+            ctx.clearRect(0,0,canvas.width, canvas.height);
+            ctx.fillStyle = "rgba(0, 210, 255, 0.5)";
+            ctx.strokeStyle = "rgba(0, 210, 255, 0.05)";
             
-            document.getElementById('u-name').innerText = data.username;
-            document.getElementById('u-ava').innerText = data.username[0].toUpperCase();
-            document.getElementById('u-id').innerText = data.id;
-        });
+            particles.forEach((p, i) => {
+                p.x += p.vx; p.y += p.vy;
+                if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2);
+                ctx.fill();
 
-        // СЧЕТЧИК И СПИСОК ЮЗЕРОВ
+                for(let j=i+1; j<particles.length; j++) {
+                    let p2 = particles[j];
+                    let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                    if(dist < 150) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                }
+            });
+            requestAnimationFrame(drawBg);
+        }
+
+        initBg(); drawBg();
+
+        // ЛОГИКА ВХОДА И ПРИВЕТСТВИЯ
+        function startEliteSession() {
+            const val = document.getElementById('in-name').value;
+            if(!val) return;
+            myName = val;
+
+            // 1. Скрываем вход
+            document.getElementById('screen-auth').classList.add('hidden');
+            
+            // 2. Показываем приветствие
+            const overlay = document.getElementById('welcome-overlay');
+            const wMsg = document.getElementById('w-msg');
+            overlay.style.display = 'flex';
+            
+            setTimeout(() => {
+                wMsg.innerText = `WELCOME, ${myName.toUpperCase()}`;
+                wMsg.classList.add('show');
+            }, 100);
+
+            // 3. Загружаем интерфейс
+            setTimeout(() => {
+                overlay.style.opacity = '0';
+                document.getElementById('app').classList.add('visible');
+                socket.emit('authenticate', { username: myName });
+                setTimeout(() => overlay.style.display = 'none', 1000);
+            }, 2500);
+        }
+
         socket.on('update_online', count => {
-            document.getElementById('online-count').innerText = count;
-            // Имитируем список участников для красоты (или берем с сервера)
-            const list = document.getElementById('users-list');
-            list.innerHTML = `<div class="u-item"><div class="u-status"></div> ${myData ? myData.username : 'Я'}</div>`;
+            document.getElementById('online-counter').innerText = `Nodes Online: ${count}`;
         });
 
         // ЧАТ
-        const form = document.getElementById('chat-form');
-        form.onsubmit = (e) => {
+        document.getElementById('chat-form').onsubmit = (e) => {
             e.preventDefault();
-            const input = document.getElementById('m-field');
-            if(input.value.trim()) {
+            const input = document.getElementById('m-input');
+            if(input.value) {
                 socket.emit('message', { text: input.value });
                 input.value = '';
             }
         };
 
         socket.on('message', m => {
-            const container = document.getElementById('messages');
-            const isMe = myData && m.name === myData.username;
+            const wrap = document.getElementById('messages');
+            const isMe = m.name === myName;
             const div = document.createElement('div');
-            div.className = `msg ${isMe ? 'out' : 'in'}`;
+            div.className = `bubble ${isMe ? 'me' : ''}`;
             div.innerHTML = `
-                ${!isMe ? `<div style="font-size:10px; opacity:0.6; margin-bottom:4px;">${m.name}</div>` : ''}
+                ${!isMe ? `<div style="font-size:10px; opacity:0.5; margin-bottom:5px;">${m.name}</div>` : ''}
                 ${m.text}
             `;
-            container.appendChild(div);
-            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+            wrap.appendChild(div);
+            wrap.scrollTop = wrap.scrollHeight;
         });
 
         // НАСТРОЙКИ
-        function toggleMenu() {
-            document.getElementById('settings-menu').classList.toggle('open');
+        function toggleSettings() {
+            document.getElementById('settings-panel').classList.toggle('open');
         }
 
-        const settings = { glass: true, anim: true };
-        function toggleOption(type) {
-            settings[type] = !settings[type];
+        function toggleSetting(type) {
             document.getElementById('sw-' + type).classList.toggle('on');
-            
-            if(type === 'glass') document.body.classList.toggle('glass-mode');
-            if(type === 'anim') document.body.classList.toggle('no-anim');
+            if(type === 'bg') config.active = !config.active;
+            if(type === 'glass') document.body.style.setProperty('--glass', config.active ? 'blur(25px)' : 'none');
         }
     </script>
 </body>
