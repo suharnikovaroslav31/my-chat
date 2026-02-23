@@ -3,77 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultra Live Chat</title>
+    <title>Ultra Chat PRO</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="mesh-bg"></div>
-    
+    <div class="main-gradient"></div>
+
     <div id="auth-screen">
-        <div class="auth-box">
-            <div class="logo">UC</div>
-            <h2 id="auth-title">ВХОД</h2>
-            <div class="input-group">
-                <input type="text" id="username" placeholder="Ваш логин">
+        <div class="auth-card">
+            <h1>ULTRA<span>CHAT</span></h1>
+            <div class="auth-inputs">
+                <input type="text" id="username" placeholder="Логин">
                 <input type="password" id="password" placeholder="Пароль">
             </div>
             <p id="error-msg"></p>
-            <button onclick="handleAuth()" id="auth-btn">ВОЙТИ В СИСТЕМУ</button>
-            <span class="toggle" onclick="toggleAuth()">Создать новый аккаунт</span>
+            <button onclick="handleAuth()" id="auth-btn">ВОЙТИ</button>
+            <div class="auth-toggle" onclick="toggleAuth()">Нет аккаунта? Создать</div>
         </div>
     </div>
 
     <div id="main-app" style="display: none;">
-        <nav class="side-nav">
-            <div class="nav-item active">U</div>
-            <div class="nav-item">+</div>
-        </nav>
+        <div class="side-rail">
+            <div class="rail-icon active">U</div>
+            <div class="rail-icon">+</div>
+        </div>
 
-        <aside class="channels-bar">
-            <div class="bar-header">ULTRA CHAT</div>
-            <div class="channel-list">
-                <div class="ch-item active"># основной-чат</div>
-                <div class="ch-item"># новости</div>
+        <div class="channels-panel">
+            <div class="panel-title">КАНАЛЫ</div>
+            <div class="channel-active"># основной-чат</div>
+            <div class="channel-idle"># идеи</div>
+            
+            <div class="user-footer">
+                <div class="u-avatar">👤</div>
+                <div class="u-name" id="my-name-display">User</div>
             </div>
-            <div class="user-card">
-                <div class="user-avatar"></div>
-                <div class="user-info">
-                    <span id="my-name-display">User</span>
-                    <small>Online</small>
-                </div>
-            </div>
-        </aside>
+        </div>
 
-        <main class="chat-main">
+        <div class="chat-container">
             <header class="chat-header">
                 <h3># основной-чат</h3>
-                <div id="typing-box"></div>
+                <div id="online-counter">Online</div>
             </header>
-            
+
             <div id="messages"></div>
 
-            <footer class="input-area">
+            <div class="input-wrapper">
                 <form id="chat-form">
-                    <label class="btn-attach">
+                    <label class="file-btn">
                         <input type="file" id="file-input" accept="image/*,video/*" style="display:none;">
-                        📎
+                        +
                     </label>
-                    <input type="text" id="msg-input" placeholder="Написать сообщение в #основной-чат" autocomplete="off">
-                    <button type="submit">ОТПРАВИТЬ</button>
+                    <input type="text" id="msg-input" placeholder="Написать сообщение..." autocomplete="off">
+                    <button type="submit">➤</button>
                 </form>
-            </footer>
-        </main>
+            </div>
+        </div>
 
-        <aside class="info-bar">
-            <div class="info-section">
-                <h4>В СЕТИ</h4>
-                <div id="online-list"></div>
-            </div>
-            <div class="info-section">
-                <h4>МЕДИА</h4>
-                <div id="media-stream"></div>
-            </div>
-        </aside>
+        <div class="info-panel">
+            <div class="panel-title">МЕДИА</div>
+            <div id="media-gallery"></div>
+            <div class="panel-title" style="margin-top: 20px;">В СЕТИ</div>
+            <div id="online-list"></div>
+        </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
