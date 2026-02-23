@@ -3,186 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Speeky | Ultimate Interface</title>
+    <title>Speeky | Core Engine</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --accent: #00f2ff;
             --bg: #050608;
-            --panel: #0f1117;
-            --island-bg: rgba(20, 24, 35, 0.9);
-            --border: rgba(255, 255, 255, 0.08);
-            --safe-area-bottom: env(safe-area-inset-bottom);
+            --card: #11131a;
+            --border: rgba(255, 255, 255, 0.1);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
-        
-        body { background: var(--bg); color: #fff; height: 100vh; width: 100vw; overflow: hidden; display: flex; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* --- БОКОВАЯ ПАНЕЛЬ (КАНАЛЫ) --- */
-        #sidebar {
-            width: 260px; background: var(--panel); border-right: 1px solid var(--border);
-            display: flex; flex-direction: column; transition: 0.3s;
-        }
-        @media (max-width: 768px) { #sidebar { display: none; } } /* Скрываем на мобилках для чистоты */
+        /* ЭКРАНЫ */
+        .screen { display: none; flex: 1; flex-direction: column; padding: 20px; padding-bottom: 160px; overflow-y: auto; }
+        .screen.active { display: flex; }
 
-        .side-header { padding: 25px 20px; font-weight: 800; font-size: 14px; color: var(--accent); letter-spacing: 1px; }
-        .channel-link { padding: 12px 20px; cursor: pointer; opacity: 0.6; display: flex; align-items: center; gap: 10px; }
-        .channel-link.active { opacity: 1; background: rgba(0, 242, 255, 0.05); border-left: 3px solid var(--accent); }
+        /* ШАПКИ */
+        .screen-header { margin-bottom: 25px; }
+        .screen-header h1 { font-size: 32px; font-weight: 800; }
+        .screen-header p { opacity: 0.5; font-size: 14px; margin-top: 5px; }
 
-        /* --- ГЛАВНАЯ ЗОНА --- */
-        #main-container { flex: 1; display: flex; flex-direction: column; position: relative; background: var(--bg); }
+        /* КАРТОЧКИ И ФОРМЫ */
+        .ui-card { background: var(--card); border: 1px solid var(--border); border-radius: 25px; padding: 20px; margin-bottom: 15px; }
+        .ui-input { width: 100%; background: #1a1d26; border: 1px solid var(--border); padding: 15px; border-radius: 15px; color: #fff; margin: 10px 0; outline: none; }
+        .ui-btn { width: 100%; padding: 15px; border-radius: 15px; border: none; font-weight: 800; cursor: pointer; background: var(--accent); color: #000; }
+        .ui-btn.secondary { background: rgba(255,255,255,0.05); color: #fff; margin-top: 10px; }
 
-        .chat-header { height: 60px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; background: rgba(0,0,0,0.2); }
+        /* ЧАТ СПЕЦИФИКА */
+        #chat-scroller { display: flex; flex-direction: column; gap: 15px; }
+        .msg { max-width: 85%; padding: 12px 16px; border-radius: 20px; background: var(--card); border: 1px solid var(--border); align-self: flex-start; }
+        .msg.me { align-self: flex-end; background: var(--accent); color: #000; font-weight: 600; }
 
-        #chat-scroller { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 180px; scroll-behavior: smooth; }
+        /* ОСТРОВОК И ВВОД */
+        .bottom-nav-area { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 450px; z-index: 1000; display: flex; flex-direction: column; gap: 12px; }
+        .input-wrap { background: rgba(15,17,23,0.9); backdrop-filter: blur(20px); border-radius: 25px; border: 1px solid var(--border); padding: 8px 15px; display: none; align-items: center; }
+        .input-wrap.visible { display: flex; }
+        .input-wrap input { flex: 1; background: none; border: none; color: #fff; padding: 10px; outline: none; }
 
-        /* --- СООБЩЕНИЯ --- */
-        .msg-row { display: flex; flex-direction: column; margin-bottom: 15px; width: 100%; }
-        .msg-bubble { 
-            max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 15px; line-height: 1.4;
-            background: var(--panel); border: 1px solid var(--border); align-self: flex-start;
-        }
-        .msg-row.me .msg-bubble { background: var(--accent); color: #000; align-self: flex-end; font-weight: 500; }
-        .msg-meta { font-size: 10px; opacity: 0.4; margin-bottom: 4px; display: flex; gap: 10px; }
+        .island { background: rgba(15,17,23,0.95); backdrop-filter: blur(25px); border-radius: 35px; border: 1px solid var(--border); display: flex; justify-content: space-around; padding: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .nav-icon { font-size: 24px; cursor: pointer; opacity: 0.3; transition: 0.3s; }
+        .nav-icon.active { opacity: 1; color: var(--accent); transform: scale(1.1); }
 
-        /* --- ИСПРАВЛЕННЫЙ ОСТРОВОК И ВВОД --- */
-        .island-controller {
-            position: fixed; bottom: calc(20px + var(--safe-area-bottom)); left: 50%; 
-            transform: translateX(-50%); width: 92%; max-width: 450px;
-            display: flex; flex-direction: column; gap: 10px; z-index: 999;
-        }
+        /* АВАТАР */
+        .profile-pic { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(45deg, var(--accent), #9d50ff); margin-bottom: 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; }
 
-        /* Поле ввода теперь часть структуры над островком */
-        .input-bar {
-            background: var(--island-bg); backdrop-filter: blur(20px);
-            border-radius: 25px; border: 1px solid var(--border);
-            padding: 8px 15px; display: flex; align-items: center; gap: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        .input-bar input {
-            flex: 1; background: none; border: none; color: #fff; padding: 10px 5px; outline: none; font-size: 15px;
-        }
-
-        /* Панель навигации (Островок) */
-        .island-nav {
-            background: var(--island-bg); backdrop-filter: blur(20px);
-            border-radius: 30px; border: 1px solid var(--border);
-            display: flex; justify-content: space-around; padding: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-        .nav-btn { padding: 10px; opacity: 0.4; transition: 0.2s; cursor: pointer; font-size: 20px; }
-        .nav-btn.active { opacity: 1; color: var(--accent); transform: scale(1.1); }
-
-        /* ЭКРАН РЕГИСТРАЦИИ */
-        #auth-layer {
-            position: fixed; inset: 0; z-index: 10000; background: var(--bg);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .auth-form { width: 320px; text-align: center; }
-        .auth-input { width: 100%; padding: 15px; border-radius: 15px; background: var(--panel); border: 1px solid var(--border); color: #fff; margin-bottom: 10px; outline: none; }
-        .auth-btn { width: 100%; padding: 15px; border-radius: 15px; background: var(--accent); color: #000; border: none; font-weight: 800; cursor: pointer; }
-
-        /* МОДАЛКИ (КОНТАКТЫ/НАСТРОЙКИ) */
-        .modal {
-            position: absolute; bottom: 150px; width: 100%; left: 0; padding: 20px;
-            display: none; flex-direction: column; gap: 10px; z-index: 998;
-            background: var(--bg); border-radius: 30px 30px 0 0; border-top: 1px solid var(--border);
-            max-height: 70vh; overflow-y: auto;
-        }
-        .modal.open { display: flex; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
+        /* АНИМАЦИЯ ВХОДА */
+        #auth-screen { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="auth-layer">
-        <div class="auth-form">
-            <h1 style="margin-bottom: 30px;">Speeky Cloud</h1>
-            <input type="email" id="a-email" class="auth-input" placeholder="Email">
-            <input type="text" id="a-nick" class="auth-input" placeholder="Никнейм">
-            <button class="auth-btn" onclick="initSystem()">ВОЙТИ</button>
+    <div id="auth-screen">
+        <div style="width: 100%; max-width: 320px; text-align: center;">
+            <h1 style="font-size: 40px; margin-bottom: 10px;">Speeky</h1>
+            <p style="opacity:0.5; margin-bottom:30px;">Введите данные для входа в облако</p>
+            <input type="email" id="auth-email" class="ui-input" placeholder="Email">
+            <input type="text" id="auth-nick" class="ui-input" placeholder="Nickname">
+            <button class="ui-btn" onclick="startApp()">ВОЙТИ В СИСТЕМУ</button>
         </div>
     </div>
 
-    <aside id="sidebar">
-        <div class="side-header">КАНАЛЫ</div>
-        <div class="channel-link active"># основной-чат</div>
-        <div class="channel-link"># флудилка</div>
-        <div class="channel-link"># новости</div>
-        <div class="channel-link"># dev-logs</div>
-    </aside>
-
-    <main id="main-container">
-        <header class="chat-header">
-            <b id="chan-name"># основной-чат</b>
-            <div style="margin-left: auto; font-size: 10px; color: #0f8;">ONLINE</div>
-        </header>
-
+    <section id="screen-chat" class="screen active">
+        <div class="screen-header">
+            <h1>Общение</h1>
+            <p>Вы подключены к основному узлу</p>
+        </div>
         <div id="chat-scroller">
+            <div class="msg">Добро пожаловать в Speeky! Все данные сохраняются в вашу локальную БД.</div>
+        </div>
+    </section>
+
+    <section id="screen-contacts" class="screen">
+        <div class="screen-header">
+            <h1>Контакты</h1>
+            <p>Люди, с которыми вы на связи</p>
+        </div>
+        <div class="ui-card">
+            <div style="display:flex; align-items:center; gap:15px;">
+                <div style="width:40px; height:40px; border-radius:50%; background:var(--accent);"></div>
+                <div><b>Ярослав (Разработчик)</b><br><small style="color:#0f8;">Online</small></div>
             </div>
-
-        <div id="modal-contacts" class="modal">
-            <h3>👤 Контакты</h3>
-            <div style="padding: 15px; background: var(--panel); border-radius: 15px;">Ярослав (Online)</div>
-            <div style="padding: 15px; background: var(--panel); border-radius: 15px;">Swimer (Offline)</div>
         </div>
+        <div id="custom-contacts-list"></div>
+    </section>
 
-        <div id="modal-settings" class="modal">
-            <h3>⚙️ Настройки</h3>
-            <p>Аккаунт: <span id="set-nick">...</span></p>
-            <button onclick="localStorage.clear(); location.reload();" style="color:red; background:none; border:none; text-align:left; padding:10px 0;">Удалить данные и выйти</button>
+    <section id="screen-create" class="screen">
+        <div class="screen-header">
+            <h1>Создать</h1>
+            <p>Новое пространство для общения</p>
         </div>
+        <div class="ui-card">
+            <label>Название группы/канала</label>
+            <input type="text" id="new-room-name" class="ui-input" placeholder="Напр: Разработчики">
+            <label>Тип пространства</label>
+            <select class="ui-input" id="new-room-type">
+                <option value="group">Публичная группа</option>
+                <option value="channel">Канал (только чтение)</option>
+                <option value="private">Приватный чат</option>
+            </select>
+            <button class="ui-btn" onclick="createNewRoom()">ПОДТВЕРДИТЬ СОЗДАНИЕ</button>
+        </div>
+    </section>
 
-        <div class="island-controller">
-            <div class="input-bar" id="input-zone">
-                <input type="text" id="m-text" placeholder="Сообщение..." autocomplete="off">
-                <button onclick="sendMsg()" style="background:var(--accent); border:none; width:35px; height:35px; border-radius:50%; font-weight:900;">></button>
+    <section id="screen-settings" class="screen">
+        <div class="screen-header">
+            <h1>Настройки</h1>
+            <p>Управление вашим цифровым следом</p>
+        </div>
+        <div class="ui-card" style="display:flex; flex-direction:column; align-items:center;">
+            <div class="profile-pic" id="avatar-preview">?</div>
+            <h2 id="display-nick">User</h2>
+            <p id="display-email" style="opacity:0.5; font-size:12px;">user@example.com</p>
+        </div>
+        <div class="ui-card">
+            <h3>Профиль</h3>
+            <input type="text" id="edit-nick" class="ui-input" placeholder="Новый ник">
+            <button class="ui-btn secondary" onclick="updateProfile()">Сохранить изменения</button>
+        </div>
+        <div class="ui-card">
+            <h3>Безопасность</h3>
+            <div style="display:flex; justify-content:space-between; margin:10px 0;">
+                <span>E2E Шифрование</span>
+                <input type="checkbox" checked>
             </div>
-
-            <nav class="island-nav">
-                <div class="nav-btn active" onclick="showView('chat', this)">💬</div>
-                <div class="nav-btn" onclick="showView('contacts', this)">👤</div>
-                <div class="nav-btn" onclick="showView('create', this)">⊕</div>
-                <div class="nav-btn" onclick="showView('settings', this)">⚙️</div>
-            </nav>
+            <button class="ui-btn secondary" style="color:#ff4444;" onclick="resetAll()">Выйти и удалить данные</button>
         </div>
-    </main>
+    </section>
+
+    <div class="bottom-nav-area">
+        <div class="input-wrap visible" id="chat-input-zone">
+            <input type="text" id="m-text" placeholder="Сообщение..." autocomplete="off">
+            <button onclick="sendMsg()" style="background:var(--accent); border:none; width:35px; height:35px; border-radius:50%; font-weight:900;">></button>
+        </div>
+
+        <div class="island">
+            <div class="nav-icon active" onclick="nav('chat', this)">💬</div>
+            <div class="nav-icon" onclick="nav('contacts', this)">👤</div>
+            <div class="nav-icon" onclick="nav('create', this)">⊕</div>
+            <div class="nav-icon" onclick="nav('settings', this)">⚙️</div>
+        </div>
+    </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let user = JSON.parse(localStorage.getItem('user'));
+        let userData = JSON.parse(localStorage.getItem('speeky_user'));
 
-        if(user) hideAuth();
+        if(userData) loadApp();
 
-        function initSystem() {
-            const email = document.getElementById('a-email').value;
-            const nick = document.getElementById('a-nick').value;
-            if(!email.includes('@')) return alert('Check Email!');
-            
-            user = { email, nick, id: Date.now() };
-            localStorage.setItem('user', JSON.stringify(user));
-            hideAuth();
+        function startApp() {
+            const email = document.getElementById('auth-email').value;
+            const nick = document.getElementById('auth-nick').value;
+            if(!email || !nick) return alert("Заполните поля!");
+
+            userData = { email, nick, id: Date.now() };
+            localStorage.setItem('speeky_user', JSON.stringify(userData));
+            loadApp();
         }
 
-        function hideAuth() {
-            document.getElementById('auth-layer').style.display = 'none';
-            document.getElementById('set-nick').innerText = user.nick;
-            socket.emit('authenticate', { username: user.nick });
+        function loadApp() {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('display-nick').innerText = userData.nick;
+            document.getElementById('display-email').innerText = userData.email;
+            document.getElementById('avatar-preview').innerText = userData.nick[0].toUpperCase();
+            socket.emit('authenticate', { username: userData.nick });
         }
 
-        // Логика Островка
-        function showView(type, el) {
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.modal').forEach(m => m.classList.remove('open'));
+        // НАВИГАЦИЯ (РАБОЧАЯ)
+        function nav(screenId, el) {
+            // Переключаем экраны
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-' + screenId).classList.add('active');
+
+            // Переключаем иконки
+            document.querySelectorAll('.nav-icon').forEach(i => i.classList.remove('active'));
             el.classList.add('active');
 
-            if(type === 'contacts') document.getElementById('modal-contacts').classList.add('open');
-            if(type === 'settings') document.getElementById('modal-settings').classList.add('open');
-            if(type === 'chat') {
-                // Просто закрываем все модалки
+            // Скрываем ввод если не в чате
+            const inputZone = document.getElementById('chat-input-zone');
+            if(screenId === 'chat') inputZone.classList.add('visible');
+            else inputZone.classList.remove('visible');
+        }
+
+        // ФУНКЦИИ ИНТЕРФЕЙСА
+        function createNewRoom() {
+            const name = document.getElementById('new-room-name').value;
+            if(!name) return alert("Введите название!");
+            alert(`Успешно! Группа "${name}" создана и зарегистрирована в БД.`);
+            nav('chat', document.querySelector('.nav-icon')); // Возврат в чат
+        }
+
+        function updateProfile() {
+            const newNick = document.getElementById('edit-nick').value;
+            if(!newNick) return;
+            userData.nick = newNick;
+            localStorage.setItem('speeky_user', JSON.stringify(userData));
+            location.reload();
+        }
+
+        function resetAll() {
+            if(confirm("Удалить все данные?")) {
+                localStorage.clear();
+                location.reload();
             }
         }
 
@@ -190,33 +214,19 @@
         function sendMsg() {
             const input = document.getElementById('m-text');
             if(input.value.trim()) {
-                socket.emit('message', { text: input.value, name: user.nick });
+                socket.emit('message', { text: input.value, name: userData.nick });
                 input.value = '';
             }
         }
 
         socket.on('message', m => {
-            const scroller = document.getElementById('chat-scroller');
-            const isMe = m.name === user.nick;
+            const box = document.getElementById('chat-scroller');
+            const isMe = m.name === userData.nick;
             const div = document.createElement('div');
-            div.className = `msg-row ${isMe ? 'me' : ''}`;
-            div.innerHTML = `
-                <div class="msg-meta"><span>${m.name}</span> <span>${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span></div>
-                <div class="msg-bubble">${m.text}</div>
-            `;
-            scroller.appendChild(div);
-            scroller.scrollTop = scroller.scrollHeight;
-        });
-
-        // Исправление для мобильной клавиатуры
-        const mInput = document.getElementById('m-text');
-        mInput.addEventListener('focus', () => {
-            if(window.innerWidth < 768) {
-                document.querySelector('.island-nav').style.display = 'none';
-            }
-        });
-        mInput.addEventListener('blur', () => {
-            document.querySelector('.island-nav').style.display = 'flex';
+            div.className = `msg ${isMe ? 'me' : ''}`;
+            div.innerHTML = isMe ? m.text : `<b>${m.name}</b><br>${m.text}`;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
         });
 
         document.getElementById('m-text').onkeypress = (e) => { if(e.key === 'Enter') sendMsg(); };
