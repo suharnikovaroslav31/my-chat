@@ -3,46 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultra PRO Chat</title>
+    <title>Ultra Live Chat</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="bg-animate"><div class="circle"></div><div class="circle"></div></div>
-
+    <div class="mesh-bg"></div>
+    
     <div id="auth-screen">
-        <div class="glass-card">
-            <h1 id="auth-title">ВХОД</h1>
-            <input type="text" id="username" placeholder="Логин">
-            <input type="password" id="password" placeholder="Пароль">
-            <p id="error-msg" style="color: #ff4d4d; font-size: 12px;"></p>
-            <button onclick="handleAuth()" id="auth-btn">ВОЙТИ</button>
-            <p class="toggle-text" onclick="toggleAuth()">Нет аккаунта? Зарегистрироваться</p>
+        <div class="auth-box">
+            <div class="logo">UC</div>
+            <h2 id="auth-title">ВХОД</h2>
+            <div class="input-group">
+                <input type="text" id="username" placeholder="Ваш логин">
+                <input type="password" id="password" placeholder="Пароль">
+            </div>
+            <p id="error-msg"></p>
+            <button onclick="handleAuth()" id="auth-btn">ВОЙТИ В СИСТЕМУ</button>
+            <span class="toggle" onclick="toggleAuth()">Создать новый аккаунт</span>
         </div>
     </div>
 
     <div id="main-app" style="display: none;">
-        <aside id="left-panel">
-            <div class="brand">UC</div>
-            <div class="srv-icon active">#</div>
+        <nav class="side-nav">
+            <div class="nav-item active">U</div>
+            <div class="nav-item">+</div>
+        </nav>
+
+        <aside class="channels-bar">
+            <div class="bar-header">ULTRA CHAT</div>
+            <div class="channel-list">
+                <div class="ch-item active"># основной-чат</div>
+                <div class="ch-item"># новости</div>
+            </div>
+            <div class="user-card">
+                <div class="user-avatar"></div>
+                <div class="user-info">
+                    <span id="my-name-display">User</span>
+                    <small>Online</small>
+                </div>
+            </div>
         </aside>
 
-        <section id="chat-window">
-            <header><h2># general-channel</h2></header>
+        <main class="chat-main">
+            <header class="chat-header">
+                <h3># основной-чат</h3>
+                <div id="typing-box"></div>
+            </header>
+            
             <div id="messages"></div>
-            <footer>
+
+            <footer class="input-area">
                 <form id="chat-form">
-                    <label class="attach">📎<input type="file" id="file-input" accept="image/*,video/*" style="display:none;"></label>
-                    <input type="text" id="msg-input" placeholder="Ваше сообщение..." autocomplete="off">
-                    <button type="submit">➤</button>
+                    <label class="btn-attach">
+                        <input type="file" id="file-input" accept="image/*,video/*" style="display:none;">
+                        📎
+                    </label>
+                    <input type="text" id="msg-input" placeholder="Написать сообщение в #основной-чат" autocomplete="off">
+                    <button type="submit">ОТПРАВИТЬ</button>
                 </form>
             </footer>
-        </section>
+        </main>
 
-        <aside id="right-panel">
-            <div class="section-title">МЕДИА</div>
-            <div id="media-gallery"></div>
-            <div class="section-title">ВЫ ВОШЛИ КАК:</div>
-            <div id="user-display" style="color: var(--accent); font-weight: bold;"></div>
+        <aside class="info-bar">
+            <div class="info-section">
+                <h4>В СЕТИ</h4>
+                <div id="online-list"></div>
+            </div>
+            <div class="info-section">
+                <h4>МЕДИА</h4>
+                <div id="media-stream"></div>
+            </div>
         </aside>
     </div>
 
