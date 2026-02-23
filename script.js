@@ -1,10 +1,5 @@
 const socket = io({ transports: ['websocket'] });
 
-const messageForm = document.getElementById('chat-form');
-const messageInput = document.getElementById('msg-input');
-const messageContainer = document.getElementById('messages');
-const fileInput = document.getElementById('file-input');
-
 function joinChat() {
     const name = document.getElementById('username-input').value.trim();
     if (name) {
@@ -17,53 +12,49 @@ function joinChat() {
 
 function renderMessage(data) {
     if (!data.name || !data.text) return;
-    
     const isMine = data.name === window.userName;
-    const item = document.createElement('div');
-    item.className = `message ${isMine ? 'outgoing' : 'incoming'}`;
+    const container = document.getElementById('messages');
+    
+    const div = document.createElement('div');
+    div.className = `message ${isMine ? 'outgoing' : 'incoming'}`;
 
-    let content = '';
-    if (data.type === 'image') {
-        content = `<img src="${data.text}" style="max-width:100%; border-radius:15px; margin-top:5px;">`;
-    } else if (data.type === 'video') {
-        content = `<video src="${data.text}" controls style="max-width:100%; border-radius:15px; margin-top:5px;"></video>`;
-    } else {
-        content = `<div style="word-break: break-all;">${data.text}</div>`;
-    }
+    let media = '';
+    if (data.type === 'image') media = `<img src="${data.text}" style="width:100%; border-radius:10px; margin:5px 0;">`;
+    if (data.type === 'video') media = `<video src="${data.text}" controls style="width:100%; border-radius:10px; margin:5px 0;"></video>`;
 
-    item.innerHTML = `
+    div.innerHTML = `
         <div class="bubble">
-            <div style="font-size: 0.75em; opacity: 0.6; margin-bottom: 4px;">${data.name}</div>
-            ${content}
-            <div style="font-size: 0.65em; text-align: right; opacity: 0.5; margin-top: 4px;">${data.time}</div>
+            <small style="color:var(--accent); display:block; margin-bottom:5px;">${data.name}</small>
+            ${media || `<span>${data.text}</span>`}
+            <div style="text-align:right; font-size:10px; opacity:0.5; margin-top:5px;">${data.time}</div>
         </div>
     `;
-    messageContainer.appendChild(item);
-    messageContainer.scrollTop = messageContainer.scrollHeight;
+    
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
 }
 
-socket.on('message', (data) => renderMessage(data));
-socket.on('load_history', (history) => {
-    messageContainer.innerHTML = '';
-    history.forEach(msg => renderMessage(msg));
+socket.on('message', data => renderMessage(data));
+socket.on('load_history', history => {
+    document.getElementById('messages').innerHTML = '';
+    history.forEach(m => renderMessage(m));
 });
 
-messageForm.addEventListener('submit', (e) => {
+document.getElementById('chat-form').onsubmit = (e) => {
     e.preventDefault();
-    if (messageInput.value.trim() && window.userName) {
-        socket.emit('message', { name: window.userName, text: messageInput.value, type: 'text' });
-        messageInput.value = '';
+    const input = document.getElementById('msg-input');
+    if (input.value.trim()) {
+        socket.emit('message', { name: window.userName, text: input.value, type: 'text' });
+        input.value = '';
     }
-});
+};
 
-fileInput.addEventListener('change', function() {
+document.getElementById('file-input').onchange = function() {
     const file = this.files[0];
-    if (file && window.userName) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
         const type = file.type.startsWith('video') ? 'video' : 'image';
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            socket.emit('message', { name: window.userName, text: e.target.result, type: type });
-        };
-        reader.readAsDataURL(file);
-    }
-});
+        socket.emit('message', { name: window.userName, text: e.target.result, type: type });
+    };
+    reader.readAsDataURL(file);
+};
