@@ -3,174 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Speeky | Dynamic Island</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Speeky | Next Gen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --accent: #9d50ff;
-            --bg: #08080a;
-            --island: rgba(20, 20, 25, 0.95);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent-light: #bc8aff;
+            --bg: #050505;
+            --island-bg: rgba(15, 15, 20, 0.95);
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.08);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        
         body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
 
-        /* ОСНОВНОЙ КОНТЕНТ */
-        #app { display: flex; flex-direction: column; height: 100vh; padding-bottom: 90px; }
+        /* --- ЭКРАН РЕГИСТРАЦИИ (ПОЧТА) --- */
+        #auth-layer {
+            position: fixed; inset: 0; z-index: 5000; background: var(--bg);
+            display: flex; align-items: center; justify-content: center; padding: 20px;
+        }
+        .auth-card {
+            width: 100%; max-width: 360px; background: var(--glass); 
+            padding: 40px 30px; border-radius: 35px; border: 1px solid var(--border);
+            backdrop-filter: blur(20px); text-align: center;
+        }
+        .auth-card h2 { font-size: 28px; margin-bottom: 10px; font-weight: 800; }
+        .auth-card p { font-size: 14px; opacity: 0.5; margin-bottom: 30px; }
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.4; margin-left: 10px; }
+        .auth-input {
+            width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+            padding: 16px; border-radius: 18px; color: #fff; outline: none; transition: 0.3s;
+        }
+        .auth-input:focus { border-color: var(--accent); background: rgba(157, 80, 255, 0.05); }
+        .auth-btn {
+            width: 100%; padding: 18px; background: var(--accent); border: none;
+            border-radius: 18px; color: #fff; font-weight: 700; cursor: pointer; margin-top: 10px;
+        }
+
+        /* --- ГЛАВНЫЙ ИНТЕРФЕЙС --- */
+        #app { display: none; height: 100vh; flex-direction: column; opacity: 0; transition: 0.5s; }
         
-        /* ШАПКА */
-        .header { padding: 20px; display: flex; align-items: center; justify-content: space-between; }
-        .header h1 { font-size: 20px; font-weight: 800; letter-spacing: -1px; }
+        .header { padding: 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+        .view-section { flex: 1; overflow-y: auto; padding: 20px; display: none; }
+        .view-section.active { display: flex; flex-direction: column; }
 
         /* ЧАТ */
-        #chat-view { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .msg { max-width: 80%; padding: 12px 16px; border-radius: 20px; font-size: 15px; }
-        .msg.in { background: rgba(255,255,255,0.05); align-self: flex-start; }
-        .msg.out { background: var(--accent); align-self: flex-end; }
+        #chat-content { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        .msg { max-width: 80%; padding: 14px 18px; border-radius: 22px; font-size: 15px; position: relative; }
+        .msg.in { background: var(--glass); border: 1px solid var(--border); align-self: flex-start; }
+        .msg.out { background: var(--accent); align-self: flex-end; box-shadow: 0 10px 20px rgba(157, 80, 255, 0.2); }
+        .msg-sender { font-size: 10px; font-weight: 800; color: var(--accent-light); margin-bottom: 4px; }
 
-        /* ВВОД СООБЩЕНИЯ */
-        .input-box { padding: 10px 20px; display: flex; gap: 10px; }
-        .input-box input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 12px 20px; border-radius: 25px; color: #fff; outline: none; }
+        /* ПОЛЕ ВВОДА */
+        .input-area { padding: 15px 20px; display: flex; gap: 10px; background: rgba(0,0,0,0.2); }
+        .m-field { flex: 1; background: var(--glass); border: 1px solid var(--border); padding: 14px 20px; border-radius: 25px; color: #fff; outline: none; }
 
-        /* === DYNAMIC ISLAND (ОСТРОВОК) === */
-        .island-container {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 400px; z-index: 1000;
-            display: flex; flex-direction: column; align-items: center;
+        /* --- DYNAMIC ISLAND (ОСТРОВОК) --- */
+        .island-wrap {
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 380px; z-index: 4000;
         }
-
         .island {
-            background: var(--island); backdrop-filter: blur(25px);
-            border: 1px solid var(--glass-border); border-radius: 35px;
-            padding: 10px 20px; width: 100%; display: flex;
+            background: var(--island-bg); border: 1px solid var(--border);
+            border-radius: 35px; padding: 12px; display: flex;
             justify-content: space-around; align-items: center;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(30px); box-shadow: 0 20px 40px rgba(0,0,0,0.6);
         }
+        .nav-icon { font-size: 22px; cursor: pointer; opacity: 0.4; transition: 0.3s; padding: 10px; border-radius: 50%; }
+        .nav-icon.active { opacity: 1; color: var(--accent); background: rgba(255,255,255,0.05); }
 
-        /* Выплывающие окна меню */
-        .island-menu {
-            position: absolute; bottom: 80px; width: 100%;
-            background: var(--island); backdrop-filter: blur(25px);
-            border-radius: 30px; border: 1px solid var(--glass-border);
-            display: none; flex-direction: column; padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            animation: slideUp 0.3s ease;
+        /* СПИСКИ (КОНТАКТЫ / НАСТРОЙКИ) */
+        .list-item {
+            padding: 18px; background: var(--glass); border: 1px solid var(--border);
+            border-radius: 22px; margin-bottom: 10px; display: flex; align-items: center; gap: 15px;
         }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } }
-
-        .menu-item {
-            padding: 15px; display: flex; align-items: center; gap: 15px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .menu-item:last-child { border: none; }
-        .menu-item span { font-size: 14px; font-weight: 600; }
-        .icon { font-size: 20px; width: 30px; text-align: center; }
-
-        /* Статусы активности иконок */
-        .island div { cursor: pointer; transition: 0.3s; opacity: 0.6; }
-        .island div.active { opacity: 1; transform: scale(1.1); color: var(--accent); }
+        .status { width: 10px; height: 10px; border-radius: 50%; background: #444; }
+        .status.online { background: #0f8; box-shadow: 0 0 10px #0f8; }
 
     </style>
 </head>
 <body>
 
-    <div id="app">
-        <header class="header">
-            <h1># основной-чат</h1>
-            <div style="font-size: 12px; color: #0f8;">v3.0.1 Stable</div>
-        </header>
+    <div id="auth-layer">
+        <div class="auth-card">
+            <h2>Создать аккаунт</h2>
+            <p>Добро пожаловать в будущее Speeky</p>
+            
+            <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" id="auth-email" class="auth-input" placeholder="name@example.com">
+            </div>
+            <div class="input-group">
+                <label>Nickname</label>
+                <input type="text" id="auth-nick" class="auth-input" placeholder="@nickname">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="auth-pass" class="auth-input" placeholder="••••••••">
+            </div>
 
-        <div id="chat-view">
-            <div class="msg in">Система инициализирована.</div>
-        </div>
-
-        <div class="input-box">
-            <input type="text" id="m-field" placeholder="Сообщение..." autocomplete="off">
+            <button class="auth-btn" onclick="register()">Зарегистрироваться</button>
         </div>
     </div>
 
-    <div class="island-container">
-        
-        <div id="menu-contacts" class="island-menu">
-            <h3 style="margin-bottom: 15px;">👤 Контакты</h3>
-            <div class="menu-item"><div class="icon">🟢</div><span>ярослав (online)</span></div>
-            <div class="menu-item"><div class="icon">⚪</div><span>swimer (offline)</span></div>
-            <div class="menu-item"><div class="icon">⚪</div><span>mr.jetbys</span></div>
-        </div>
+    <div id="app">
+        <header class="header">
+            <h1 id="view-title"># Основной чат</h1>
+            <div style="font-size: 10px; opacity: 0.5;">ID: <span id="user-id">...</span></div>
+        </header>
 
-        <div id="menu-create" class="island-menu">
-            <h3 style="margin-bottom: 15px;">➕ Создать</h3>
-            <div class="menu-item" onclick="alert('Создание группы...')"><div class="icon">👥</div><span>Новая группа</span></div>
-            <div class="menu-item" onclick="alert('Создание канала...')"><div class="icon">📢</div><span>Новый канал</span></div>
-            <div class="menu-item" onclick="alert('Секретный чат...')"><div class="icon">🔒</div><span>Секретный чат</span></div>
-        </div>
-
-        <div id="menu-settings" class="island-menu">
-            <h3 style="margin-bottom: 15px;">⚙️ Настройки</h3>
-            <div class="menu-item">
-                <div class="icon">🌙</div>
-                <div style="flex:1">Темная тема</div>
-                <input type="checkbox" checked>
-            </div>
-            <div class="menu-item">
-                <div class="icon">🔔</div>
-                <div style="flex:1">Уведомления</div>
-                <input type="checkbox" checked>
-            </div>
-            <div class="menu-item" style="color: #ff4d4d;">
-                <div class="icon">🚪</div><span>Выйти из аккаунта</span>
+        <div id="view-chat" class="view-section active">
+            <div id="chat-content"></div>
+            <div class="input-area">
+                <input type="text" id="msg-input" class="m-field" placeholder="Напишите что-нибудь...">
+                <button onclick="send()" style="background:var(--accent); border:none; padding:10px 20px; border-radius:20px; color:#fff; font-weight:800;">ОТПРАВИТЬ</button>
             </div>
         </div>
 
-        <div class="island">
-            <div onclick="toggleMenu('contacts', this)" title="Контакты">👤</div>
-            <div onclick="toggleMenu('create', this)" title="Создать" style="font-size: 24px;">⊕</div>
-            <div class="active" onclick="hideAllMenus(this)" title="Чат">💬</div>
-            <div onclick="toggleMenu('settings', this)" title="Настройки">⚙️</div>
+        <div id="view-contacts" class="view-section">
+            <h2 style="margin-bottom:20px">Ваши связи</h2>
+            <div class="list-item">
+                <div class="status online"></div>
+                <div><b>Ярослав</b><br><small style="opacity:0.5">Разработчик ядра</small></div>
+            </div>
+            <div class="list-item">
+                <div class="status"></div>
+                <div><b>Support_Bot</b><br><small style="opacity:0.5">Вне сети</small></div>
+            </div>
+        </div>
+
+        <div id="view-create" class="view-section">
+            <h2 style="margin-bottom:20px">Создать пространство</h2>
+            <div class="list-item" onclick="alert('Функция в разработке')">
+                <div style="font-size:24px">👥</div>
+                <div><b>Новая группа</b><br><small style="opacity:0.5">До 5000 участников</small></div>
+            </div>
+            <div class="list-item" onclick="alert('Функция в разработке')">
+                <div style="font-size:24px">📢</div>
+                <div><b>Новый канал</b><br><small style="opacity:0.5">Неограниченно подписчиков</small></div>
+            </div>
+        </div>
+
+        <div id="view-settings" class="view-section">
+            <h2 style="margin-bottom:20px">Конфигурация</h2>
+            <div class="list-item">
+                <div style="flex:1"><b>Двухфакторная аутентификация</b></div>
+                <input type="checkbox">
+            </div>
+            <div class="list-item">
+                <div style="flex:1"><b>Сквозное шифрование (E2E)</b></div>
+                <input type="checkbox" checked disabled>
+            </div>
+            <div class="list-item">
+                <div style="flex:1"><b>Скрывать онлайн-статус</b></div>
+                <input type="checkbox">
+            </div>
+            <div class="list-item" style="border-color: #ff4444; color: #ff4444;" onclick="location.reload()">
+                <b>Выйти из системы</b>
+            </div>
+        </div>
+
+        <div class="island-wrap">
+            <div class="island">
+                <div class="nav-icon active" onclick="switchView('chat', this)">💬</div>
+                <div class="nav-icon" onclick="switchView('contacts', this)">👤</div>
+                <div class="nav-icon" onclick="switchView('create', this)">⊕</div>
+                <div class="nav-icon" onclick="switchView('settings', this)">⚙️</div>
+            </div>
         </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
+        let myNick = "";
 
-        function toggleMenu(menuId, el) {
-            const menu = document.getElementById('menu-' + menuId);
-            const isOpen = menu.style.display === 'flex';
+        // РЕГИСТРАЦИЯ
+        function register() {
+            const email = document.getElementById('auth-email').value;
+            const nick = document.getElementById('auth-nick').value;
+            const pass = document.getElementById('auth-pass').value;
+
+            if(!email.includes('@') || nick.length < 3) {
+                alert("Введите корректную почту и ник!");
+                return;
+            }
+
+            myNick = nick;
+            document.getElementById('auth-layer').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('auth-layer').style.display = 'none';
+                const app = document.getElementById('app');
+                app.style.display = 'flex';
+                setTimeout(() => app.style.opacity = '1', 50);
+                
+                document.getElementById('user-id').innerText = Math.random().toString(16).slice(2, 8).toUpperCase();
+                socket.emit('authenticate', { username: myNick });
+            }, 500);
+        }
+
+        // ПЕРЕКЛЮЧЕНИЕ ИНТЕРФЕЙСА (SPA ЛОГИКА)
+        function switchView(viewName, el) {
+            // Убираем активность со всех иконок и секций
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-icon').forEach(i => i.classList.remove('active'));
             
-            // Закрыть все
-            document.querySelectorAll('.island-menu').forEach(m => m.style.display = 'none');
-            document.querySelectorAll('.island div').forEach(d => d.classList.remove('active'));
+            // Активируем нужную
+            document.getElementById('view-' + viewName).classList.add('active');
+            el.classList.add('active');
 
-            if (!isOpen) {
-                menu.style.display = 'flex';
-                el.classList.add('active');
-            } else {
-                hideAllMenus();
+            // Меняем заголовок
+            const titles = { chat: '# Основной чат', contacts: 'Контакты', create: 'Создание', settings: 'Настройки' };
+            document.getElementById('view-title').innerText = titles[viewName];
+        }
+
+        // РАБОТА С СООБЩЕНИЯМИ (SOCKET.IO)
+        function send() {
+            const inp = document.getElementById('msg-input');
+            if(inp.value.trim()) {
+                socket.emit('message', { text: inp.value });
+                inp.value = '';
             }
         }
 
-        function hideAllMenus(el) {
-            document.querySelectorAll('.island-menu').forEach(m => m.style.display = 'none');
-            document.querySelectorAll('.island div').forEach(d => d.classList.remove('active'));
-            if(el) el.classList.add('active');
-        }
+        // Слушаем сообщения от ВСЕХ пользователей
+        socket.on('message', m => {
+            const chat = document.getElementById('chat-content');
+            const isMe = m.name === myNick;
+            const div = document.createElement('div');
+            div.className = `msg ${isMe ? 'out' : 'in'}`;
+            div.innerHTML = `
+                ${!isMe ? `<div class="msg-sender">${m.name}</div>` : ''}
+                ${m.text}
+            `;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        });
 
-        // Логика чата
-        document.getElementById('m-field').onkeypress = (e) => {
-            if(e.key === 'Enter' && e.target.value) {
-                const text = e.target.value;
-                const div = document.createElement('div');
-                div.className = 'msg out';
-                div.innerText = text;
-                document.getElementById('chat-view').appendChild(div);
-                e.target.value = '';
-                document.getElementById('chat-view').scrollTop = document.getElementById('chat-view').scrollHeight;
-            }
-        }
+        // Отправка по Enter
+        document.getElementById('msg-input').onkeypress = (e) => { if(e.key === 'Enter') send(); };
     </script>
 </body>
 </html>
