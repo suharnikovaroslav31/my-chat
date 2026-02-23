@@ -2,169 +2,213 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>ULTRA CORE | OFFICIAL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ULTRA CORE | V7 INFINITY</title>
     <style>
         :root {
             --accent: #00d2ff;
-            --bg: #0e1621;
-            --side: #17212b;
-            --panel: #242f3d;
-            --msg-in: #182533;
-            --msg-out: #2b5278;
-            --anim-speed: 0.3s; /* Управляется настройками */
+            --bg: #05080c;
+            --side: #0a0f16;
+            --panel: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.08);
+            --anim-speed: 0.4s;
         }
 
-        /* Настройки через классы */
+        /* СОСТОЯНИЯ НАСТРОЕК */
         body.no-anim * { transition: none !important; animation: none !important; }
-        body.glass-theme { --bg: #050505; --side: rgba(23, 33, 43, 0.8); }
-        body.glass-theme .sidebar { backdrop-filter: blur(20px); }
+        body.glass-mode .sidebar, body.glass-mode .rail, body.glass-mode .viewport-header { 
+            backdrop-filter: blur(20px); background: rgba(10, 15, 22, 0.7); 
+        }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', sans-serif; }
         body { background: var(--bg); color: #fff; height: 100vh; display: flex; overflow: hidden; }
 
-        /* ЭКРАН РЕГИСТРАЦИИ */
-        #auth-screen { position: fixed; inset: 0; background: #0e1621; z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .auth-card { width: 350px; text-align: center; }
-        .tg-input { width: 100%; padding: 12px; background: none; border: none; border-bottom: 2px solid var(--accent); color: #fff; margin-bottom: 20px; outline: none; font-size: 18px; }
-        .tg-btn { width: 100%; padding: 15px; background: var(--accent); border: none; border-radius: 10px; color: #000; font-weight: 700; cursor: pointer; }
+        /* ЭКРАН РЕГИСТРАЦИИ (ТГ-STYLE) */
+        #auth-screen { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: flex; align-items: center; justify-content: center; transition: 0.5s; }
+        .auth-card { width: 380px; text-align: center; animation: slideUp 0.6s ease; }
+        .auth-logo { font-size: 50px; margin-bottom: 20px; text-shadow: 0 0 20px var(--accent); }
+        .tg-input { width: 100%; padding: 15px; background: var(--side); border: 1px solid var(--border); border-radius: 12px; color: #fff; margin-bottom: 15px; outline: none; font-size: 16px; }
+        .tg-input:focus { border-color: var(--accent); }
+        .btn-start { width: 100%; padding: 15px; background: var(--accent); border: none; border-radius: 12px; color: #000; font-weight: 800; cursor: pointer; text-transform: uppercase; }
 
-        /* ОСНОВНОЙ ИНТЕРФЕЙС */
-        .sidebar { width: 320px; background: var(--side); border-right: 1px solid rgba(0,0,0,0.3); display: flex; flex-direction: column; }
-        .chat-area { flex: 1; display: flex; flex-direction: column; position: relative; }
+        /* ОСНОВНАЯ СЕТКА (КАК НА СКРИНАХ) */
+        .rail { width: 80px; background: var(--side); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 25px 0; gap: 20px; z-index: 100; }
+        .r-icon { width: 50px; height: 50px; border-radius: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; transition: 0.3s; }
+        .r-icon:hover { background: var(--panel); }
+        .r-icon.active { background: var(--accent); color: #000; box-shadow: 0 0 20px rgba(0, 210, 255, 0.3); }
+
+        .sidebar { width: 280px; background: var(--side); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+        .sidebar-title { padding: 25px; font-size: 11px; letter-spacing: 2px; color: var(--accent); font-weight: 800; }
+        .sector-item { padding: 12px 25px; display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 14px; opacity: 0.6; }
+        .sector-item.active { opacity: 1; background: var(--panel); border-left: 3px solid var(--accent); }
+
+        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; background: radial-gradient(circle at center, #0a121d 0%, #05080c 100%); }
+        .viewport-header { height: 70px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 30px; justify-content: space-between; }
+
+        #messages { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 12px; }
+        .msg { max-width: 70%; padding: 12px 18px; border-radius: 18px; font-size: 14px; line-height: 1.5; position: relative; animation: msgFade 0.3s ease; }
+        @keyframes msgFade { from { opacity: 0; transform: translateY(10px); } }
+        .msg.in { align-self: flex-start; background: #1a2432; border-bottom-left-radius: 4px; }
+        .msg.out { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; font-weight: 500; }
+
+        .input-area { padding: 20px 40px; }
+        .input-wrap { background: var(--side); border: 1px solid var(--border); border-radius: 15px; padding: 10px 20px; display: flex; align-items: center; gap: 15px; }
+        #m-field { flex: 1; background: none; border: none; color: #fff; outline: none; font-size: 15px; }
+
+        /* ПАНЕЛЬ УЧАСТНИКОВ (СПРАВА) */
+        .users-panel { width: 240px; background: var(--side); border-left: 1px solid var(--border); padding: 20px; }
+        .u-item { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; font-size: 14px; }
+        .u-status { width: 8px; height: 8px; background: #00ff88; border-radius: 50%; box-shadow: 0 0 10px #00ff88; }
+
+        /* НАСТРОЙКИ (ВЫЕЗЖАЮТ) */
+        #settings-menu { position: fixed; right: -350px; top: 0; bottom: 0; width: 320px; background: #0d121a; z-index: 5000; padding: 40px 25px; transition: 0.5s cubic-bezier(0.8, 0, 0.2, 1); border-left: 1px solid var(--border); }
+        #settings-menu.open { right: 0; box-shadow: -20px 0 60px rgba(0,0,0,0.8); }
+        .set-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--border); }
         
-        .header { height: 60px; background: var(--side); display: flex; align-items: center; padding: 0 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 10; }
-        #messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; background: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded17.png'); }
-
-        .bubble { max-width: 75%; padding: 10px 15px; border-radius: 15px; font-size: 14px; line-height: 1.4; position: relative; animation: pop var(--anim-speed) ease; }
-        @keyframes pop { from { opacity: 0; transform: scale(0.9); } }
-        .bubble.in { align-self: flex-start; background: var(--msg-in); border-bottom-left-radius: 2px; }
-        .bubble.out { align-self: flex-end; background: var(--msg-out); border-bottom-right-radius: 2px; }
-        .bubble .time { font-size: 10px; opacity: 0.5; float: right; margin: 5px 0 0 10px; }
-
-        .input-box { padding: 15px 25px; background: var(--side); display: flex; gap: 15px; }
-        #m-input { flex: 1; background: none; border: none; color: #fff; outline: none; font-size: 16px; }
-
-        /* ПАНЕЛЬ НАСТРОЕК */
-        #settings { position: fixed; left: -320px; top: 0; bottom: 0; width: 310px; background: var(--side); z-index: 1000; transition: var(--anim-speed); padding: 30px 20px; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
-        #settings.open { left: 0; }
-        .set-item { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
-        
-        .toggle { width: 40px; height: 20px; background: #333; border-radius: 10px; position: relative; }
-        .toggle.on { background: var(--accent); }
-        .toggle::after { content: ''; position: absolute; width: 16px; height: 16px; background: #fff; border-radius: 50%; top: 2px; left: 2px; transition: 0.2s; }
-        .toggle.on::after { left: 22px; }
+        /* КНОПКА-ПЕРЕКЛЮЧАТЕЛЬ */
+        .sw { width: 42px; height: 22px; background: #333; border-radius: 20px; position: relative; cursor: pointer; transition: 0.3s; }
+        .sw.on { background: var(--accent); }
+        .sw::after { content: ''; position: absolute; width: 18px; height: 18px; background: #fff; border-radius: 50%; top: 2px; left: 2px; transition: 0.3s; }
+        .sw.on::after { left: 22px; }
     </style>
 </head>
-<body>
+<body class="glass-mode">
 
     <div id="auth-screen">
         <div class="auth-card">
-            <h1 style="margin-bottom: 40px;">ВХОД В СИСТЕМУ</h1>
-            <input type="text" id="username" class="tg-input" placeholder="Ваше имя...">
-            <button class="tg-btn" onclick="auth()">ВОЙТИ</button>
+            <div class="auth-logo">💎</div>
+            <h2 style="margin-bottom: 10px;">ULTRA CORE</h2>
+            <p style="color: #666; font-size: 14px; margin-bottom: 30px;">Введите данные для доступа к ядру</p>
+            <input type="text" id="reg-name" class="tg-input" placeholder="Имя пользователя">
+            <input type="password" id="reg-pass" class="tg-input" placeholder="Ключ доступа">
+            <button class="btn-start" onclick="doAuth()">Инициализация</button>
         </div>
     </div>
 
-    <div id="settings">
-        <div style="text-align: center; margin-bottom: 30px;">
-            <div id="my-ava" style="width: 80px; height: 80px; background: var(--accent); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; font-weight: 900;">U</div>
-            <h2 id="my-name">User</h2>
-            <p id="my-id-label" style="font-size: 12px; opacity: 0.5;">ID: ---</p>
+    <div id="settings-menu">
+        <h2 style="margin-bottom: 30px;">Центр управления</h2>
+        <div style="text-align: center; margin-bottom: 40px;">
+            <div id="u-ava" style="width: 70px; height: 70px; background: var(--accent); border-radius: 20px; margin: 0 auto 15px; color:#000; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:900;">?</div>
+            <h3 id="u-name">User</h3>
+            <p style="font-size: 12px; color: var(--accent); margin-top: 5px;">ID: <span id="u-id">000</span></p>
         </div>
 
-        <div class="set-item" onclick="toggleOption('glass')">
-            <span>Glass Mode</span>
-            <div class="toggle" id="sw-glass"></div>
+        <div class="set-row">
+            <span>Эффект размытия (Glass)</span>
+            <div class="sw on" id="sw-glass" onclick="toggleOption('glass')"></div>
         </div>
-        <div class="set-item" onclick="toggleOption('anim')">
-            <span>Анимации</span>
-            <div class="toggle on" id="sw-anim"></div>
+        <div class="set-row">
+            <span>Анимации интерфейса</span>
+            <div class="sw on" id="sw-anim" onclick="toggleOption('anim')"></div>
         </div>
-        <div class="set-item" style="color: #ff4444;" onclick="location.reload()">
-            <span>Выйти</span>
-        </div>
-        <button class="tg-btn" style="margin-top: 50px;" onclick="closeSets()">ЗАКРЫТЬ</button>
+        
+        <button class="btn-start" style="margin-top: 50px; background: #ff4444; color: #fff;" onclick="toggleMenu()">ЗАКРЫТЬ</button>
     </div>
+
+    <nav class="rail">
+        <div class="r-icon active">💬</div>
+        <div class="r-icon" onclick="toggleMenu()">⚙️</div>
+        <div class="r-icon" style="margin-top: auto;" onclick="location.reload()">🚪</div>
+    </nav>
 
     <aside class="sidebar">
-        <div style="padding: 20px; font-weight: 700; display: flex; justify-content: space-between;">
-            <span onclick="openSets()" style="cursor: pointer;">☰ МЕНЮ</span>
-        </div>
-        <div style="background: var(--panel); margin: 10px; padding: 15px; border-radius: 10px; cursor: pointer;">
-            <b># основной-чат</b>
-            <div style="font-size: 12px; color: var(--accent);">В сети: <span id="online-count">1</span></div>
-        </div>
+        <div class="sidebar-title">СЕКТОРЫ</div>
+        <div class="sector-item active"># main_stream</div>
+        <div class="sector-item"># dev_logs</div>
+        <div class="sector-item"># dark_matter</div>
     </aside>
 
-    <main class="chat-area">
-        <header class="header">
-            <h3 id="chat-title"># основной-чат</h3>
+    <main class="main-content">
+        <header class="viewport-header">
+            <div>
+                <h3 id="chat-title"># main_stream</h3>
+                <span style="font-size: 12px; color: #00ff88;">● соединение активно</span>
+            </div>
+            <div style="font-size: 12px; opacity: 0.5;">v7.0 Stable</div>
         </header>
+
         <div id="messages"></div>
-        <form class="input-box" id="chat-form">
-            <input type="text" id="m-input" placeholder="Написать сообщение..." autocomplete="off">
-            <button type="submit" style="background:none; border:none; color:var(--accent); font-weight:700; cursor:pointer;">ОТПРАВИТЬ</button>
-        </form>
+
+        <div class="input-area">
+            <form id="chat-form" class="input-wrap">
+                <input type="text" id="m-field" placeholder="Передать сигнал в туманность..." autocomplete="off">
+                <button type="submit" style="background:none; border:none; color:var(--accent); font-weight:900; cursor:pointer;">SEND</button>
+            </form>
+        </div>
     </main>
+
+    <aside class="users-panel">
+        <div style="font-size: 11px; letter-spacing: 1px; margin-bottom: 20px; opacity: 0.5;">УЧАСТНИКИ — <span id="online-count">0</span></div>
+        <div id="users-list">
+            </div>
+    </aside>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let me = null;
+        let myData = null;
 
-        function auth() {
-            const u = document.getElementById('username').value;
-            if(!u) return;
-            socket.emit('authenticate', { username: u });
+        // РЕГИСТРАЦИЯ
+        function doAuth() {
+            const name = document.getElementById('reg-name').value;
+            if(!name) return;
+            socket.emit('authenticate', { username: name });
         }
 
         socket.on('auth_success', data => {
-            me = data;
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('my-name').innerText = me.username;
-            document.getElementById('my-ava').innerText = me.username[0].toUpperCase();
-            document.getElementById('my-id-label').innerText = "ID: " + me.id;
+            myData = data;
+            document.getElementById('auth-screen').style.opacity = '0';
+            setTimeout(() => document.getElementById('auth-screen').style.display = 'none', 500);
+            
+            document.getElementById('u-name').innerText = data.username;
+            document.getElementById('u-ava').innerText = data.username[0].toUpperCase();
+            document.getElementById('u-id').innerText = data.id;
         });
 
+        // СЧЕТЧИК И СПИСОК ЮЗЕРОВ
         socket.on('update_online', count => {
             document.getElementById('online-count').innerText = count;
+            // Имитируем список участников для красоты (или берем с сервера)
+            const list = document.getElementById('users-list');
+            list.innerHTML = `<div class="u-item"><div class="u-status"></div> ${myData ? myData.username : 'Я'}</div>`;
         });
 
+        // ЧАТ
         const form = document.getElementById('chat-form');
         form.onsubmit = (e) => {
             e.preventDefault();
-            const input = document.getElementById('m-input');
-            if(input.value) {
+            const input = document.getElementById('m-field');
+            if(input.value.trim()) {
                 socket.emit('message', { text: input.value });
                 input.value = '';
             }
         };
 
         socket.on('message', m => {
-            const wrap = document.getElementById('messages');
-            const isMe = m.name === me.username;
+            const container = document.getElementById('messages');
+            const isMe = myData && m.name === myData.username;
             const div = document.createElement('div');
-            div.className = `bubble ${isMe ? 'out' : 'in'}`;
+            div.className = `msg ${isMe ? 'out' : 'in'}`;
             div.innerHTML = `
-                ${!isMe ? `<b style="color:var(--accent); font-size:12px;">${m.name}</b><br>` : ''}
+                ${!isMe ? `<div style="font-size:10px; opacity:0.6; margin-bottom:4px;">${m.name}</div>` : ''}
                 ${m.text}
-                <span class="time">${m.time}</span>
             `;
-            wrap.appendChild(div);
-            wrap.scrollTop = wrap.scrollHeight;
+            container.appendChild(div);
+            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
         });
 
-        // ЛОГИКА НАСТРОЕК
-        function openSets() { document.getElementById('settings').classList.add('open'); }
-        function closeSets() { document.getElementById('settings').classList.remove('open'); }
+        // НАСТРОЙКИ
+        function toggleMenu() {
+            document.getElementById('settings-menu').classList.toggle('open');
+        }
 
-        const state = { glass: false, anim: true };
-        function toggleOption(opt) {
-            state[opt] = !state[opt];
-            document.getElementById('sw-' + opt).classList.toggle('on');
+        const settings = { glass: true, anim: true };
+        function toggleOption(type) {
+            settings[type] = !settings[type];
+            document.getElementById('sw-' + type).classList.toggle('on');
             
-            if(opt === 'glass') document.body.classList.toggle('glass-theme');
-            if(opt === 'anim') document.body.classList.toggle('no-anim');
+            if(type === 'glass') document.body.classList.toggle('glass-mode');
+            if(type === 'anim') document.body.classList.toggle('no-anim');
         }
     </script>
 </body>
