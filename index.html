@@ -3,54 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Speeky OS | Final Sync</title>
+    <title>Speeky OS | Fixed Logic</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --accent: #00f2ff; --bg: #030406; --glass: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1); }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
+        /* ВЕРХНЯЯ ПАНЕЛЬ ДЛЯ СБРОСА */
+        .top-bar { padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .reset-btn { font-size: 10px; color: #ff4d4d; cursor: pointer; border: 1px solid #ff4d4d; padding: 4px 8px; border-radius: 5px; }
+
         /* ЧАТ */
-        #sc-chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 160px; }
-        .msg { max-width: 75%; padding: 12px 16px; border-radius: 22px; font-size: 15px; display: flex; flex-direction: column; position: relative; animation: fadeIn 0.2s ease; }
-        .msg b { font-size: 10px; opacity: 0.5; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        #sc-chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 120px; }
+        .msg { max-width: 75%; padding: 12px 16px; border-radius: 20px; font-size: 15px; display: flex; flex-direction: column; transition: 0.3s; }
+        .msg b { font-size: 10px; opacity: 0.5; margin-bottom: 4px; text-transform: uppercase; }
 
-        /* ТВОИ (Справа) */
-        .msg.sent { 
-            align-self: flex-end; 
-            background: var(--accent); 
-            color: #000; 
-            border-bottom-right-radius: 4px; 
-        }
+        /* МОИ СООБЩЕНИЯ (СПРАВА) */
+        .msg.sent { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; text-align: right; }
+        .msg.sent b { color: #000; opacity: 0.7; }
 
-        /* ЧУЖИЕ (Слева) */
-        .msg.received { 
-            align-self: flex-start; 
-            background: var(--glass); 
-            border: 1px solid var(--border); 
-            color: #fff; 
-            border-bottom-left-radius: 4px; 
-        }
+        /* ЧУЖИЕ СООБЩЕНИЯ (СЛЕВА) */
+        .msg.received { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); color: #fff; border-bottom-left-radius: 4px; }
 
         /* ВВОД */
-        .bottom-ui { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 500px; z-index: 10; }
-        .input-box { background: rgba(15,17,23,0.96); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 35px; padding: 10px 12px 10px 22px; display: flex; align-items: center; }
-        .input-box input { background: none; border: none; flex: 1; color: #fff; outline: none; font-size: 16px; padding: 5px 0; }
-        .send-btn { background: var(--accent); border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; font-weight: 800; font-size: 18px; transition: transform 0.1s; }
-        .send-btn:active { transform: scale(0.9); }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .bottom-area { position: fixed; bottom: 20px; width: 100%; display: flex; justify-content: center; }
+        .input-wrap { width: 92%; max-width: 500px; background: rgba(15,17,23,0.9); border: 1px solid var(--border); border-radius: 30px; padding: 8px 10px 8px 20px; display: flex; align-items: center; }
+        .input-wrap input { background: none; border: none; flex: 1; color: #fff; outline: none; padding: 10px; }
+        .send-btn { background: var(--accent); border: none; width: 40px; height: 40px; border-radius: 50%; font-weight: 800; cursor: pointer; }
     </style>
 </head>
 <body>
 
+    <div class="top-bar">
+        <span id="my-identity" style="font-size: 12px; color: var(--accent);"></span>
+        <div class="reset-btn" onclick="hardReset()">СБРОСИТЬ ВСЁ</div>
+    </div>
+
     <section id="sc-chat">
-        <h1 style="font-size: 26px; font-weight: 800; margin-bottom: 15px; color: var(--accent);">Видимое облако</h1>
         <div id="chat-flow" style="display: flex; flex-direction: column; gap: 12px;"></div>
     </section>
 
-    <div class="bottom-ui">
-        <div class="input-box">
+    <div class="bottom-area">
+        <div class="input-wrap">
             <input type="text" id="m-text" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') send()">
             <button class="send-btn" onclick="send()">></button>
         </div>
@@ -59,23 +54,33 @@
     <script>
         const API = 'https://my-chat-itp3.onrender.com';
         
-        // Получаем данные пользователя и чистим их от возможных пробелов
-        let user = JSON.parse(localStorage.getItem('spk_user')) || { nick: 'Guest', email: 'guest@speeky.com' };
-        const myEmail = String(user.email).trim().toLowerCase();
-        const myNick = String(user.nick).trim().toLowerCase();
+        // 1. ПОЛУЧАЕМ ТЕКУЩЕГО ЮЗЕРА
+        let user = JSON.parse(localStorage.getItem('spk_user'));
+        
+        // Если юзера нет - просим ввести данные (простейшая рега прямо тут)
+        if(!user) {
+            const nick = prompt("Твой ник:");
+            const email = prompt("Твой email:");
+            user = { nick: nick || 'Guest', email: email || 'anon@test.com' };
+            localStorage.setItem('spk_user', JSON.stringify(user));
+        }
+
+        document.getElementById('my-identity').innerText = `Я: ${user.nick} (${user.email})`;
+
+        function hardReset() {
+            localStorage.clear();
+            location.reload();
+        }
 
         async function send() {
             const inp = document.getElementById('m-text');
-            const val = inp.value.trim();
-            if(!val) return;
+            if(!inp.value.trim()) return;
 
             const data = { 
-                nick: user.nick, 
-                email: user.email, 
-                text: val,
-                ts: Date.now()
+                nick: user.nick.trim(), 
+                email: user.email.trim().toLowerCase(), 
+                text: inp.value 
             };
-            
             inp.value = '';
 
             try {
@@ -85,7 +90,7 @@
                     body: JSON.stringify(data)
                 });
                 load();
-            } catch(e) { console.error("Ошибка сети"); }
+            } catch(e) { }
         }
 
         async function load() {
@@ -93,14 +98,12 @@
                 const res = await fetch(`${API}/messages`);
                 const msgs = await res.json();
                 const flow = document.getElementById('chat-flow');
+                const myEmail = user.email.trim().toLowerCase();
                 
                 let html = '';
                 msgs.forEach(m => {
-                    // УСИЛЕННАЯ ПРОВЕРКА: сравниваем и почту, и ник
-                    const msgEmail = String(m.email).trim().toLowerCase();
-                    const msgNick = String(m.nick).trim().toLowerCase();
-                    
-                    const isMe = (msgEmail === myEmail) || (msgNick === myNick);
+                    // КРИТИЧЕСКАЯ ПРОВЕРКА
+                    const isMe = String(m.email).trim().toLowerCase() === myEmail;
                     
                     html += `
                         <div class="msg ${isMe ? 'sent' : 'received'}">
@@ -109,15 +112,12 @@
                         </div>`;
                 });
                 flow.innerHTML = html;
-
-                // Скролл вниз
                 const sc = document.getElementById('sc-chat');
                 sc.scrollTop = sc.scrollHeight;
             } catch(e) { }
         }
 
-        // Авто-обновление каждые 2 секунды
-        setInterval(load, 2000);
+        setInterval(load, 2500);
         load();
     </script>
 </body>
