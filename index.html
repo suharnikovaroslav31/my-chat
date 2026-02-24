@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Speeky OS | Ultra Flow</title>
+    <title>Speeky OS | Pro Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -11,6 +11,7 @@
             --bg: #030406;
             --glass: rgba(255, 255, 255, 0.04);
             --border: rgba(255, 255, 255, 0.08);
+            --blur: blur(25px);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -18,49 +19,52 @@
 
         /* ЖИВОЙ ФОН */
         .bg-wrap { position: fixed; inset: 0; z-index: -2; background: #000; overflow: hidden; }
-        .orb { position: absolute; width: 60vw; height: 60vw; background: var(--accent); filter: blur(120px); opacity: 0.12; border-radius: 50%; animation: float 25s infinite alternate; }
-        @keyframes float { from { transform: translate(-20%, -20%); } to { transform: translate(40%, 30%); } }
+        .orb { position: absolute; width: 70vw; height: 70vw; background: var(--accent); filter: blur(140px); opacity: 0.1; border-radius: 50%; animation: float 20s infinite alternate; }
+        @keyframes float { from { transform: translate(-10%, -10%); } to { transform: translate(30%, 20%); } }
 
-        /* СЛОИ АВТОРИЗАЦИИ */
-        .overlay { position: fixed; inset: 0; z-index: 2000; background: var(--bg); display: flex; align-items: center; justify-content: center; transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
-        .card { width: 90%; max-width: 400px; padding: 40px; background: rgba(13, 15, 20, 0.95); border: 1px solid var(--border); border-radius: 35px; backdrop-filter: blur(40px); text-align: center; display: none; }
+        /* OVERLAYS (AUTH, WELCOME, PERKS) */
+        .overlay { position: fixed; inset: 0; z-index: 2000; background: var(--bg); display: flex; align-items: center; justify-content: center; transition: 0.8s; }
+        .card { width: 90%; max-width: 400px; padding: 40px; background: rgba(13, 15, 20, 0.95); border: 1px solid var(--border); border-radius: 35px; backdrop-filter: var(--blur); text-align: center; display: none; }
         .card.active { display: block; animation: zoomIn 0.5s ease; }
         
-        input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 18px; border-radius: 20px; color: #fff; margin-bottom: 12px; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--accent); }
-        .btn { width: 100%; padding: 18px; border-radius: 20px; border: none; background: var(--accent); color: #000; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        input, select { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 16px; border-radius: 18px; color: #fff; margin-bottom: 12px; outline: none; }
+        .btn { width: 100%; padding: 18px; border-radius: 18px; border: none; background: var(--accent); color: #000; font-weight: 800; cursor: pointer; transition: 0.3s; }
         .btn:active { transform: scale(0.95); }
 
-        /* ЭКРАН ПРИВЕТСТВИЯ */
-        #welcome-layer { background: radial-gradient(circle at center, #111, #000); text-align: center; flex-direction: column; }
-        .cloud-icon { font-size: 60px; margin-bottom: 20px; display: block; animation: bounce 2s infinite; }
+        /* PERKS LIST */
+        .perks-list { text-align: left; margin: 25px 0; gap: 15px; display: flex; flex-direction: column; }
+        .perk { display: flex; align-items: center; gap: 15px; font-size: 14px; opacity: 0.8; }
+        .perk-icon { font-size: 20px; background: var(--glass); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
 
-        /* ОСНОВНОЕ ПРИЛОЖЕНИЕ */
-        #app { display: flex; flex-direction: column; height: 100vh; opacity: 0; transition: 1.5s; }
+        /* APP STRUCTURE */
+        #app { display: flex; flex-direction: column; height: 100vh; opacity: 0; transition: 1s; }
         .screen { flex: 1; padding: 25px; overflow-y: auto; display: none; padding-bottom: 180px; }
         .screen.active { display: flex; flex-direction: column; }
 
-        /* ЧАТ БЕЗ МЕРЦАНИЯ */
+        /* CHAT */
         #chat-flow { display: flex; flex-direction: column; gap: 15px; }
-        .msg { max-width: 78%; padding: 14px 18px; border-radius: 22px; font-size: 15px; position: relative; animation: msgSlide 0.4s ease-out; }
-        .msg b { display: block; font-size: 10px; opacity: 0.4; margin-bottom: 4px; text-transform: uppercase; }
-        .msg.sent { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; box-shadow: 0 10px 25px rgba(0, 242, 255, 0.15); }
+        .msg { max-width: 80%; padding: 14px 18px; border-radius: 22px; font-size: 15px; animation: msgSlide 0.3s ease; }
+        .msg b { display: block; font-size: 10px; opacity: 0.5; margin-bottom: 4px; text-transform: uppercase; }
+        .msg.sent { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; }
         .msg.received { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
 
-        /* УПРАВЛЕНИЕ */
+        /* PROFILE & SETTINGS */
+        .p-box { background: var(--glass); border: 1px solid var(--border); border-radius: 30px; padding: 25px; margin-bottom: 15px; }
+        .ava-img { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; background: var(--accent); margin: 0 auto 15px; border: 3px solid var(--accent); display: block; }
+        .setting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 14px; opacity: 0.8; }
+
+        /* NAV DOCK */
         .ui-nav { position: fixed; bottom: 30px; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 15px; z-index: 100; }
-        .input-bar { width: 92%; max-width: 500px; background: rgba(18, 20, 27, 0.9); border: 1px solid var(--border); backdrop-filter: blur(30px); border-radius: 35px; padding: 8px 10px 8px 22px; display: none; align-items: center; }
+        .input-bar { width: 92%; background: rgba(18,20,27,0.9); border: 1px solid var(--border); backdrop-filter: var(--blur); border-radius: 35px; padding: 8px 10px 8px 22px; display: none; align-items: center; }
         .input-bar.active { display: flex; }
         .input-bar input { background: none; border: none; flex: 1; color: #fff; outline: none; }
         
-        .dock { width: 92%; max-width: 450px; background: rgba(10, 12, 18, 0.95); border: 1px solid var(--border); border-radius: 40px; padding: 12px; display: flex; justify-content: space-around; backdrop-filter: blur(20px); }
-        .dock-item { font-size: 24px; opacity: 0.3; transition: 0.4s; cursor: pointer; }
-        .dock-item.active { opacity: 1; color: var(--accent); transform: scale(1.2); }
+        .dock { width: 92%; max-width: 400px; background: rgba(10,12,18,0.95); border: 1px solid var(--border); border-radius: 40px; padding: 10px; display: flex; justify-content: space-around; }
+        .dock-item { font-size: 24px; opacity: 0.3; transition: 0.3s; cursor: pointer; }
+        .dock-item.active { opacity: 1; color: var(--accent); transform: scale(1.1); }
 
-        /* АНИМАЦИИ */
         @keyframes zoomIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-        @keyframes msgSlide { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes msgSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -68,49 +72,58 @@
     <div class="bg-wrap"><div class="orb"></div></div>
 
     <div id="auth-layer" class="overlay">
-        <div id="card-login" class="card active">
-            <h1 style="margin-bottom:10px">Speeky OS</h1>
-            <p style="opacity:0.5; margin-bottom:30px">С возвращением в систему</p>
-            <input type="email" id="l-email" placeholder="Email">
-            <input type="password" id="l-pass" placeholder="Пароль">
-            <button class="btn" onclick="handleAuth('login')">ВОЙТИ</button>
-            <p style="margin-top:20px; font-size:13px; opacity:0.4" onclick="switchForm('card-reg')">Нет аккаунта? <b>Создать</b></p>
-        </div>
-        <div id="card-reg" class="card">
-            <h1>Регистрация</h1>
-            <p style="opacity:0.5; margin-bottom:30px">Начни свой путь здесь</p>
-            <input type="text" id="r-nick" placeholder="Никнейм">
+        <div id="card-reg" class="card active">
+            <h1>Speeky ID</h1>
+            <p style="opacity:0.5; margin-bottom:25px">Создание нового узла</p>
+            <input type="text" id="r-nick" placeholder="Ваше имя">
             <input type="email" id="r-email" placeholder="Email">
             <input type="password" id="r-pass" placeholder="Пароль">
-            <input type="text" id="r-word" placeholder="Секретное слово">
-            <button class="btn" onclick="handleAuth('reg')">ЗАРЕГИСТРИРОВАТЬСЯ</button>
-            <p style="margin-top:20px; font-size:13px; opacity:0.4" onclick="switchForm('card-login')">Уже есть ID? <b>Войти</b></p>
+            <button class="btn" onclick="handleReg()">ПРОДОЛЖИТЬ</button>
         </div>
     </div>
 
     <div id="welcome-layer" class="overlay" style="display:none; opacity:0;">
-        <span class="cloud-icon">☁️</span>
-        <h1 id="welcome-name" style="font-size:32px; font-weight:800">Привет!</h1>
-        <p style="opacity:0.5; margin-top:10px">Speeky Cloud синхронизирует данные...</p>
+        <div class="card active">
+            <span style="font-size:50px">👋</span>
+            <h1 id="w-name" style="margin-top:15px">Привет!</h1>
+            <p style="opacity:0.5">Добро пожаловать в Speeky OS</p>
+            <button class="btn" style="margin-top:25px" onclick="showPerks()">ДАЛЕЕ</button>
+        </div>
+    </div>
+
+    <div id="perks-layer" class="overlay" style="display:none; opacity:0;">
+        <div class="card active">
+            <h1>Преимущества</h1>
+            <div class="perks-list">
+                <div class="perk"><div class="perk-icon">⚡</div> <span><b>Cloud Sync:</b> Мгновенная доставка сообщений</span></div>
+                <div class="perk"><div class="perk-icon">🛡️</div> <span><b>Security:</b> Полное шифрование сессий</span></div>
+                <div class="perk"><div class="perk-icon">🌑</div> <span><b>Ghost Mode:</b> Мы не храним логи ваших переписок</span></div>
+            </div>
+            <button class="btn" onclick="finishIntro()">ПОЕХАЛИ</button>
+        </div>
     </div>
 
     <div id="app">
         <section id="sc-chat" class="screen active">
-            <header style="margin-bottom:30px">
-                <h1 style="font-size:32px; font-weight:800">Speeky OS</h1>
-                <p style="color:var(--accent); font-size:12px; font-weight:600">CLOUD ACTIVE</p>
-            </header>
+            <header><h1>Облако</h1><div style="width:30px; height:3px; background:var(--accent); margin:10px 0 25px"></header>
             <div id="chat-flow"></div>
         </section>
 
         <section id="sc-profile" class="screen">
             <h1>Профиль</h1>
-            <div style="background:var(--glass); border:1px solid var(--border); padding:30px; border-radius:30px; margin-top:20px; text-align:center;">
-                <div id="u-avatar" style="width:70px; height:70px; background:var(--accent); color:#000; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px; font-weight:800; font-size:24px;">?</div>
-                <h2 id="u-nick">User</h2>
-                <p id="u-email" style="opacity:0.4; font-size:14px; margin-bottom:20px">---</p>
-                <div style="font-size:12px; opacity:0.3">ID создан: <span id="u-date">--.--.----</span></div>
-                <button onclick="logout()" style="margin-top:25px; color:#ff4d4d; background:none; border:none; font-weight:800; cursor:pointer">ВЫЙТИ</button>
+            <div class="p-box" style="margin-top:20px; text-align:center">
+                <img id="p-ava" src="" class="ava-img">
+                <input type="text" id="edit-nick" placeholder="Ник" style="text-align:center">
+                <input type="text" id="edit-ava" placeholder="URL аватарки (ссылка)">
+                <button class="btn" style="padding:12px; font-size:14px" onclick="saveProfile()">СОХРАНИТЬ ИЗМЕНЕНИЯ</button>
+            </div>
+            <div class="p-box">
+                <h3 style="margin-bottom:15px">Настройки Speeky</h3>
+                <div class="setting-row"><span>Прозрачность (Blur)</span> <input type="checkbox" checked style="width:20px"></div>
+                <div class="setting-row"><span>Темный режим</span> <input type="checkbox" checked style="width:20px"></div>
+                <div class="setting-row"><span>Уведомления</span> <input type="checkbox" style="width:20px"></div>
+                <div style="font-size:11px; opacity:0.3; margin-top:15px">Дата регистрации: <span id="p-date"></span></div>
+                <button onclick="logout()" style="color:#ff4d4d; background:none; border:none; margin-top:20px; font-weight:800; cursor:pointer">ВЫЙТИ ИЗ СИСТЕМЫ</button>
             </div>
         </section>
 
@@ -129,61 +142,64 @@
     <script>
         const API = 'https://my-chat-itp3.onrender.com';
         let user = JSON.parse(localStorage.getItem('spk_user'));
-        let lastMsgCount = 0;
+        let lastCount = 0;
 
-        function switchForm(id) {
-            document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-        }
-
-        function handleAuth(type) {
-            if(type === 'reg') {
-                const data = {
-                    nick: document.getElementById('r-nick').value,
-                    email: document.getElementById('r-email').value,
-                    pass: document.getElementById('r-pass').value,
-                    word: document.getElementById('r-word').value,
-                    regDate: new Date().toLocaleDateString()
-                };
-                if(!data.nick || !data.email) return;
-                localStorage.setItem('spk_user', JSON.stringify(data));
-                startApp(true);
-            } else {
-                const email = document.getElementById('l-email').value;
-                const stored = JSON.parse(localStorage.getItem('spk_user'));
-                if(stored && stored.email === email) startApp(false);
-                else alert("Аккаунт не найден. Зарегистрируйтесь.");
-            }
-        }
-
-        function startApp(isNew) {
-            user = JSON.parse(localStorage.getItem('spk_user'));
+        function handleReg() {
+            const data = {
+                nick: document.getElementById('r-nick').value,
+                email: document.getElementById('r-email').value,
+                ava: 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
+                regDate: new Date().toLocaleDateString()
+            };
+            if(!data.nick || !data.email) return;
+            localStorage.setItem('spk_user', JSON.stringify(data));
+            user = data;
+            
             document.getElementById('auth-layer').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('auth-layer').style.display = 'none';
-                const welcome = document.getElementById('welcome-layer');
-                welcome.style.display = 'flex';
-                document.getElementById('welcome-name').innerText = `Привет, ${user.nick}!`;
-                setTimeout(() => welcome.style.opacity = '1', 50);
-
-                setTimeout(() => {
-                    welcome.style.opacity = '0';
-                    setTimeout(() => {
-                        welcome.style.display = 'none';
-                        document.getElementById('app').style.opacity = '1';
-                        initUI();
-                    }, 800);
-                }, 2000);
-            }, 600);
+                const wl = document.getElementById('welcome-layer');
+                wl.style.display = 'flex';
+                document.getElementById('w-name').innerText = `Привет, ${user.nick}!`;
+                setTimeout(() => wl.style.opacity = '1', 50);
+            }, 800);
         }
 
-        function initUI() {
-            document.getElementById('u-nick').innerText = user.nick;
-            document.getElementById('u-email').innerText = user.email;
-            document.getElementById('u-date').innerText = user.regDate;
-            document.getElementById('u-avatar').innerText = user.nick[0].toUpperCase();
+        function showPerks() {
+            const wl = document.getElementById('welcome-layer');
+            wl.style.opacity = '0';
+            setTimeout(() => {
+                wl.style.display = 'none';
+                const pl = document.getElementById('perks-layer');
+                pl.style.display = 'flex';
+                setTimeout(() => pl.style.opacity = '1', 50);
+            }, 800);
+        }
+
+        function finishIntro() {
+            document.getElementById('perks-layer').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('perks-layer').style.display = 'none';
+                document.getElementById('app').style.opacity = '1';
+                initApp();
+            }, 800);
+        }
+
+        function initApp() {
+            document.getElementById('p-ava').src = user.ava;
+            document.getElementById('edit-nick').value = user.nick;
+            document.getElementById('edit-ava').value = user.ava;
+            document.getElementById('p-date').innerText = user.regDate;
             setInterval(load, 2000);
             load();
+        }
+
+        function saveProfile() {
+            user.nick = document.getElementById('edit-nick').value;
+            user.ava = document.getElementById('edit-ava').value;
+            localStorage.setItem('spk_user', JSON.stringify(user));
+            document.getElementById('p-ava').src = user.ava;
+            alert("Профиль обновлен!");
         }
 
         async function send() {
@@ -191,11 +207,7 @@
             if(!inp.value.trim()) return;
             const msg = { nick: user.nick, email: user.email.toLowerCase(), text: inp.value };
             inp.value = '';
-            await fetch(`${API}/messages`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(msg)
-            });
+            await fetch(`${API}/messages`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(msg) });
             load();
         }
 
@@ -203,19 +215,16 @@
             try {
                 const res = await fetch(`${API}/messages`);
                 const msgs = await res.json();
-                if(msgs.length === lastMsgCount) return; // УМНОЕ ОБНОВЛЕНИЕ: если нет новых, не перерисовываем
-
+                if(msgs.length === lastCount) return;
                 const flow = document.getElementById('chat-flow');
-                const myEmail = user.email.toLowerCase().trim();
-                let html = '';
-                msgs.forEach(m => {
-                    const isMe = String(m.email).toLowerCase().trim() === myEmail;
-                    html += `<div class="msg ${isMe ? 'sent' : 'received'}"><b>${m.nick}</b>${m.text}</div>`;
-                });
-                flow.innerHTML = html;
-                lastMsgCount = msgs.length;
-                const sc = document.getElementById('sc-chat');
-                sc.scrollTop = sc.scrollHeight;
+                const myMail = user.email.toLowerCase().trim();
+                flow.innerHTML = msgs.map(m => `
+                    <div class="msg ${m.email.toLowerCase().trim() === myMail ? 'sent' : 'received'}">
+                        <b>${m.nick}</b>${m.text}
+                    </div>
+                `).join('');
+                lastCount = msgs.length;
+                document.getElementById('sc-chat').scrollTop = document.getElementById('sc-chat').scrollHeight;
             } catch(e) {}
         }
 
@@ -229,11 +238,10 @@
 
         function logout() { localStorage.removeItem('spk_user'); location.reload(); }
 
-        // Если уже залогинен - пропускаем авторизацию
         if(user) {
             document.getElementById('auth-layer').style.display = 'none';
             document.getElementById('app').style.opacity = '1';
-            initUI();
+            initApp();
         }
     </script>
 </body>
