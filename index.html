@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Speeky OS | V4 Ultra Fixed</title>
+    <title>Speeky OS | Cloud Sync</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -11,10 +11,9 @@
             --bg: #030406;
             --glass: rgba(255, 255, 255, 0.03);
             --border: rgba(255, 255, 255, 0.08);
-            --card: rgba(15, 17, 23, 0.9);
+            --card: rgba(15, 17, 23, 0.95);
             --radius: 30px;
             --blur: 20px;
-            --glow: 15px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -22,122 +21,91 @@
 
         /* ФОН */
         .bg-wrapper { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
-        .orb { position: absolute; width: 600px; height: 600px; background: var(--accent); filter: blur(120px); opacity: 0.12; border-radius: 50%; animation: float 20s infinite alternate; }
-        @keyframes float { from { transform: translate(-20%, -20%); } to { transform: translate(30%, 30%); } }
-
-        /* ИНТРО */
-        #intro { position: fixed; inset: 0; z-index: 9999; background: var(--bg); display: none; flex-direction: column; align-items: center; justify-content: center; transition: 1s cubic-bezier(0.4, 0, 0.2, 1); }
-        .intro-text { font-size: 56px; font-weight: 800; opacity: 0; transform: translateY(20px); filter: blur(10px); transition: 0.8s; }
-        .intro-sub { font-size: 16px; opacity: 0; margin-top: 10px; color: var(--accent); letter-spacing: 4px; transition: 0.8s; }
+        .orb { position: absolute; width: 600px; height: 600px; background: var(--accent); filter: blur(120px); opacity: 0.1; border-radius: 50%; animation: float 20s infinite alternate; }
+        @keyframes float { from { transform: translate(-10%, -10%); } to { transform: translate(20%, 20%); } }
 
         /* AUTH */
         #auth-layer { position: fixed; inset: 0; z-index: 5000; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .auth-card { width: 100%; max-width: 420px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); backdrop-filter: blur(var(--blur)); padding: 40px; }
-        .auth-form { display: none; opacity: 0; transform: scale(0.95); transition: 0.4s; }
-        .auth-form.active { display: block; opacity: 1; transform: scale(1); }
+        .auth-card { width: 100%; max-width: 400px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); backdrop-filter: blur(var(--blur)); padding: 40px; }
+        .auth-form { display: none; }
+        .auth-form.active { display: block; animation: fadeIn 0.4s ease; }
         
-        input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 18px; border-radius: 20px; color: #fff; margin-bottom: 15px; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--accent); }
+        input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 18px; border-radius: 20px; color: #fff; margin-bottom: 15px; outline: none; }
         .btn-main { width: 100%; padding: 20px; border-radius: 20px; border: none; background: var(--accent); color: #000; font-weight: 800; cursor: pointer; }
 
         /* APP */
-        #app { display: none; height: 100vh; flex-direction: column; opacity: 0; transition: 1s; }
-        .screen { display: none; flex: 1; padding: 25px; padding-bottom: 220px; overflow-y: auto; }
-        .screen.active { display: flex; flex-direction: column; animation: slideUp 0.6s ease; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        #app { display: none; height: 100vh; flex-direction: column; }
+        .screen { display: none; flex: 1; padding: 25px; padding-bottom: 220px; overflow-y: auto; scroll-behavior: smooth; }
+        .screen.active { display: flex; flex-direction: column; }
 
-        /* ЧАТ СООБЩЕНИЯ */
-        .chat-container { display: flex; flex-direction: column; gap: 10px; }
-        .msg { max-width: 80%; padding: 15px 20px; border-radius: 22px; font-size: 15px; line-height: 1.4; animation: msgIn 0.3s ease; }
-        .msg.sent { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 5px; font-weight: 500; }
-        .msg.received { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 5px; }
-        @keyframes msgIn { from { opacity: 0; transform: scale(0.9) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        /* ЧАТ */
+        #chat-flow { display: flex; flex-direction: column; gap: 12px; }
+        .msg { max-width: 80%; padding: 14px 18px; border-radius: 22px; font-size: 15px; position: relative; animation: msgIn 0.3s ease; }
+        .msg.sent { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; }
+        .msg.received { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+        .msg-sender { font-size: 10px; opacity: 0.5; margin-bottom: 4px; display: block; }
 
-        /* ОСТРОВОК И ВВОД */
-        .bottom-controls { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 450px; z-index: 1000; display: flex; flex-direction: column; gap: 12px; }
-        
-        .input-area { 
-            background: rgba(15, 17, 23, 0.8); backdrop-filter: blur(30px); 
-            border: 1px solid var(--border); border-radius: 30px; 
-            padding: 8px 10px 8px 20px; display: none; align-items: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        .input-area.show { display: flex; animation: slideUp 0.4s ease; }
-        .input-area input { margin: 0; background: none; border: none; padding: 12px 0; font-size: 16px; flex: 1; }
-        .send-btn { background: var(--accent); border: none; width: 45px; height: 45px; border-radius: 50%; color: #000; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
-        .send-btn:hover { transform: scale(1.1); }
+        /* ВВОД И ОСТРОВОК */
+        .controls { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 450px; z-index: 1000; }
+        .input-bar { background: rgba(15, 17, 23, 0.9); backdrop-filter: blur(30px); border: 1px solid var(--border); border-radius: 30px; padding: 8px 10px 8px 20px; display: none; align-items: center; margin-bottom: 12px; }
+        .input-bar.show { display: flex; }
+        .input-bar input { background: none; border: none; color: #fff; flex: 1; padding: 10px; outline: none; }
+        .send-btn { background: var(--accent); border: none; width: 42px; height: 42px; border-radius: 50%; font-weight: 900; cursor: pointer; }
 
-        .nav-island { background: rgba(10, 12, 18, 0.9); backdrop-filter: blur(40px); border: 1px solid var(--border); border-radius: 40px; padding: 8px; display: flex; justify-content: space-around; }
-        .nav-btn { font-size: 24px; opacity: 0.3; cursor: pointer; transition: 0.3s; padding: 12px; }
-        .nav-btn.active { opacity: 1; color: var(--accent); transform: translateY(-3px); }
+        .nav { background: rgba(10, 12, 18, 0.95); backdrop-filter: blur(40px); border: 1px solid var(--border); border-radius: 40px; padding: 8px; display: flex; justify-content: space-around; }
+        .nav-btn { font-size: 24px; opacity: 0.3; cursor: pointer; padding: 10px; transition: 0.3s; }
+        .nav-btn.active { opacity: 1; color: var(--accent); }
 
-        /* ПРОФИЛЬ */
-        .p-card { background: linear-gradient(160deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%); border: 1px solid var(--border); border-radius: var(--radius); padding: 25px; margin-top: 15px; }
-        .p-avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--accent); color: #000; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800; margin-bottom: 15px; }
+        @keyframes msgIn { from { opacity: 0; transform: translateY(10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
     <div class="bg-wrapper"><div class="orb"></div></div>
 
-    <div id="intro">
-        <h1 class="intro-text" id="intro-title">Привет</h1>
-        <p class="intro-sub" id="intro-nick">SWIMER</p>
-    </div>
-
     <div id="auth-layer">
         <div class="auth-card">
-            <div id="form-login" class="auth-form active">
+            <div id="f-login" class="auth-form active">
                 <h1 style="margin-bottom: 25px;">Speeky ID</h1>
-                <input type="email" id="l-email" placeholder="Почта">
+                <input type="email" id="l-email" placeholder="Email">
                 <input type="password" id="l-pass" placeholder="Пароль">
                 <button class="btn-main" onclick="login()">ВОЙТИ</button>
-                <p onclick="switchForm('form-reg')" style="text-align:center; margin-top:20px; cursor:pointer; opacity:0.5; font-size:14px;">Создать аккаунт</p>
+                <p onclick="toggleForm('f-reg')" style="text-align:center; margin-top:20px; cursor:pointer; opacity:0.5;">Регистрация</p>
             </div>
-            <div id="form-reg" class="auth-form">
-                <h1 style="margin-bottom: 25px;">Регистрация</h1>
+            <div id="f-reg" class="auth-form">
+                <h1 style="margin-bottom: 25px;">Новый аккаунт</h1>
                 <input type="text" id="r-nick" placeholder="Никнейм">
                 <input type="email" id="r-email" placeholder="Email">
                 <input type="password" id="r-pass" placeholder="Пароль">
-                <button class="btn-main" onclick="register()">ГОТОВО</button>
-                <p onclick="switchForm('form-login')" style="text-align:center; margin-top:20px; cursor:pointer; opacity:0.5; font-size:14px;">Уже есть ID</p>
+                <button class="btn-main" onclick="register()">СОЗДАТЬ</button>
+                <p onclick="toggleForm('f-login')" style="text-align:center; margin-top:20px; cursor:pointer; opacity:0.5;">Уже есть ID</p>
             </div>
         </div>
     </div>
 
     <div id="app">
         <section id="sc-chat" class="screen active">
-            <h1 style="font-size: 34px; font-weight: 800; margin-bottom: 20px;">Сообщения</h1>
-            <div id="chat-flow" class="chat-container">
-                <div class="msg received">Добро пожаловать в Speeky! Твои сообщения теперь сохраняются в твоем ID.</div>
-            </div>
+            <h1 style="font-size: 34px; margin-bottom: 25px;">Чаты</h1>
+            <div id="chat-flow"></div>
         </section>
 
         <section id="sc-settings" class="screen">
             <h1>Профиль</h1>
-            <div class="p-card">
-                <div class="p-avatar" id="u-avatar">?</div>
+            <div style="background:var(--glass); padding:30px; border-radius:30px; margin-top:20px; text-align:center; border: 1px solid var(--border);">
+                <div id="u-avatar" style="width:80px; height:80px; background:var(--accent); border-radius:50%; margin: 0 auto 15px; display:flex; align-items:center; justify-content:center; color:#000; font-size:32px; font-weight:800;">?</div>
                 <h2 id="u-nick">...</h2>
-                <p id="u-email" style="opacity:0.4; margin-bottom:15px;">...</p>
-                <input type="text" id="u-status" placeholder="Твой статус..." onblur="saveProfile()" style="background:rgba(0,0,0,0.2); border:none;">
-            </div>
-            
-            <div style="margin-top:20px;">
-                <p style="font-size:11px; opacity:0.3; margin-bottom:10px;">ВНЕШНИЙ ВИД</p>
-                <div style="background:var(--glass); padding:15px; border-radius:20px; display:flex; justify-content:space-between; align-items:center;">
-                    <span>Блюр системы</span>
-                    <input type="range" id="set-blur" min="0" max="50" value="20" oninput="updateUI()" style="width:100px; margin:0;">
-                </div>
-                <button onclick="logout()" style="width:100%; padding:18px; border-radius:20px; background:rgba(255,0,0,0.1); color:#ff4444; border:none; font-weight:700; margin-top:15px;">ВЫЙТИ</button>
+                <p id="u-email" style="opacity:0.4;">...</p>
+                <button onclick="logout()" style="margin-top:20px; background:none; border:none; color:#ff4444; font-weight:800; cursor:pointer;">ВЫЙТИ</button>
             </div>
         </section>
 
-        <div class="bottom-controls">
-            <div class="input-area show" id="chat-input-box">
-                <input type="text" id="m-text" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') send()">
-                <button class="send-btn" onclick="send()">></button>
+        <div class="controls">
+            <div class="input-bar show" id="chat-input-box">
+                <input type="text" id="m-text" placeholder="Напишите сообщение..." onkeypress="if(event.key==='Enter') broadcast()">
+                <button class="send-btn" onclick="broadcast()">></button>
             </div>
-            <nav class="nav-island">
+            <nav class="nav">
                 <div class="nav-btn active" onclick="go('chat', this)">💬</div>
                 <div class="nav-btn" onclick="go('settings', this)">⚙️</div>
             </nav>
@@ -146,24 +114,25 @@
 
     <script>
         let db; let user = null;
-        const req = indexedDB.open("SpeekyFinal_V1", 1);
-        req.onupgradeneeded = (e) => { db = e.target.result; db.createObjectStore("users", { keyPath: "email" }); };
-        req.onsuccess = (e) => { db = e.target.result; check(); };
 
-        function switchForm(id) {
+        // 1. Инициализация БД
+        const request = indexedDB.open("SpeekyGlobalV1", 1);
+        request.onupgradeneeded = (e) => {
+            db = e.target.result;
+            db.createObjectStore("users", { keyPath: "email" });
+            db.createObjectStore("messages", { autoIncrement: true });
+        };
+        request.onsuccess = (e) => { db = e.target.result; checkSession(); };
+
+        // 2. Авторизация
+        function toggleForm(id) {
             document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
             document.getElementById(id).classList.add('active');
         }
 
         function register() {
-            const data = {
-                nick: document.getElementById('r-nick').value,
-                email: document.getElementById('r-email').value,
-                pass: document.getElementById('r-pass').value,
-                status: "Hey, I'm using Speeky",
-                theme: { blur: "20", color: "#00f2ff" }
-            };
-            db.transaction("users", "readwrite").objectStore("users").add(data).onsuccess = () => switchForm('form-login');
+            const data = { nick: document.getElementById('r-nick').value, email: document.getElementById('r-email').value, pass: document.getElementById('r-pass').value };
+            db.transaction("users", "readwrite").objectStore("users").add(data).onsuccess = () => toggleForm('f-login');
         }
 
         function login() {
@@ -172,52 +141,70 @@
             db.transaction("users").objectStore("users").get(email).onsuccess = (e) => {
                 const u = e.target.result;
                 if(u && u.pass === pass) {
-                    localStorage.setItem('spk_session', JSON.stringify(u));
-                    startIntro(u);
+                    localStorage.setItem('spk_user', JSON.stringify(u));
+                    location.reload();
                 } else alert("Ошибка");
             };
         }
 
-        function startIntro(u) {
-            document.getElementById('auth-layer').style.display = 'none';
-            const intro = document.getElementById('intro');
-            intro.style.display = 'flex';
-            document.getElementById('intro-nick').innerText = u.nick.toUpperCase();
-            setTimeout(() => {
-                document.getElementById('intro-title').style.opacity = 1;
-                document.getElementById('intro-title').style.transform = 'translateY(0)';
-                setTimeout(() => {
-                    document.getElementById('intro-nick').style.opacity = 0.5;
-                    document.getElementById('intro-nick').style.transform = 'translateY(0)';
-                }, 400);
-            }, 300);
-            setTimeout(() => { location.reload(); }, 3000);
-        }
-
-        function check() {
-            const s = localStorage.getItem('spk_session');
+        function checkSession() {
+            const s = localStorage.getItem('spk_user');
             if(s) {
                 user = JSON.parse(s);
                 document.getElementById('auth-layer').style.display = 'none';
                 document.getElementById('app').style.display = 'flex';
-                setTimeout(() => document.getElementById('app').style.opacity = 1, 100);
                 document.getElementById('u-nick').innerText = user.nick;
                 document.getElementById('u-email').innerText = user.email;
                 document.getElementById('u-avatar').innerText = user.nick[0].toUpperCase();
-                document.getElementById('u-status').value = user.status;
+                loadMessages();
             }
         }
 
-        function send() {
+        // 3. ЛОГИКА СООБЩЕНИЙ (REAL-TIME ЭМУЛЯЦИЯ)
+        function broadcast() {
             const inp = document.getElementById('m-text');
             if(!inp.value.trim()) return;
+
+            const msgData = {
+                sender: user.nick,
+                email: user.email,
+                text: inp.value,
+                time: Date.now()
+            };
+
+            // Сохраняем в IndexedDB
+            const tx = db.transaction("messages", "readwrite");
+            tx.objectStore("messages").add(msgData).onsuccess = () => {
+                // Триггерим событие для других вкладок
+                localStorage.setItem('spk_last_msg', JSON.stringify(msgData));
+                inp.value = '';
+                loadMessages();
+            };
+        }
+
+        // Слушаем «приход» сообщения от другого (из другой вкладки)
+        window.addEventListener('storage', (e) => {
+            if(e.key === 'spk_last_msg') {
+                loadMessages();
+            }
+        });
+
+        function loadMessages() {
             const flow = document.getElementById('chat-flow');
-            const msg = document.createElement('div');
-            msg.className = 'msg sent';
-            msg.innerText = inp.value;
-            flow.appendChild(msg);
-            inp.value = '';
-            document.getElementById('sc-chat').scrollTop = flow.scrollHeight;
+            flow.innerHTML = '';
+            
+            db.transaction("messages").objectStore("messages").getAll().onsuccess = (e) => {
+                const allMsgs = e.target.result;
+                allMsgs.forEach(m => {
+                    const div = document.createElement('div');
+                    const isMe = m.email === user.email;
+                    div.className = `msg ${isMe ? 'sent' : 'received'}`;
+                    div.innerHTML = `<span class="msg-sender">${isMe ? 'Вы' : m.sender}</span>${m.text}`;
+                    flow.appendChild(div);
+                });
+                const screen = document.getElementById('sc-chat');
+                screen.scrollTop = screen.scrollHeight;
+            };
         }
 
         function go(scr, el) {
@@ -228,12 +215,7 @@
             document.getElementById('chat-input-box').classList.toggle('show', scr === 'chat');
         }
 
-        function updateUI() {
-            const b = document.getElementById('set-blur').value;
-            document.documentElement.style.setProperty('--blur', b + 'px');
-        }
-
-        function logout() { localStorage.removeItem('spk_session'); location.reload(); }
+        function logout() { localStorage.removeItem('spk_user'); location.reload(); }
     </script>
 </body>
 </html>
