@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Speeky OS | Final Fix</title>
+    <title>Speeky OS | Identity Cloud</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -18,141 +18,123 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
 
-        /* ЖИВОЙ ФОН */
+        /* NEBULA BACKGROUND */
         .nebula-wrap { position: fixed; inset: 0; z-index: -2; background: #000; overflow: hidden; pointer-events: none; }
         .blob { 
-            position: absolute; width: 70vw; height: 70vw; 
+            position: absolute; width: 80vw; height: 80vw; 
             background: radial-gradient(circle, var(--accent) 0%, transparent 70%); 
             filter: blur(100px); opacity: var(--orb-op); border-radius: 50%; 
-            animation: move 20s infinite alternate;
+            animation: move 25s infinite alternate;
         }
-        .blob-2 { background: radial-gradient(circle, #7000ff 0%, transparent 70%); animation-delay: -7s; left: 50%; top: 30%; }
-        @keyframes move { from { transform: translate(-20%, -20%) scale(1); } to { transform: translate(30%, 30%) scale(1.3); } }
+        .blob-2 { background: radial-gradient(circle, #7000ff 0%, transparent 70%); animation-delay: -8s; left: 40%; top: 20%; }
+        @keyframes move { from { transform: translate(-10%, -10%) scale(1); } to { transform: translate(20%, 20%) scale(1.2); } }
 
-        /* ОВЕРЛЕЙ И КАРТОЧКИ (FIXED CLICKS) */
-        .overlay { position: fixed; inset: 0; z-index: 2000; background: #000; display: flex; align-items: center; justify-content: center; transition: 0.8s; }
+        /* AUTH OVERLAY */
+        .overlay { position: fixed; inset: 0; z-index: 2000; background: #000; display: flex; align-items: center; justify-content: center; transition: 0.8s ease-in-out; }
         .card { 
-            width: 92%; max-width: 420px; padding: 40px; background: rgba(10, 12, 18, 0.9); 
+            width: 92%; max-width: 400px; padding: 40px; background: rgba(10, 12, 18, 0.9); 
             border: 1px solid var(--border); border-radius: 40px; backdrop-filter: blur(40px); 
             text-align: center; position: absolute; opacity: 0; pointer-events: none;
-            transform: scale(0.95); transition: 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+            transform: translateY(30px) scale(0.95); transition: 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .card.active { opacity: 1; transform: scale(1); pointer-events: all; z-index: 2001; }
+        .card.active { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; z-index: 2001; }
         .overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
         input { 
             width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); 
-            padding: 18px; border-radius: 22px; color: #fff; outline: none; transition: 0.3s;
+            padding: 18px; border-radius: 22px; color: #fff; outline: none; transition: 0.3s; margin-bottom: 12px;
         }
-        input:focus { border-color: var(--accent); background: rgba(255,255,255,0.1); }
+        input:focus { border-color: var(--accent); background: rgba(255,255,255,0.08); box-shadow: 0 0 20px rgba(0,242,255,0.05); }
 
         .btn-main { width: 100%; padding: 20px; border-radius: 22px; border: none; background: var(--accent); color: #000; font-weight: 800; cursor: pointer; transition: 0.3s; }
-        .btn-main:active { transform: scale(0.98); }
+        .btn-main:active { transform: scale(0.96); }
 
-        .link-btn { background: none; border: none; color: var(--accent); opacity: 0.6; font-size: 14px; margin-top: 20px; cursor: pointer; text-decoration: underline; }
+        /* CHAT ENGINE & PLAVNOST */
+        .screen { flex: 1; padding: 20px; overflow-y: auto; display: none; width: 100%; max-width: 800px; margin: 0 auto; scroll-behavior: smooth; }
+        .screen.active { display: flex; flex-direction: column; animation: scFade 0.5s ease; }
+        @keyframes scFade { from { opacity: 0; } to { opacity: 1; } }
 
-        /* ЭКРАНЫ */
-        .screen { flex: 1; padding: 25px; overflow-y: auto; display: none; width: 100%; max-width: 850px; margin: 0 auto; }
-        .screen.active { display: flex; flex-direction: column; animation: slideUp 0.5s ease; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        #chat-flow { display: flex; flex-direction: column; gap: 12px; padding-bottom: 20px; }
+        
+        .msg { 
+            max-width: 85%; padding: 14px 18px; border-radius: 24px; 
+            animation: msgIn 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+            position: relative;
+        }
+        @keyframes msgIn { 
+            from { opacity: 0; transform: translateY(30px) scale(0.8); filter: blur(10px); } 
+            to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } 
+        }
 
-        /* ЧАТ */
-        #chat-flow { display: flex; flex-direction: column; gap: 15px; }
-        .msg { max-width: 80%; padding: 14px 18px; border-radius: 22px; animation: msgIn 0.3s ease-out forwards; }
         .msg.sent { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; }
         .msg.received { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 4px; backdrop-filter: blur(var(--blur-val)); }
+        
         .msg-info { display: flex; align-items: center; gap: 8px; font-size: 11px; margin-bottom: 6px; font-weight: 700; opacity: 0.7; }
-        .msg-ava { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; background: #222; }
+        .msg-ava { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
 
-        /* НАСТРОЙКИ */
-        .set-group { background: var(--glass); border: 1px solid var(--border); border-radius: 35px; padding: 28px; margin-bottom: 20px; backdrop-filter: blur(15px); }
-        .set-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 15px; }
+        /* SETTINGS & NAV */
+        .set-group { background: var(--glass); border: 1px solid var(--border); border-radius: 35px; padding: 25px; margin-bottom: 15px; backdrop-filter: blur(20px); }
+        .set-row { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; font-size: 14px; }
         
-        /* UI NAV */
-        .ui-nav { position: fixed; bottom: 30px; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 15px; z-index: 1000; }
-        .input-bar { width: 90%; max-width: 600px; background: rgba(10, 12, 18, 0.95); border: 1px solid var(--border); border-radius: 40px; padding: 10px; display: none; align-items: center; backdrop-filter: blur(30px); }
-        .input-bar.active { display: flex; }
-        .input-bar input { background: none; border: none; flex: 1; padding-left: 15px; }
-        
-        .dock { width: 90%; max-width: 380px; background: rgba(10, 12, 18, 0.98); border: 1px solid var(--border); border-radius: 40px; padding: 14px; display: flex; justify-content: space-around; backdrop-filter: blur(25px); }
-        .dock-item { font-size: 26px; opacity: 0.3; transition: 0.3s; cursor: pointer; }
-        .dock-item.active { opacity: 1; color: var(--accent); transform: scale(1.15); }
+        .ui-nav { position: fixed; bottom: 25px; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; z-index: 1000; }
+        .input-bar { width: 92%; max-width: 600px; background: rgba(10, 12, 18, 0.95); border: 1px solid var(--border); border-radius: 40px; padding: 8px; display: none; align-items: center; backdrop-filter: blur(30px); }
+        .input-bar.active { display: flex; animation: barIn 0.5s ease; }
+        @keyframes barIn { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .dock { width: 92%; max-width: 360px; background: rgba(10, 12, 18, 0.98); border: 1px solid var(--border); border-radius: 40px; padding: 12px; display: flex; justify-content: space-around; backdrop-filter: blur(20px); }
+        .dock-item { font-size: 24px; opacity: 0.3; transition: 0.3s; cursor: pointer; }
+        .dock-item.active { opacity: 1; color: var(--accent); transform: scale(1.1); }
     </style>
 </head>
 <body>
 
-    <div class="nebula-wrap">
-        <div class="blob" id="orb1"></div>
-        <div class="blob blob-2" id="orb2"></div>
-    </div>
+    <div class="nebula-wrap"><div class="blob"></div><div class="blob blob-2"></div></div>
 
     <div id="intro-overlay" class="overlay">
-        <div id="card-reg" class="card active">
-            <h1 style="font-weight:800; font-size:32px; margin-bottom:10px">Speeky OS</h1>
-            <p style="opacity:0.4; margin-bottom:30px">Создайте свой ID</p>
-            <input type="text" id="r-nick" placeholder="Ваше имя">
-            <div style="height:12px"></div>
-            <input type="email" id="r-email" placeholder="Email">
-            <div style="height:25px"></div>
-            <button class="btn-main" onclick="nextCard('perks')">СОЗДАТЬ АККАУНТ</button>
-            <button class="link-btn" onclick="quickLogin()">Уже есть аккаунт? Войти</button>
-        </div>
-
-        <div id="card-perks" class="card">
-            <h2>Ваши возможности</h2>
-            <div style="text-align:left; margin:25px 0; display:flex; flex-direction:column; gap:15px">
-                <div>💎 <b>Identity OS</b> — Аккаунт навсегда</div>
-                <div>🌌 <b>Nebula Flow</b> — Ультра-плавность</div>
-                <div>⚙️ <b>Custom Core</b> — Полная настройка</div>
-            </div>
-            <button class="btn-main" onclick="finishIntro()">ВСЁ ПОНЯТНО</button>
+        <div id="card-auth" class="card active">
+            <h1 style="font-weight:800; font-size:32px; letter-spacing:-1px">Speeky Cloud</h1>
+            <p id="auth-sub" style="opacity:0.4; margin-bottom:25px">Регистрация нового ID</p>
+            
+            <input type="text" id="r-nick" placeholder="Имя профиля">
+            <input type="email" id="r-email" placeholder="Email адрес">
+            <input type="password" id="r-pass" placeholder="Пароль">
+            
+            <button class="btn-main" id="btn-action" onclick="handleAuth()">СОЗДАТЬ АККАУНТ</button>
+            <p onclick="toggleAuthMode()" style="margin-top:20px; font-size:14px; color:var(--accent); cursor:pointer; opacity:0.7">Уже есть аккаунт? Войти</p>
         </div>
     </div>
 
     <div id="app" style="display:none; flex-direction:column; height:100vh;">
         <section id="sc-chat" class="screen active">
-            <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:35px">
-                <h1 style="font-size:34px; font-weight:800">Облако</h1>
-                <div style="color:#00ff88; font-size:13px; font-weight:800; border:1px solid rgba(0,255,136,0.2); padding:8px 16px; border-radius:20px">● <span id="on-count">1</span> online</div>
+            <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px">
+                <h1 style="font-size:32px; font-weight:800">Облако</h1>
+                <div style="color:#00ff88; font-size:12px; font-weight:800; background:rgba(0,255,136,0.1); padding:6px 14px; border-radius:20px">● <span id="on-count">1</span> online</div>
             </header>
             <div id="chat-flow"></div>
         </section>
 
         <section id="sc-settings" class="screen">
-            <h1 style="font-size:34px; font-weight:800; margin-bottom:30px">Настройки</h1>
+            <h1 style="font-size:32px; font-weight:800; margin-bottom:25px">Настройки</h1>
             
             <div class="set-group">
-                <h2 style="font-size:18px; margin-bottom:20px">Профиль</h2>
-                <input type="text" id="set-nick-inp" placeholder="Ник" onchange="save()">
-                <div style="height:12px"></div>
-                <input type="text" id="set-ava-inp" placeholder="Аватарка (URL)" onchange="save()">
+                <h3 style="font-size:12px; opacity:0.4; text-transform:uppercase">Аккаунт</h3>
+                <div style="height:15px"></div>
+                <input type="text" id="set-nick-inp" placeholder="Изменить ник" onchange="save()">
+                <input type="text" id="set-ava-inp" placeholder="URL аватарки" onchange="save()">
             </div>
 
             <div class="set-group">
-                <h2 style="font-size:18px; margin-bottom:20px">Визуал</h2>
-                <div class="set-row">
-                    <span>Размытие</span>
-                    <input type="range" min="0" max="60" value="25" oninput="document.documentElement.style.setProperty('--blur-val', this.value+'px')">
-                </div>
-                <div class="set-row">
-                    <span>Яркость неона</span>
-                    <input type="range" min="0" max="50" value="15" oninput="document.documentElement.style.setProperty('--orb-op', this.value/100)">
-                </div>
-                <div class="set-row">
-                    <span>Цвет акцента</span>
-                    <input type="color" value="#00f2ff" style="width:35px; height:35px; border:none; background:none" oninput="document.documentElement.style.setProperty('--accent', this.value)">
-                </div>
+                <h3 style="font-size:12px; opacity:0.4; text-transform:uppercase">Визуал</h3>
+                <div class="set-row"><span>Размытие</span> <input type="range" min="0" max="60" value="25" oninput="document.documentElement.style.setProperty('--blur-val', this.value+'px')"></div>
+                <div class="set-row"><span>Яркость неона</span> <input type="range" min="0" max="50" value="15" oninput="document.documentElement.style.setProperty('--orb-op', this.value/100)"></div>
+                <div class="set-row"><span>Цвет акцента</span> <input type="color" value="#00f2ff" style="width:30px; height:30px; border:none; background:none" oninput="document.documentElement.style.setProperty('--accent', this.value)"></div>
             </div>
 
             <div class="set-group">
-                <h2 style="font-size:18px; margin-bottom:20px">Приватность</h2>
-                <div class="set-row">
-                    <span>Инкогнито</span>
-                    <input type="checkbox" style="width:20px; height:20px; accent-color:var(--accent)">
-                </div>
+                <div class="set-row"><span>Инкогнито</span> <input type="checkbox" style="width:20px; height:20px; accent-color:var(--accent)"></div>
             </div>
 
-            <button onclick="localStorage.clear(); location.reload();" style="width:100%; padding:20px; background:rgba(255,50,50,0.1); border:none; color:#ff4d4d; border-radius:25px; font-weight:800; cursor:pointer; margin-bottom:50px">ВЫЙТИ</button>
+            <button onclick="localStorage.clear(); location.reload();" style="width:100%; padding:18px; background:rgba(255,50,50,0.1); border:none; color:#ff4d4d; border-radius:25px; font-weight:800; cursor:pointer">ВЫЙТИ ИЗ ID</button>
         </section>
 
         <div class="ui-nav">
@@ -169,22 +151,27 @@
 
     <script>
         const API = 'https://my-chat-itp3.onrender.com';
-        const defaultAva = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+        const defAva = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
         let user = JSON.parse(localStorage.getItem('spk_user'));
+        let isLoginMode = false;
         let lastCount = 0;
 
-        function nextCard(step) {
-            const n = document.getElementById('r-nick').value;
-            const e = document.getElementById('r-email').value;
-            if(!n || !e) return alert("Заполни поля!");
-            user = { nick: n, email: e, ava: defaultAva };
-            document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
-            document.getElementById('card-'+step).classList.add('active');
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-sub').innerText = isLoginMode ? "Вход в систему" : "Регистрация нового ID";
+            document.getElementById('btn-action').innerText = isLoginMode ? "ВОЙТИ" : "СОЗДАТЬ АККАУНТ";
+            document.getElementById('r-nick').style.display = isLoginMode ? "none" : "block";
         }
 
-        function quickLogin() {
-            if(user) finishIntro();
-            else alert("Данные не найдены. Сначала зарегистрируйтесь!");
+        function handleAuth() {
+            const e = document.getElementById('r-email').value;
+            const p = document.getElementById('r-pass').value;
+            const n = document.getElementById('r-nick').value;
+
+            if(!e || !p || (!isLoginMode && !n)) return alert("Заполни все поля!");
+            
+            user = { nick: isLoginMode ? (user ? user.nick : "User") : n, email: e.toLowerCase(), ava: defAva };
+            finishIntro();
         }
 
         function finishIntro() {
@@ -199,7 +186,7 @@
 
         function initApp() {
             document.getElementById('set-nick-inp').value = user.nick;
-            document.getElementById('set-ava-inp').value = user.ava === defaultAva ? '' : user.ava;
+            document.getElementById('set-ava-inp').value = user.ava === defAva ? '' : user.ava;
             setInterval(ping, 10000); 
             setInterval(load, 3000);
             ping(); load();
@@ -207,33 +194,32 @@
 
         function save() {
             user.nick = document.getElementById('set-nick-inp').value;
-            const newAva = document.getElementById('set-ava-inp').value;
-            user.ava = newAva.trim() !== '' ? newAva : defaultAva;
+            user.ava = document.getElementById('set-ava-inp').value || defAva;
             localStorage.setItem('spk_user', JSON.stringify(user));
         }
 
         async function ping() {
-            const s = { nick: "_s", email: user.email.toLowerCase(), text: "p", time: Date.now() };
+            const s = { nick: "_s", email: user.email, text: "p", time: Date.now() };
             fetch(`${API}/messages`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(s) });
         }
 
         async function send() {
             const inp = document.getElementById('m-text');
             if(!inp.value.trim()) return;
-            const msg = { nick: user.nick, email: user.email.toLowerCase(), ava: user.ava, text: inp.value, time: Date.now() };
-            renderMessage(msg);
+            const msg = { nick: user.nick, email: user.email, ava: user.ava, text: inp.value, time: Date.now() };
+            renderMsg(msg); 
             inp.value = '';
             try { await fetch(`${API}/messages`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(msg) }); } catch(e) {}
         }
 
-        function renderMessage(m) {
+        function renderMsg(m) {
             const flow = document.getElementById('chat-flow');
             const div = document.createElement('div');
             const isMe = m.email?.toLowerCase() === user.email?.toLowerCase();
             div.className = `msg ${isMe ? 'sent' : 'received'}`;
             div.innerHTML = `
                 <div class="msg-info">
-                    <img src="${m.ava || defaultAva}" class="msg-ava" onerror="this.src='${defaultAva}'">
+                    <img src="${m.ava || defAva}" class="msg-ava" onerror="this.src='${defAva}'">
                     <span>${m.nick}</span>
                 </div>
                 <span>${m.text}</span>
@@ -249,7 +235,7 @@
                 const msgs = all.filter(m => m.nick !== "_s");
                 if(msgs.length !== lastCount) {
                     document.getElementById('chat-flow').innerHTML = '';
-                    msgs.forEach(m => renderMessage(m));
+                    msgs.forEach(m => renderMsg(m));
                     lastCount = msgs.length;
                 }
                 const online = new Set(all.filter(m => Date.now() - (m.time || 0) < 40000).map(m => m.email));
