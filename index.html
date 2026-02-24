@@ -3,126 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Speeky OS | Infinite</title>
+    <title>Speeky OS | Premium</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --accent: #00f2ff;
             --bg: #030406;
-            --glass: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.1);
-            --blur-val: 40px;
+            --glass: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.08);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
+        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; position: relative; }
 
         /* ЖИВОЙ ФОН */
-        .bg-layer { position: fixed; inset: 0; z-index: -1; background: #000; overflow: hidden; }
-        .blob { position: absolute; width: 600px; height: 600px; background: var(--accent); filter: blur(140px); opacity: 0.1; border-radius: 50%; animation: move 20s infinite alternate; }
-        @keyframes move { from { transform: translate(-10%, -10%); } to { transform: translate(30%, 20%); } }
+        .bg-wrap { position: fixed; inset: 0; z-index: -2; background: #000; overflow: hidden; }
+        .orb { position: absolute; width: 70vw; height: 70vw; background: var(--accent); filter: blur(120px); opacity: 0.12; border-radius: 50%; animation: float 25s infinite alternate; }
+        @keyframes float { from { transform: translate(-10%, -10%); } to { transform: translate(30%, 20%); } }
 
-        /* OVERLAYS */
-        .overlay { position: fixed; inset: 0; z-index: 2000; background: var(--bg); display: flex; align-items: center; justify-content: center; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
-        .card { width: 90%; max-width: 400px; padding: 40px; background: rgba(13, 15, 20, 0.95); border: 1px solid var(--border); border-radius: 35px; backdrop-filter: blur(var(--blur-val)); text-align: center; display: none; }
-        .card.active { display: block; animation: zoomIn 0.4s ease; }
+        /* ЭКРАНЫ АВТОРИЗАЦИИ И ПРИВЕТСТВИЯ */
+        .overlay { position: fixed; inset: 0; z-index: 2000; background: var(--bg); display: flex; align-items: center; justify-content: center; transition: 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card { width: 90%; max-width: 400px; padding: 40px; background: rgba(13, 15, 20, 0.95); border: 1px solid var(--border); border-radius: 40px; backdrop-filter: blur(40px); text-align: center; display: none; }
+        .card.active { display: block; animation: zoomIn 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
         
-        input, select { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 16px; border-radius: 18px; color: #fff; margin-bottom: 12px; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--accent); }
-        .btn-main { width: 100%; padding: 18px; border-radius: 20px; border: none; background: var(--accent); color: #000; font-weight: 800; cursor: pointer; transition: 0.3s; }
-        .btn-main:active { transform: scale(0.95); }
+        input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 18px; border-radius: 20px; color: #fff; margin-bottom: 12px; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 242, 255, 0.1); }
+        .btn { width: 100%; padding: 18px; border-radius: 20px; border: none; background: var(--accent); color: #000; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        .btn:active { transform: scale(0.95); }
 
-        /* APP */
-        #app { display: flex; flex-direction: column; height: 100vh; opacity: 0; transition: 1s; }
-        .screen { flex: 1; padding: 25px; overflow-y: auto; display: none; padding-bottom: 180px; scroll-behavior: smooth; }
-        .screen.active { display: flex; flex-direction: column; }
+        /* ПРИЛОЖЕНИЕ */
+        #app { display: flex; flex-direction: column; height: 100vh; opacity: 0; transition: 1.5s ease; }
+        .screen { flex: 1; padding: 25px; overflow-y: auto; display: none; padding-bottom: 180px; transition: 0.5s; }
+        .screen.active { display: flex; flex-direction: column; animation: slideUp 0.5s ease; }
 
-        /* CHAT */
-        #chat-flow { display: flex; flex-direction: column; gap: 15px; }
-        .msg { max-width: 80%; padding: 14px 18px; border-radius: 22px; font-size: 15px; animation: msgSlide 0.3s ease; position: relative; }
+        /* ЧАТ */
+        #chat-flow { display: flex; flex-direction: column; gap: 12px; }
+        .msg { max-width: 80%; padding: 14px 18px; border-radius: 24px; font-size: 15px; animation: msgPop 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.2); }
         .msg b { display: block; font-size: 10px; opacity: 0.4; margin-bottom: 4px; text-transform: uppercase; }
-        .msg.sent { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; }
+        .msg.sent { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; box-shadow: 0 10px 20px rgba(0, 242, 255, 0.1); }
         .msg.received { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 4px; backdrop-filter: blur(10px); }
 
-        /* SETTINGS ELEMENTS */
-        .set-group { background: var(--glass); border: 1px solid var(--border); border-radius: 25px; padding: 20px; margin-bottom: 15px; }
-        .set-group h3 { font-size: 12px; text-transform: uppercase; opacity: 0.4; margin-bottom: 15px; letter-spacing: 1px; }
-        .set-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 15px; }
-        .set-row:last-child { margin-bottom: 0; }
-        
-        /* TOGGLE SWITCH */
-        .switch { width: 40px; height: 22px; background: rgba(255,255,255,0.1); border-radius: 20px; position: relative; cursor: pointer; transition: 0.3s; }
-        .switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: 0.3s; }
-        .switch.on { background: var(--accent); }
-        .switch.on::after { left: 20px; background: #000; }
+        /* НАСТРОЙКИ */
+        .set-box { background: var(--glass); border: 1px solid var(--border); border-radius: 30px; padding: 20px; margin-bottom: 15px; }
+        .set-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 
-        /* DOCK */
+        /* УПРАВЛЕНИЕ */
         .ui-nav { position: fixed; bottom: 30px; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 15px; z-index: 100; }
-        .dock { width: 92%; max-width: 450px; background: rgba(10, 12, 18, 0.95); border: 1px solid var(--border); border-radius: 40px; padding: 10px; display: flex; justify-content: space-around; backdrop-filter: blur(25px); }
-        .dock-item { font-size: 22px; opacity: 0.3; transition: 0.3s; cursor: pointer; padding: 10px; }
-        .dock-item.active { opacity: 1; color: var(--accent); transform: translateY(-5px); }
-
-        .input-bar { width: 92%; max-width: 500px; background: rgba(15, 17, 23, 0.9); border: 1px solid var(--border); border-radius: 35px; padding: 8px 10px 8px 22px; display: none; align-items: center; }
+        .input-bar { width: 92%; max-width: 500px; background: rgba(18,20,27,0.9); border: 1px solid var(--border); backdrop-filter: blur(30px); border-radius: 35px; padding: 8px 10px 8px 22px; display: none; align-items: center; }
         .input-bar.active { display: flex; }
+        .input-bar input { background: none; border: none; flex: 1; color: #fff; outline: none; padding: 10px 0; }
+        
+        .dock { width: 92%; max-width: 400px; background: rgba(10, 12, 18, 0.95); border: 1px solid var(--border); border-radius: 40px; padding: 12px; display: flex; justify-content: space-around; backdrop-filter: blur(20px); }
+        .dock-item { font-size: 24px; opacity: 0.3; transition: 0.4s; cursor: pointer; }
+        .dock-item.active { opacity: 1; color: var(--accent); transform: scale(1.1); }
 
-        @keyframes zoomIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-        @keyframes msgSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* АНИМАЦИИ */
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes msgPop { from { opacity: 0; transform: scale(0.5) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes cloudFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
     </style>
 </head>
 <body>
 
-    <div class="bg-layer"><div id="blob1" class="blob"></div></div>
+    <div class="bg-wrap"><div class="orb"></div></div>
 
     <div id="auth-layer" class="overlay">
+        <div id="card-reg" class="card active">
+            <h1 style="font-size:32px; font-weight:800; margin-bottom:10px">Speeky ID</h1>
+            <p style="opacity:0.5; margin-bottom:30px">Создание личного профиля</p>
+            <input type="text" id="r-nick" placeholder="Твой никнейм">
+            <input type="email" id="r-email" placeholder="Email адрес">
+            <input type="password" id="r-pass" placeholder="Пароль">
+            <button class="btn" onclick="goWelcome()">ЗАРЕГИСТРИРОВАТЬСЯ</button>
+        </div>
+    </div>
+
+    <div id="welcome-layer" class="overlay" style="display:none; opacity:0;">
         <div class="card active">
-            <h1>Speeky ID</h1>
-            <p style="opacity: 0.5; margin-bottom: 25px;">Вход в систему</p>
-            <input type="text" id="r-nick" placeholder="Имя профиля">
-            <input type="email" id="r-email" placeholder="Email">
-            <button class="btn-main" onclick="handleAuth()">ВОЙТИ</button>
+            <div style="font-size:70px; animation: cloudFloat 3s infinite ease-in-out;">☁️</div>
+            <h1 id="w-name" style="margin-top:20px; font-size:32px; font-weight:800">Привет!</h1>
+            <p style="opacity:0.5; margin-top:10px">Твой аккаунт в Speeky Cloud готов</p>
+            <button class="btn" style="margin-top:30px" onclick="goPerks()">ДАЛЕЕ</button>
+        </div>
+    </div>
+
+    <div id="perks-layer" class="overlay" style="display:none; opacity:0;">
+        <div class="card active">
+            <h1 style="margin-bottom:25px">Почему Speeky?</h1>
+            <div style="text-align:left; gap:20px; display:flex; flex-direction:column; margin-bottom:30px">
+                <div style="display:flex; align-items:center; gap:15px">
+                    <span style="font-size:24px">⚡</span>
+                    <span><b>Real-time:</b> Мгновенный обмен данными</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:15px">
+                    <span style="font-size:24px">📸</span>
+                    <span><b>Медиа:</b> ГС, кружки и фото</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:15px">
+                    <span style="font-size:24px">💎</span>
+                    <span><b>Дизайн:</b> Плавность и стиль в деталях</span>
+                </div>
+            </div>
+            <button class="btn" onclick="startApp()">ВСТУПИТЬ В ОБЛАКО</button>
         </div>
     </div>
 
     <div id="app">
         <section id="sc-chat" class="screen active">
-            <header style="margin-bottom:20px"><h1>Облако</h1></header>
+            <header style="margin-bottom:25px">
+                <h1 style="font-size:32px; font-weight:800">Облако</h1>
+                <div style="width:40px; height:4px; background:var(--accent); border-radius:2px; margin-top:5px"></div>
+            </header>
             <div id="chat-flow"></div>
         </section>
 
         <section id="sc-settings" class="screen">
-            <header style="margin-bottom:20px"><h1>Настройки</h1></header>
-            
-            <div class="set-group">
-                <h3>Профиль</h3>
-                <input type="text" id="set-nick" placeholder="Изменить ник" onchange="updateProfile()">
-                <input type="text" id="set-ava" placeholder="URL Аватарки" onchange="updateProfile()">
-                <div class="set-row"><span>Email</span> <span id="set-disp-email" style="opacity:0.4"></span></div>
+            <h1 style="font-size:28px; font-weight:800; margin-bottom:20px">Настройки</h1>
+            <div class="set-box">
+                <p style="opacity:0.4; font-size:11px; text-transform:uppercase; margin-bottom:15px">Профиль</p>
+                <div class="set-row"><span>Никнейм</span> <b id="p-nick">---</b></div>
+                <div class="set-row"><span>Email</span> <b id="p-email" style="font-size:12px; opacity:0.6">---</b></div>
             </div>
-
-            <div class="set-group">
-                <h3>Интерфейс</h3>
-                <div class="set-row"><span>Размытие (Glass)</span> <div class="switch on" onclick="this.classList.toggle('on')"></div></div>
-                <div class="set-row"><span>Анимированный фон</span> <div class="switch on" id="bg-toggle" onclick="toggleBG()"></div></div>
-                <div class="set-row"><span>Яркость неона</span> <input type="range" style="width:100px; margin:0" oninput="document.getElementById('blob1').style.opacity = this.value/100"></div>
+            <div class="set-box">
+                <p style="opacity:0.4; font-size:11px; text-transform:uppercase; margin-bottom:15px">Интерфейс</p>
+                <div class="set-row"><span>Живой фон</span> <span style="color:var(--accent)">Активен</span></div>
+                <div class="set-row"><span>Анимации</span> <span style="color:var(--accent)">Turbo</span></div>
             </div>
-
-            <div class="set-group">
-                <h3>Приватность</h3>
-                <div class="set-row"><span>Скрывать текст (Incognito)</span> <div class="switch" onclick="this.classList.toggle('on')"></div></div>
-                <div class="set-row"><span>Звук сообщений</span> <div class="switch on" onclick="this.classList.toggle('on')"></div></div>
-            </div>
-
-            <div class="set-group">
-                <h3>Система</h3>
-                <div class="set-row"><span>Версия OS</span> <span style="color:var(--accent)">4.0.2-pro</span></div>
-                <button onclick="logout()" style="width:100%; padding:15px; background:rgba(255,0,0,0.1); border:1px solid rgba(255,0,0,0.2); color:#ff4d4d; border-radius:15px; font-weight:800; margin-top:10px">ВЫЙТИ ИЗ ID</button>
-            </div>
+            <button onclick="logout()" style="width:100%; padding:15px; background:rgba(255,0,0,0.1); border:none; color:#ff4d4d; border-radius:20px; font-weight:800; cursor:pointer">ВЫЙТИ</button>
         </section>
 
         <div class="ui-nav">
             <div class="input-bar active" id="input-ui">
                 <input type="text" id="m-text" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') send()">
-                <button class="btn-main" style="width:45px; height:45px; padding:0" onclick="send()">></button>
+                <button class="btn" style="width:45px; height:45px; padding:0" onclick="send()">></button>
             </div>
             <nav class="dock">
                 <div class="dock-item active" onclick="tab('chat', this)">💬</div>
@@ -134,45 +148,56 @@
     <script>
         const API = 'https://my-chat-itp3.onrender.com';
         let user = JSON.parse(localStorage.getItem('spk_user'));
-        let lastCount = 0;
+        let lastMsgCount = 0;
 
-        function handleAuth() {
-            const data = {
-                nick: document.getElementById('r-nick').value || 'User',
-                email: document.getElementById('r-email').value || 'anon@speeky.com',
-                ava: '',
-                regDate: new Date().toLocaleDateString()
-            };
-            localStorage.setItem('spk_user', JSON.stringify(data));
-            user = data;
-            location.reload();
+        function goWelcome() {
+            const nick = document.getElementById('r-nick').value;
+            const email = document.getElementById('r-email').value;
+            if(!nick || !email) return alert("Заполни данные!");
+
+            user = { nick, email, regDate: new Date().toLocaleDateString() };
+            localStorage.setItem('spk_user', JSON.stringify(user));
+
+            document.getElementById('auth-layer').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('auth-layer').style.display = 'none';
+                const wl = document.getElementById('welcome-layer');
+                wl.style.display = 'flex';
+                document.getElementById('w-name').innerText = `Привет, ${nick}!`;
+                setTimeout(() => wl.style.opacity = '1', 50);
+            }, 800);
         }
 
-        function initUI() {
-            document.getElementById('set-nick').value = user.nick;
-            document.getElementById('set-disp-email').innerText = user.email;
-            document.getElementById('app').style.opacity = '1';
+        function goPerks() {
+            document.getElementById('welcome-layer').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('welcome-layer').style.display = 'none';
+                const pl = document.getElementById('perks-layer');
+                pl.style.display = 'flex';
+                setTimeout(() => pl.style.opacity = '1', 50);
+            }, 800);
+        }
+
+        function startApp() {
+            document.getElementById('perks-layer').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('perks-layer').style.display = 'none';
+                document.getElementById('app').style.opacity = '1';
+                initApp();
+            }, 800);
+        }
+
+        function initApp() {
+            document.getElementById('p-nick').innerText = user.nick;
+            document.getElementById('p-email').innerText = user.email;
             setInterval(load, 2500);
             load();
-        }
-
-        function updateProfile() {
-            user.nick = document.getElementById('set-nick').value;
-            user.ava = document.getElementById('set-ava').value;
-            localStorage.setItem('spk_user', JSON.stringify(user));
-        }
-
-        function toggleBG() {
-            const b = document.getElementById('blob1');
-            const btn = document.getElementById('bg-toggle');
-            btn.classList.toggle('on');
-            b.style.display = btn.classList.contains('on') ? 'block' : 'none';
         }
 
         async function send() {
             const inp = document.getElementById('m-text');
             if(!inp.value.trim()) return;
-            const msg = { nick: user.nick, email: user.email.toLowerCase().trim(), text: inp.value };
+            const msg = { nick: user.nick, email: user.email.toLowerCase(), text: inp.value };
             inp.value = '';
             await fetch(`${API}/messages`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(msg) });
             load();
@@ -182,15 +207,16 @@
             try {
                 const res = await fetch(`${API}/messages`);
                 const msgs = await res.json();
-                if(msgs.length === lastCount) return;
+                if(msgs.length === lastMsgCount) return;
+                
                 const flow = document.getElementById('chat-flow');
-                const myMail = user.email.toLowerCase().trim();
+                const myEmail = user.email.toLowerCase().trim();
                 flow.innerHTML = msgs.map(m => `
-                    <div class="msg ${m.email.toLowerCase().trim() === myMail ? 'sent' : 'received'}">
+                    <div class="msg ${m.email.toLowerCase() === myEmail ? 'sent' : 'received'}">
                         <b>${m.nick}</b>${m.text}
                     </div>
                 `).join('');
-                lastCount = msgs.length;
+                lastMsgCount = msgs.length;
                 document.getElementById('sc-chat').scrollTop = document.getElementById('sc-chat').scrollHeight;
             } catch(e) {}
         }
@@ -205,9 +231,11 @@
 
         function logout() { localStorage.clear(); location.reload(); }
 
+        // Если залогинен - сразу в чат
         if(user) {
             document.getElementById('auth-layer').style.display = 'none';
-            initUI();
+            document.getElementById('app').style.opacity = '1';
+            initApp();
         }
     </script>
 </body>
