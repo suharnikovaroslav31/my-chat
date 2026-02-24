@@ -3,215 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Speeky OS | Next-Gen</title>
+    <title>Speeky OS | Premium</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --accent: #00f2ff;
-            --accent-soft: rgba(0, 242, 255, 0.1);
             --bg: #030406;
             --glass: rgba(255, 255, 255, 0.03);
             --border: rgba(255, 255, 255, 0.08);
-            --card: rgba(15, 17, 23, 0.7);
+            --card: rgba(15, 17, 23, 0.8);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        
         body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; position: relative; }
 
-        /* --- ЖИВОЙ ЗАДНИЙ ФОН --- */
-        .ambient-bg {
-            position: fixed; inset: 0; z-index: -1; overflow: hidden;
-        }
-        .blob {
-            position: absolute; width: 400px; height: 400px; background: var(--accent);
-            filter: blur(120px); opacity: 0.15; border-radius: 50%; animation: move 25s infinite alternate;
-        }
-        .blob-2 { background: #9d50ff; animation-delay: -5s; left: 50%; }
-        @keyframes move { from { transform: translate(-20%, -20%) scale(1); } to { transform: translate(40%, 40%) scale(1.2); } }
+        /* ФОНОВАЯ АНИМАЦИЯ */
+        .ambient-bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; }
+        .blob { position: absolute; width: 500px; height: 500px; background: var(--accent); filter: blur(130px); opacity: 0.12; border-radius: 50%; animation: move 20s infinite alternate; }
+        .blob-2 { background: #9d50ff; animation-delay: -7s; right: -10%; top: -10%; }
+        @keyframes move { from { transform: translate(-10%, -10%); } to { transform: translate(30%, 30%); } }
 
-        /* --- АВТОРИЗАЦИЯ --- */
-        #auth-layer {
-            position: fixed; inset: 0; z-index: 5000; background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: center; padding: 20px;
+        /* ПРИВЕТСТВЕННОЕ ОБЛАЧКО (INTRO) */
+        #welcome-overlay {
+            position: fixed; inset: 0; z-index: 6000; background: var(--bg);
+            display: none; align-items: center; justify-content: center;
         }
-        .auth-card {
-            width: 100%; max-width: 380px; padding: 40px 30px; background: var(--card);
-            border: 1px solid var(--border); border-radius: 40px; box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        .welcome-cloud {
+            background: var(--glass); backdrop-filter: blur(40px); border: 1px solid var(--border);
+            padding: 40px; border-radius: 50px; width: 85%; max-width: 400px; text-align: center;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+            animation: cloudIn 1.2s cubic-bezier(0.22, 1, 0.36, 1);
         }
+        @keyframes cloudIn {
+            from { opacity: 0; transform: scale(0.8) translateY(50px); filter: blur(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        }
+        .cloud-title { font-size: 32px; font-weight: 800; margin-bottom: 15px; background: linear-gradient(to right, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .cloud-text { opacity: 0.6; line-height: 1.6; font-size: 15px; margin-bottom: 25px; }
+
+        /* AUTH LAYER */
+        #auth-layer { position: fixed; inset: 0; z-index: 5000; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .auth-card { width: 100%; max-width: 380px; padding: 40px 30px; background: var(--card); border: 1px solid var(--border); border-radius: 40px; }
         .auth-form { display: none; }
-        .auth-form.active { display: block; animation: slideUp 0.5s ease; }
-        
-        input {
-            width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-            padding: 16px; border-radius: 20px; color: #fff; outline: none; margin-bottom: 15px; font-size: 15px;
-        }
-        input:focus { border-color: var(--accent); background: rgba(0,242,255,0.02); }
-        .auth-btn {
-            width: 100%; padding: 18px; border-radius: 20px; border: none;
-            background: var(--accent); color: #000; font-weight: 800; cursor: pointer; transition: 0.3s;
-        }
-        .auth-btn:hover { box-shadow: 0 0 20px var(--accent); }
+        .auth-form.active { display: block; animation: fadeIn 0.6s ease; }
+        input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 16px; border-radius: 20px; color: #fff; outline: none; margin-bottom: 15px; transition: 0.3s; }
+        input:focus { border-color: var(--accent); }
+        .auth-btn { width: 100%; padding: 18px; border-radius: 20px; border: none; background: var(--accent); color: #000; font-weight: 800; cursor: pointer; }
 
-        /* --- ИНТЕРФЕЙС ПРИЛОЖЕНИЯ --- */
-        #app { display: none; height: 100vh; flex-direction: column; }
+        /* MAIN APP */
+        #app { display: none; height: 100vh; flex-direction: column; animation: appEnter 1s ease; }
+        @keyframes appEnter { from { opacity: 0; } to { opacity: 1; } }
         .screen { display: none; flex: 1; padding: 25px; padding-bottom: 180px; overflow-y: auto; }
-        .screen.active { display: flex; flex-direction: column; animation: fadeIn 0.4s ease; }
+        .screen.active { display: flex; flex-direction: column; }
 
-        .header-ui { margin-bottom: 30px; }
-        .header-ui h1 { font-size: 36px; font-weight: 800; letter-spacing: -1.5px; }
-        .header-ui p { opacity: 0.4; font-size: 14px; }
+        /* ISLAND */
+        .island-controller { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 440px; z-index: 1000; }
+        .island-nav { background: rgba(10, 12, 18, 0.9); backdrop-filter: blur(40px); border: 1px solid var(--border); border-radius: 45px; padding: 12px; display: flex; justify-content: space-around; }
+        .nav-link { font-size: 26px; opacity: 0.25; cursor: pointer; padding: 10px; }
+        .nav-link.active { opacity: 1; color: var(--accent); }
 
-        /* ВИДЖЕТЫ И КАРТОЧКИ */
-        .glass-box {
-            background: var(--glass); backdrop-filter: blur(15px);
-            border: 1px solid var(--border); border-radius: 30px;
-            padding: 20px; margin-bottom: 15px;
-        }
-        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .grid-item { 
-            background: var(--glass); border: 1px solid var(--border); 
-            padding: 20px; border-radius: 25px; text-align: center; cursor: pointer;
-        }
-        .grid-item span { display: block; font-size: 24px; margin-bottom: 10px; }
-
-        /* ПРОФИЛЬ */
-        .profile-hero { text-align: center; padding: 20px 0; }
-        .p-avatar { 
-            width: 90px; height: 90px; background: linear-gradient(45deg, var(--accent), #9d50ff);
-            border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; 
-            justify-content: center; font-size: 38px; font-weight: 800; color: #000;
-            box-shadow: 0 10px 30px rgba(0, 242, 255, 0.3);
-        }
-
-        /* ОСТРОВОК НАВИГАЦИИ */
-        .island-controller {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            width: 92%; max-width: 440px; z-index: 1000;
-        }
-        .island-nav {
-            background: rgba(10, 12, 18, 0.9); backdrop-filter: blur(40px);
-            border: 1px solid var(--border); border-radius: 45px;
-            padding: 12px; display: flex; justify-content: space-around; align-items: center;
-        }
-        .nav-link { font-size: 26px; opacity: 0.25; cursor: pointer; transition: 0.3s; padding: 10px; }
-        .nav-link.active { opacity: 1; color: var(--accent); transform: translateY(-3px); }
-
-        /* ВВОД */
-        .msg-input-area {
-            background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-            border-radius: 30px; padding: 10px 20px; display: none; align-items: center;
-            margin-bottom: 12px; backdrop-filter: blur(20px);
-        }
+        .msg-input-area { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 30px; padding: 10px 20px; display: none; align-items: center; margin-bottom: 12px; backdrop-filter: blur(20px); }
         .msg-input-area.show { display: flex; }
         .msg-input-area input { margin: 0; background: none; border: none; flex: 1; padding: 10px; }
 
-        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .glass-box { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 30px; padding: 20px; margin-bottom: 15px; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div class="ambient-bg">
-        <div class="blob"></div>
-        <div class="blob blob-2"></div>
+    <div class="ambient-bg"><div class="blob"></div><div class="blob blob-2"></div></div>
+
+    <div id="welcome-overlay">
+        <div class="welcome-cloud" id="cloud-box">
+            <h1 class="cloud-title" id="welcome-nick">Speeky OS</h1>
+            <p class="cloud-text" id="cloud-info">Инициализация защищенного ядра...</p>
+            <div style="height: 4px; width: 100%; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden;">
+                <div id="cloud-progress" style="height: 100%; width: 0%; background: var(--accent); transition: 0.5s;"></div>
+            </div>
+        </div>
     </div>
 
     <div id="auth-layer">
         <div class="auth-card">
             <div id="auth-login" class="auth-form active">
-                <h1 style="margin-bottom: 10px;">Войти</h1>
-                <p style="opacity: 0.5; margin-bottom: 30px;">Speeky Core V3.0</p>
+                <h1>Вход</h1>
+                <p style="opacity: 0.4; margin-bottom: 30px;">Speeky Cloud ID</p>
                 <input type="email" id="l-email" placeholder="Email">
                 <input type="password" id="l-pass" placeholder="Пароль">
                 <button class="auth-btn" onclick="handleLogin()">АВТОРИЗАЦИЯ</button>
-                <p class="link" onclick="toggleForm('auth-reg')" style="text-align:center; margin-top:20px; cursor:pointer; color:var(--accent); font-size:13px;">Создать аккаунт</p>
-                <p onclick="toggleForm('auth-reset')" style="text-align:center; margin-top:10px; cursor:pointer; opacity:0.3; font-size:11px;">Забыли пароль?</p>
+                <p onclick="toggleForm('auth-reg')" style="text-align:center; margin-top:20px; cursor:pointer; color:var(--accent); font-size:13px;">Создать ID</p>
             </div>
-
             <div id="auth-reg" class="auth-form">
                 <h1>Создать ID</h1>
-                <p style="opacity: 0.5; margin-bottom: 30px;">Регистрация в Speeky Cloud</p>
                 <input type="text" id="r-nick" placeholder="Никнейм">
                 <input type="email" id="r-email" placeholder="Email">
                 <input type="password" id="r-pass" placeholder="Пароль">
-                <input type="text" id="r-secret" placeholder="Кодовое слово (для сброса)">
-                <button class="auth-btn" onclick="handleRegister()">СОЗДАТЬ</button>
-                <p onclick="toggleForm('auth-login')" style="text-align:center; margin-top:20px; cursor:pointer; color:var(--accent); font-size:13px;">Уже есть аккаунт</p>
-            </div>
-
-            <div id="auth-reset" class="auth-form">
-                <h1>Сброс</h1>
-                <input type="email" id="f-email" placeholder="Email">
-                <input type="text" id="f-secret" placeholder="Кодовое слово">
-                <button class="auth-btn" onclick="handleReset()">ВОССТАНОВИТЬ</button>
-                <p onclick="toggleForm('auth-login')" style="text-align:center; margin-top:20px; cursor:pointer; font-size:13px;">Назад</p>
+                <input type="text" id="r-secret" placeholder="Кодовое слово">
+                <button class="auth-btn" onclick="handleRegister()">ГОТОВО</button>
+                <p onclick="toggleForm('auth-login')" style="text-align:center; margin-top:20px; cursor:pointer; font-size:13px;">Уже есть аккаунт</p>
             </div>
         </div>
     </div>
 
     <div id="app">
         <section id="sc-chat" class="screen active">
-            <div class="header-ui">
-                <h1>Сообщения</h1>
-                <p>Все узлы работают штатно</p>
-            </div>
+            <h1 style="font-size: 34px; letter-spacing: -1px; margin-bottom: 20px;">Сообщения</h1>
             <div id="messages-container" style="display:flex; flex-direction:column; gap:12px;">
-                <div class="glass-box" style="border-left: 3px solid var(--accent);">
-                    <b>Система</b><br>
-                    <small style="opacity:0.5;">Ваш профиль успешно загружен из IndexedDB.</small>
-                </div>
-            </div>
-        </section>
-
-        <section id="sc-create" class="screen">
-            <div class="header-ui">
-                <h1>Создать</h1>
-                <p>Выберите тип нового пространства</p>
-            </div>
-            <div class="action-grid">
-                <div class="grid-item" onclick="alert('Канал создан')"><span>📢</span><b>Канал</b></div>
-                <div class="grid-item" onclick="alert('Группа создана')"><span>👥</span><b>Группа</b></div>
-                <div class="grid-item" onclick="alert('Секретный чат')"><span>🔒</span><b>Секрет</b></div>
-                <div class="grid-item" onclick="alert('Облако')"><span>☁️</span><b>Cloud</b></div>
-            </div>
-            <div class="glass-box" style="margin-top:20px;">
-                <h3>Быстрый старт</h3>
-                <input type="text" class="ui-input" placeholder="Введите название...">
-                <button class="auth-btn" style="padding:12px;">ПОДТВЕРДИТЬ</button>
+                <div class="glass-box">Система готова. Начните общение.</div>
             </div>
         </section>
 
         <section id="sc-settings" class="screen">
-            <div class="header-ui">
-                <h1>Профиль</h1>
-                <p>Управление Speeky ID</p>
+            <h1>Профиль</h1>
+            <div class="glass-box" style="text-align:center; margin-top: 20px;">
+                <div style="width:80px; height:80px; background:var(--accent); color:#000; border-radius:50%; margin: 0 auto 15px; display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:800;" id="u-avatar">?</div>
+                <h2 id="u-nick">...</h2>
+                <p id="u-email" style="opacity:0.5;">...</p>
             </div>
-            <div class="glass-box profile-hero">
-                <div class="p-avatar" id="u-avatar">?</div>
-                <h2 id="u-nick">Nickname</h2>
-                <p id="u-email" style="opacity:0.5;">email@example.com</p>
-            </div>
-            <div class="glass-box">
-                <p style="font-size:12px; opacity:0.4; margin-bottom:10px;">ИНФОРМАЦИЯ ОБ АККАУНТЕ</p>
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                    <span>Дата создания:</span><span id="u-date" style="color:var(--accent);">--.--.--</span>
-                </div>
-                <div style="display:flex; justify-content:space-between;">
-                    <span>Статус:</span><span style="color:#0f8;">Active</span>
-                </div>
-            </div>
-            <button onclick="handleLogout()" style="background:rgba(255,0,0,0.1); color:#ff4444; border:1px solid rgba(255,0,0,0.2); width:100%; padding:15px; border-radius:20px; font-weight:800; cursor:pointer;">ВЫЙТИ</button>
+            <button onclick="handleLogout()" style="background:rgba(255,0,0,0.1); color:#ff4444; border:none; width:100%; padding:18px; border-radius:20px; font-weight:800; cursor:pointer;">ВЫЙТИ</button>
         </section>
 
         <div class="island-controller">
             <div class="msg-input-area show" id="island-input">
-                <input type="text" id="m-val" placeholder="Написать сообщение...">
+                <input type="text" id="m-val" placeholder="Написать...">
                 <button onclick="sendMsg()" style="background:var(--accent); border:none; width:35px; height:35px; border-radius:50%; font-weight:900;">></button>
             </div>
             <nav class="island-nav">
                 <div class="nav-link active" onclick="go('chat', this)">💬</div>
-                <div class="nav-link" onclick="go('create', this)">⊕</div>
                 <div class="nav-link" onclick="go('settings', this)">⚙️</div>
             </nav>
         </div>
@@ -221,18 +141,13 @@
         let db;
         let currentUser = null;
 
-        // DB INIT
-        const req = indexedDB.open("SpeekyCoreDB", 1);
+        const req = indexedDB.open("SpeekySmoothDB", 1);
         req.onupgradeneeded = (e) => {
             db = e.target.result;
             db.createObjectStore("users", { keyPath: "email" });
         };
-        req.onsuccess = (e) => {
-            db = e.target.result;
-            checkSession();
-        };
+        req.onsuccess = (e) => { db = e.target.result; checkSession(true); };
 
-        // AUTH LOGIC
         function toggleForm(id) {
             document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
             document.getElementById(id).classList.add('active');
@@ -246,59 +161,84 @@
                 secret: document.getElementById('r-secret').value.toLowerCase(),
                 date: new Date().toLocaleDateString()
             };
-            if(!user.email.includes('@')) return alert("Email не валиден");
-            
             const tx = db.transaction("users", "readwrite");
-            const req = tx.objectStore("users").add(user);
-            req.onsuccess = () => { alert("ID Создан!"); toggleForm('auth-login'); };
-            req.onerror = () => alert("Email занят");
+            tx.objectStore("users").add(user).onsuccess = () => toggleForm('auth-login');
         }
 
         function handleLogin() {
             const email = document.getElementById('l-email').value;
             const pass = document.getElementById('l-pass').value;
-
             db.transaction("users").objectStore("users").get(email).onsuccess = (e) => {
                 const u = e.target.result;
                 if(u && u.pass === pass) {
                     localStorage.setItem('spk_session', JSON.stringify(u));
-                    checkSession();
-                } else alert("Ошибка входа");
+                    runWelcomeIntro(u);
+                } else alert("Ошибка");
             };
         }
 
-        function handleReset() {
-            const email = document.getElementById('f-email').value;
-            const secret = document.getElementById('f-secret').value.toLowerCase();
-            db.transaction("users").objectStore("users").get(email).onsuccess = (e) => {
-                const u = e.target.result;
-                if(u && u.secret === secret) alert("Ваш пароль: " + u.pass);
-                else alert("Данные не верны");
-            };
+        // --- ТО САМОЕ ПЛАВНОЕ ПРИВЕТСТВИЕ ---
+        function runWelcomeIntro(user) {
+            document.getElementById('auth-layer').style.display = 'none';
+            const overlay = document.getElementById('welcome-overlay');
+            const info = document.getElementById('cloud-info');
+            const progress = document.getElementById('cloud-progress');
+            const nick = document.getElementById('welcome-nick');
+
+            overlay.style.display = 'flex';
+            nick.innerText = `Привет, ${user.nick}`;
+
+            const steps = [
+                { t: "Синхронизация Speeky ID...", p: "30%" },
+                { t: "Загрузка облачных данных...", p: "60%" },
+                { t: "Шифрование сессии активно.", p: "100%" }
+            ];
+
+            let step = 0;
+            const interval = setInterval(() => {
+                if(step < steps.length) {
+                    info.style.opacity = 0;
+                    setTimeout(() => {
+                        info.innerText = steps[step].t;
+                        progress.style.width = steps[step].p;
+                        info.style.opacity = 0.6;
+                        step++;
+                    }, 300);
+                } else {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        overlay.style.opacity = 0;
+                        overlay.style.transition = "1s ease";
+                        setTimeout(() => {
+                            overlay.style.display = 'none';
+                            checkSession(false);
+                        }, 1000);
+                    }, 800);
+                }
+            }, 1200);
         }
 
-        // SESSION
-        function checkSession() {
+        function checkSession(fast) {
             const s = localStorage.getItem('spk_session');
             if(s) {
                 currentUser = JSON.parse(s);
-                document.getElementById('auth-layer').style.display = 'none';
-                document.getElementById('app').style.display = 'flex';
-                // Sync UI
+                if(fast) {
+                    document.getElementById('auth-layer').style.display = 'none';
+                    document.getElementById('app').style.display = 'flex';
+                } else {
+                    document.getElementById('app').style.display = 'flex';
+                }
                 document.getElementById('u-nick').innerText = currentUser.nick;
                 document.getElementById('u-email').innerText = currentUser.email;
-                document.getElementById('u-date').innerText = currentUser.date;
                 document.getElementById('u-avatar').innerText = currentUser.nick[0].toUpperCase();
             }
         }
 
-        // NAVIGATION
         function go(screen, el) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('sc-' + screen).classList.add('active');
             document.querySelectorAll('.nav-link').forEach(i => i.classList.remove('active'));
             el.classList.add('active');
-
             document.getElementById('island-input').classList.toggle('show', screen === 'chat');
         }
 
@@ -311,7 +251,6 @@
             div.style.alignSelf = 'flex-end';
             div.style.background = 'var(--accent)';
             div.style.color = '#000';
-            div.style.fontWeight = '600';
             div.innerText = inp.value;
             flow.appendChild(div);
             inp.value = '';
