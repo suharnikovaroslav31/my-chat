@@ -1,23 +1,37 @@
 const express = require('express');
-const cors = require('cors'); // РАЗРЕШАЕТ ПЕРЕСЫЛКУ МЕЖДУ ЛЮДЬМИ
+const cors = require('cors');
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
+// База сообщений в оперативной памяти
 let messages = [];
 
-// Отдаем сообщения всем
+// Главная страница (чтобы не было "Cannot GET /")
+app.get('/', (req, res) => {
+    res.send('Speeky Server is Active!');
+});
+
+// Получение сообщений
 app.get('/messages', (req, res) => {
     res.json(messages);
 });
 
-// Принимаем сообщения
+// Прием новых сообщений
 app.post('/messages', (req, res) => {
-    messages.push(req.body);
-    if(messages.length > 50) messages.shift(); // Чтобы сервер не лопнул
-    res.json({status: "ok"});
+    const msg = req.body;
+    if(msg.text && msg.nick) {
+        messages.push(msg);
+        // Храним последние 50, чтобы сервер не тормозил
+        if(messages.length > 50) messages.shift();
+        res.status(201).json({status: "ok"});
+    } else {
+        res.status(400).json({status: "error"});
+    }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`Сервер пашет на порту ${PORT}`);
+});
