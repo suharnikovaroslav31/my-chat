@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Speeky OS | Fixed Sync</title>
+    <title>Speeky OS | Global Fix</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --accent: #00f2ff; --bg: #030406; --glass: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1); }
@@ -21,7 +21,7 @@
         .msg.received { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
         .msg b { display: block; font-size: 10px; opacity: 0.5; margin-bottom: 2px; }
 
-        /* ПАНЕЛЬ ВВОДА */
+        /* ВВОД */
         .controls { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 500px; }
         .input-bar { background: rgba(15,17,23,0.95); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 30px; padding: 8px 10px 8px 20px; display: flex; }
         .input-bar input { background: none; border: none; flex: 1; color: #fff; outline: none; padding: 10px; }
@@ -34,64 +34,66 @@
         <section id="sc-chat" class="screen active">
             <div id="chat-flow"></div>
         </section>
-
         <div class="controls">
             <div class="input-bar">
-                <input type="text" id="m-text" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') sendMsg()">
+                <input type="text" id="m-text" placeholder="Написать..." onkeypress="if(event.key==='Enter') sendMsg()">
                 <button class="send-btn" onclick="sendMsg()">></button>
             </div>
         </div>
     </div>
 
     <script>
-        // ТВОЙ СЕРВЕР ИЗ СКРИНШОТОВ
+        // БРО, ПРОВЕРЬ ЭТУ ССЫЛКУ! Она должна быть точь-в-точь как твой домен на Render
         const API = 'https://my-chat-itp3.onrender.com';
-        let user = JSON.parse(localStorage.getItem('spk_user')) || { nick: 'Guest', email: 'guest@test.com' };
         
-        // Показываем приложение
+        // Берем данные твоего аккаунта из сохраненки (они там точно есть после регистрации)
+        let user = JSON.parse(localStorage.getItem('spk_user')) || { nick: 'Аноним', email: 'none' };
+
         document.getElementById('app').style.display = 'flex';
 
-        // 1. ОТПРАВКА НА СЕРВЕР
         async function sendMsg() {
             const inp = document.getElementById('m-text');
             const val = inp.value.trim();
             if(!val) return;
 
-            const data = { nick: user.nick, email: user.email, text: val };
-            inp.value = ''; // Очистка
+            const data = { 
+                nick: user.nick, 
+                email: user.email, 
+                text: val,
+                date: user.regDate // Тянем дату из профиля
+            };
+            inp.value = '';
 
             try {
-                await fetch(`${API}/messages`, {
+                const res = await fetch(`${API}/messages`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-                load(); // Обновляем сразу
-            } catch(e) { console.error("Ошибка отправки"); }
+                if(res.ok) load();
+            } catch(e) { console.error("Ошибка отправки:", e); }
         }
 
-        // 2. ПОЛУЧЕНИЕ С СЕРВЕРА (LIVE)
         async function load() {
             try {
                 const res = await fetch(`${API}/messages`);
                 const msgs = await res.json();
                 const flow = document.getElementById('chat-flow');
                 
-                flow.innerHTML = '';
+                // Чтобы не мерцало, обновляем только если есть разница
+                let newHTML = '';
                 msgs.forEach(m => {
                     const isMe = m.email === user.email;
-                    const d = document.createElement('div');
-                    d.className = `msg ${isMe ? 'sent' : 'received'}`;
-                    d.innerHTML = `<b>${m.nick}</b>${m.text}`;
-                    flow.appendChild(d);
+                    newHTML += `<div class="msg ${isMe ? 'sent' : 'received'}"><b>${m.nick}</b>${m.text}</div>`;
                 });
+                flow.innerHTML = newHTML;
 
                 const sc = document.getElementById('sc-chat');
                 sc.scrollTop = sc.scrollHeight;
-            } catch(e) { console.log("Сервер не отвечает"); }
+            } catch(e) { console.warn("Сервер еще не проснулся..."); }
         }
 
-        // ЗАПУСКАЕМ ВЕЧНЫЙ ЦИКЛ (чтобы сообщения приходили от других)
+        // ОПРОС РАЗ В 2 СЕКУНДЫ
         setInterval(load, 2000); 
         load();
     </script>
