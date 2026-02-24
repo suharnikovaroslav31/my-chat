@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Speeky OS | Full Settings & Nebula</title>
+    <title>Speeky OS | Final Fix</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -19,7 +19,7 @@
         body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
 
         /* ЖИВОЙ ФОН */
-        .nebula-wrap { position: fixed; inset: 0; z-index: -2; background: #000; overflow: hidden; }
+        .nebula-wrap { position: fixed; inset: 0; z-index: -2; background: #000; overflow: hidden; pointer-events: none; }
         .blob { 
             position: absolute; width: 70vw; height: 70vw; 
             background: radial-gradient(circle, var(--accent) 0%, transparent 70%); 
@@ -29,24 +29,30 @@
         .blob-2 { background: radial-gradient(circle, #7000ff 0%, transparent 70%); animation-delay: -7s; left: 50%; top: 30%; }
         @keyframes move { from { transform: translate(-20%, -20%) scale(1); } to { transform: translate(30%, 30%) scale(1.3); } }
 
-        /* ИНТЕРФЕЙС */
+        /* ОВЕРЛЕЙ И КАРТОЧКИ (FIXED CLICKS) */
         .overlay { position: fixed; inset: 0; z-index: 2000; background: #000; display: flex; align-items: center; justify-content: center; transition: 0.8s; }
         .card { 
-            width: 92%; max-width: 420px; padding: 40px; background: rgba(10, 12, 18, 0.85); 
+            width: 92%; max-width: 420px; padding: 40px; background: rgba(10, 12, 18, 0.9); 
             border: 1px solid var(--border); border-radius: 40px; backdrop-filter: blur(40px); 
-            text-align: center; position: absolute; opacity: 0; transform: scale(0.95); transition: 0.5s;
+            text-align: center; position: absolute; opacity: 0; pointer-events: none;
+            transform: scale(0.95); transition: 0.5s cubic-bezier(0.22, 1, 0.36, 1);
         }
-        .card.active { opacity: 1; transform: scale(1); visibility: visible; }
-        .overlay.hidden { opacity: 0; visibility: hidden; }
+        .card.active { opacity: 1; transform: scale(1); pointer-events: all; z-index: 2001; }
+        .overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
-        input[type="text"], input[type="email"] { 
+        input { 
             width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); 
             padding: 18px; border-radius: 22px; color: #fff; outline: none; transition: 0.3s;
         }
         input:focus { border-color: var(--accent); background: rgba(255,255,255,0.1); }
 
+        .btn-main { width: 100%; padding: 20px; border-radius: 22px; border: none; background: var(--accent); color: #000; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        .btn-main:active { transform: scale(0.98); }
+
+        .link-btn { background: none; border: none; color: var(--accent); opacity: 0.6; font-size: 14px; margin-top: 20px; cursor: pointer; text-decoration: underline; }
+
         /* ЭКРАНЫ */
-        .screen { flex: 1; padding: 25px; overflow-y: auto; display: none; width: 100%; max-width: 850px; margin: 0 auto; scroll-behavior: smooth; }
+        .screen { flex: 1; padding: 25px; overflow-y: auto; display: none; width: 100%; max-width: 850px; margin: 0 auto; }
         .screen.active { display: flex; flex-direction: column; animation: slideUp 0.5s ease; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -58,25 +64,17 @@
         .msg-info { display: flex; align-items: center; gap: 8px; font-size: 11px; margin-bottom: 6px; font-weight: 700; opacity: 0.7; }
         .msg-ava { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; background: #222; }
 
-        @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* ТЕ САМЫЕ НАСТРОЙКИ */
+        /* НАСТРОЙКИ */
         .set-group { background: var(--glass); border: 1px solid var(--border); border-radius: 35px; padding: 28px; margin-bottom: 20px; backdrop-filter: blur(15px); }
-        .set-group h2 { font-size: 18px; font-weight: 800; margin-bottom: 20px; }
         .set-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 15px; }
-        .set-row:last-child { margin-bottom: 0; }
         
-        /* СЛАЙДЕРЫ */
-        input[type="range"] { -webkit-appearance: none; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; width: 120px; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; background: var(--accent); border-radius: 50%; cursor: pointer; }
-
-        /* КНОПКИ И НАВ */
+        /* UI NAV */
         .ui-nav { position: fixed; bottom: 30px; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 15px; z-index: 1000; }
-        .input-bar { width: 90%; max-width: 600px; background: rgba(10, 12, 18, 0.9); border: 1px solid var(--border); border-radius: 40px; padding: 10px 10px 10px 25px; display: none; align-items: center; backdrop-filter: blur(30px); }
+        .input-bar { width: 90%; max-width: 600px; background: rgba(10, 12, 18, 0.95); border: 1px solid var(--border); border-radius: 40px; padding: 10px; display: none; align-items: center; backdrop-filter: blur(30px); }
         .input-bar.active { display: flex; }
-        .input-bar input { background: none; border: none; flex: 1; }
+        .input-bar input { background: none; border: none; flex: 1; padding-left: 15px; }
         
-        .dock { width: 90%; max-width: 380px; background: rgba(10, 12, 18, 0.95); border: 1px solid var(--border); border-radius: 40px; padding: 14px; display: flex; justify-content: space-around; backdrop-filter: blur(25px); }
+        .dock { width: 90%; max-width: 380px; background: rgba(10, 12, 18, 0.98); border: 1px solid var(--border); border-radius: 40px; padding: 14px; display: flex; justify-content: space-around; backdrop-filter: blur(25px); }
         .dock-item { font-size: 26px; opacity: 0.3; transition: 0.3s; cursor: pointer; }
         .dock-item.active { opacity: 1; color: var(--accent); transform: scale(1.15); }
     </style>
@@ -91,29 +89,30 @@
     <div id="intro-overlay" class="overlay">
         <div id="card-reg" class="card active">
             <h1 style="font-weight:800; font-size:32px; margin-bottom:10px">Speeky OS</h1>
-            <p style="opacity:0.4; margin-bottom:30px">Создайте ID аккаунт</p>
-            <input type="text" id="r-nick" placeholder="Никнейм">
+            <p style="opacity:0.4; margin-bottom:30px">Создайте свой ID</p>
+            <input type="text" id="r-nick" placeholder="Ваше имя">
             <div style="height:12px"></div>
             <input type="email" id="r-email" placeholder="Email">
             <div style="height:25px"></div>
-            <button onclick="nextCard('perks')" style="width:100%; padding:20px; border-radius:22px; border:none; background:var(--accent); color:#000; font-weight:800; cursor:pointer">ПРОДОЛЖИТЬ</button>
+            <button class="btn-main" onclick="nextCard('perks')">СОЗДАТЬ АККАУНТ</button>
+            <button class="link-btn" onclick="quickLogin()">Уже есть аккаунт? Войти</button>
         </div>
 
         <div id="card-perks" class="card">
-            <h2>Ваши преимущества</h2>
+            <h2>Ваши возможности</h2>
             <div style="text-align:left; margin:25px 0; display:flex; flex-direction:column; gap:15px">
-                <div>✨ <b>Identity Plus</b> — Постоянный профиль</div>
-                <div>🎨 <b>Ultimate Design</b> — Полная настройка</div>
-                <div>🔐 <b>Cloud Recovery</b> — Доступ по Email</div>
+                <div>💎 <b>Identity OS</b> — Аккаунт навсегда</div>
+                <div>🌌 <b>Nebula Flow</b> — Ультра-плавность</div>
+                <div>⚙️ <b>Custom Core</b> — Полная настройка</div>
             </div>
-            <button onclick="finishIntro()" style="width:100%; padding:20px; border-radius:22px; border:none; background:var(--accent); color:#000; font-weight:800; cursor:pointer">ЗАПУСТИТЬ</button>
+            <button class="btn-main" onclick="finishIntro()">ВСЁ ПОНЯТНО</button>
         </div>
     </div>
 
     <div id="app" style="display:none; flex-direction:column; height:100vh;">
         <section id="sc-chat" class="screen active">
             <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:35px">
-                <h1 style="font-size:34px; font-weight:800; letter-spacing:-1px">Облако</h1>
+                <h1 style="font-size:34px; font-weight:800">Облако</h1>
                 <div style="color:#00ff88; font-size:13px; font-weight:800; border:1px solid rgba(0,255,136,0.2); padding:8px 16px; border-radius:20px">● <span id="on-count">1</span> online</div>
             </header>
             <div id="chat-flow"></div>
@@ -123,14 +122,14 @@
             <h1 style="font-size:34px; font-weight:800; margin-bottom:30px">Настройки</h1>
             
             <div class="set-group">
-                <h2>Профиль</h2>
-                <input type="text" id="set-nick-inp" placeholder="Сменить ник" onchange="save()">
+                <h2 style="font-size:18px; margin-bottom:20px">Профиль</h2>
+                <input type="text" id="set-nick-inp" placeholder="Ник" onchange="save()">
                 <div style="height:12px"></div>
-                <input type="text" id="set-ava-inp" placeholder="Ссылка на аватарку (URL)" onchange="save()">
+                <input type="text" id="set-ava-inp" placeholder="Аватарка (URL)" onchange="save()">
             </div>
 
             <div class="set-group">
-                <h2>Визуал</h2>
+                <h2 style="font-size:18px; margin-bottom:20px">Визуал</h2>
                 <div class="set-row">
                     <span>Размытие</span>
                     <input type="range" min="0" max="60" value="25" oninput="document.documentElement.style.setProperty('--blur-val', this.value+'px')">
@@ -141,19 +140,19 @@
                 </div>
                 <div class="set-row">
                     <span>Цвет акцента</span>
-                    <input type="color" value="#00f2ff" style="width:35px; height:35px; border:none; background:none;" oninput="document.documentElement.style.setProperty('--accent', this.value)">
+                    <input type="color" value="#00f2ff" style="width:35px; height:35px; border:none; background:none" oninput="document.documentElement.style.setProperty('--accent', this.value)">
                 </div>
             </div>
 
             <div class="set-group">
-                <h2>Приватность</h2>
+                <h2 style="font-size:18px; margin-bottom:20px">Приватность</h2>
                 <div class="set-row">
                     <span>Инкогнито</span>
                     <input type="checkbox" style="width:20px; height:20px; accent-color:var(--accent)">
                 </div>
             </div>
 
-            <button onclick="localStorage.clear(); location.reload();" style="width:100%; padding:20px; background:rgba(255,50,50,0.1); border:none; color:#ff4d4d; border-radius:25px; font-weight:800; cursor:pointer; margin-bottom:50px">ВЫЙТИ ИЗ ID</button>
+            <button onclick="localStorage.clear(); location.reload();" style="width:100%; padding:20px; background:rgba(255,50,50,0.1); border:none; color:#ff4d4d; border-radius:25px; font-weight:800; cursor:pointer; margin-bottom:50px">ВЫЙТИ</button>
         </section>
 
         <div class="ui-nav">
@@ -177,10 +176,15 @@
         function nextCard(step) {
             const n = document.getElementById('r-nick').value;
             const e = document.getElementById('r-email').value;
-            if(!n || !e) return alert("Заполните все данные!");
+            if(!n || !e) return alert("Заполни поля!");
             user = { nick: n, email: e, ava: defaultAva };
             document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
-            setTimeout(() => document.getElementById('card-'+step).classList.add('active'), 50);
+            document.getElementById('card-'+step).classList.add('active');
+        }
+
+        function quickLogin() {
+            if(user) finishIntro();
+            else alert("Данные не найдены. Сначала зарегистрируйтесь!");
         }
 
         function finishIntro() {
@@ -217,7 +221,7 @@
             const inp = document.getElementById('m-text');
             if(!inp.value.trim()) return;
             const msg = { nick: user.nick, email: user.email.toLowerCase(), ava: user.ava, text: inp.value, time: Date.now() };
-            renderMessage(msg); // Локальное отображение
+            renderMessage(msg);
             inp.value = '';
             try { await fetch(`${API}/messages`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(msg) }); } catch(e) {}
         }
@@ -235,8 +239,7 @@
                 <span>${m.text}</span>
             `;
             flow.appendChild(div);
-            const sc = document.getElementById('sc-chat');
-            sc.scrollTop = sc.scrollHeight;
+            document.getElementById('sc-chat').scrollTop = document.getElementById('sc-chat').scrollHeight;
         }
 
         async function load() {
