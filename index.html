@@ -3,61 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Speeky OS | Real-Time Counter</title>
+    <title>Speeky OS | Clean Design</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #00f2ff; --bg: #030406; --glass: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1); --blur-val: 30px; }
+        :root { 
+            --accent: #00f2ff; 
+            --bg: #030406; 
+            --glass: rgba(255, 255, 255, 0.03); 
+            --border: rgba(255, 255, 255, 0.08); 
+            --blur-val: 30px; 
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; transition: 0.5s; }
+        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
+
+        /* ФОН */
         .bg-wrap { position: fixed; inset: 0; z-index: -2; background: #000; }
         .orb { position: absolute; width: 80vw; height: 80vw; background: var(--accent); filter: blur(120px); opacity: 0.1; border-radius: 50%; animation: float 20s infinite alternate; }
         @keyframes float { from { transform: translate(-20%, -10%); } to { transform: translate(30%, 20%); } }
 
-        /* ПЛАВНОСТЬ */
+        /* OVERLAYS */
         .overlay { position: fixed; inset: 0; z-index: 2000; background: var(--bg); display: flex; align-items: center; justify-content: center; transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
-        .card { width: 90%; max-width: 400px; padding: 40px; background: rgba(15, 17, 23, 0.95); border: 1px solid var(--border); border-radius: 40px; backdrop-filter: blur(40px); text-align: center; position: absolute; opacity: 0; transform: scale(0.9) translateY(20px); transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); pointer-events: none; }
+        .card { width: 92%; max-width: 400px; padding: 40px; background: rgba(10, 12, 18, 0.9); border: 1px solid var(--border); border-radius: 40px; backdrop-filter: blur(40px); text-align: center; position: absolute; opacity: 0; transform: scale(0.9) translateY(20px); transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); pointer-events: none; }
         .card.active { opacity: 1; transform: scale(1) translateY(0); pointer-events: all; }
         .overlay.hidden { opacity: 0; transform: translateY(-100vh); pointer-events: none; }
 
-        #app { display: none; flex-direction: column; height: 100vh; opacity: 0; transform: scale(1.05); transition: 1s cubic-bezier(0.22, 1, 0.36, 1); }
+        /* UI ELEMENTS (FIXING THE WHITE STUFF) */
+        input { 
+            width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); 
+            padding: 16px 20px; border-radius: 18px; color: #fff; outline: none; 
+            transition: 0.3s; font-size: 15px;
+        }
+        input:focus { border-color: var(--accent); background: rgba(255,255,255,0.08); }
+        input::placeholder { color: rgba(255,255,255,0.3); }
+
+        .btn-main { 
+            width: 100%; padding: 18px; border-radius: 20px; border: none; 
+            background: var(--accent); color: #000; font-weight: 800; 
+            cursor: pointer; transition: 0.3s; margin-top: 10px;
+        }
+        .btn-main:active { transform: scale(0.98); }
+
+        /* APP STRUCTURE */
+        #app { display: none; flex-direction: column; height: 100vh; opacity: 0; transform: scale(1.02); transition: 0.8s ease; }
         #app.visible { opacity: 1; transform: scale(1); display: flex; }
-        .screen { flex: 1; padding: 25px; overflow-y: auto; display: none; padding-bottom: 180px; }
-        .screen.active { display: flex; flex-direction: column; animation: fadeUp 0.6s ease; }
+        .screen { flex: 1; padding: 25px; overflow-y: auto; display: none; padding-bottom: 200px; }
+        .screen.active { display: flex; flex-direction: column; animation: fadeUp 0.5s ease forwards; }
 
-        /* ОНЛАЙН СЧЕТЧИК */
-        .online-chip { background: rgba(0, 255, 136, 0.1); color: #00ff88; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(0, 255, 136, 0.2); }
-        .pulse { width: 8px; height: 8px; background: #00ff88; border-radius: 50%; animation: p 1.5s infinite; }
-        @keyframes p { 0% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(0, 255, 136, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); } }
+        /* CHAT */
+        .online-chip { background: rgba(0, 255, 136, 0.08); color: #00ff88; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(0, 255, 136, 0.15); }
+        .pulse { width: 8px; height: 8px; background: #00ff88; border-radius: 50%; box-shadow: 0 0 10px #00ff88; animation: p-glow 2s infinite; }
+        @keyframes p-glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-        /* ЧАТ */
-        #chat-flow { display: flex; flex-direction: column; gap: 12px; }
-        .msg { max-width: 80%; padding: 14px 18px; border-radius: 24px; animation: msgPop 0.4s ease forwards; }
-        .msg b { display: flex; align-items: center; gap: 8px; font-size: 10px; opacity: 0.4; margin-bottom: 4px; text-transform: uppercase; }
-        .msg-ava { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
-        .msg.sent { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; }
+        #chat-flow { display: flex; flex-direction: column; gap: 15px; }
+        .msg { max-width: 85%; padding: 14px 18px; border-radius: 22px; line-height: 1.5; }
+        .msg b { display: flex; align-items: center; gap: 8px; font-size: 11px; opacity: 0.5; margin-bottom: 6px; }
+        .msg-ava { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+        .msg.sent { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; font-weight: 500; }
         .msg.received { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 4px; backdrop-filter: blur(var(--blur-val)); }
 
-        /* НАСТРОЙКИ */
-        .set-group { background: var(--glass); border: 1px solid var(--border); border-radius: 30px; padding: 22px; margin-bottom: 15px; }
-        .set-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 14px; }
-        .toggle { width: 44px; height: 24px; background: rgba(255,255,255,0.1); border-radius: 20px; position: relative; cursor: pointer; transition: 0.3s; }
+        /* SETTINGS */
+        .set-group { background: var(--glass); border: 1px solid var(--border); border-radius: 28px; padding: 22px; margin-bottom: 16px; backdrop-filter: blur(10px); }
+        .set-group h3 { font-size: 11px; text-transform: uppercase; opacity: 0.3; margin-bottom: 18px; letter-spacing: 1.2px; }
+        .set-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 14px; }
+        
+        input[type="range"] { -webkit-appearance: none; background: rgba(255,255,255,0.1); height: 4px; border-radius: 2px; width: 120px; border: none; padding: 0; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: var(--accent); border-radius: 50%; cursor: pointer; }
+
+        .toggle { width: 42px; height: 22px; background: rgba(255,255,255,0.1); border-radius: 20px; position: relative; cursor: pointer; transition: 0.3s; }
         .toggle.on { background: var(--accent); }
-        .toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: 0.3s; }
+        .toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: 0.3s; }
         .toggle.on::after { left: 23px; background: #000; }
 
-        /* ИНКОГНИТО */
-        .incognito .msg span { filter: blur(8px); transition: 0.3s; }
-        .incognito .msg:hover span { filter: blur(0); }
-
+        /* NAV & INPUT BAR */
         .ui-nav { position: fixed; bottom: 30px; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 15px; z-index: 100; }
-        .input-bar { width: 92%; max-width: 500px; background: rgba(18,20,27,0.9); border: 1px solid var(--border); border-radius: 35px; padding: 8px 10px 8px 22px; display: none; align-items: center; backdrop-filter: blur(25px); }
+        .input-bar { 
+            width: 92%; max-width: 600px; background: rgba(15, 17, 23, 0.85); 
+            border: 1px solid var(--border); border-radius: 30px; padding: 8px 10px 8px 20px; 
+            display: none; align-items: center; backdrop-filter: blur(25px);
+        }
         .input-bar.active { display: flex; }
-        .dock { width: 92%; max-width: 400px; background: rgba(10,12,18,0.95); border: 1px solid var(--border); border-radius: 40px; padding: 12px; display: flex; justify-content: space-around; backdrop-filter: blur(20px); }
-        .dock-item { font-size: 24px; opacity: 0.3; transition: 0.4s; cursor: pointer; }
+        .input-bar input { background: none; border: none; padding: 12px 0; margin: 0; flex: 1; font-size: 15px; }
+        
+        .send-btn { 
+            background: var(--accent); border: none; width: 44px; height: 44px; 
+            border-radius: 50%; cursor: pointer; display: flex; align-items: center; 
+            justify-content: center; transition: 0.3s; margin-left: 10px;
+        }
+        .send-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+
+        .dock { width: 92%; max-width: 350px; background: rgba(10, 12, 18, 0.9); border: 1px solid var(--border); border-radius: 35px; padding: 10px; display: flex; justify-content: space-around; backdrop-filter: blur(20px); }
+        .dock-item { font-size: 22px; opacity: 0.3; transition: 0.4s; cursor: pointer; }
         .dock-item.active { opacity: 1; color: var(--accent); transform: scale(1.1); }
 
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes msgPop { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -66,49 +105,54 @@
 
     <div id="intro-overlay" class="overlay">
         <div id="card-reg" class="card active">
-            <h1 style="font-weight:800; font-size:32px">Speeky OS</h1>
-            <input type="text" id="r-nick" placeholder="Имя">
-            <input type="email" id="r-email" placeholder="Email">
-            <button class="btn" style="width:100%; padding:18px; border-radius:22px; background:var(--accent); border:none; font-weight:800; margin-top:10px" onclick="nextCard('welcome')">ДАЛЕЕ</button>
+            <h2 style="font-weight:800; font-size:28px; margin-bottom:10px">Speeky OS</h2>
+            <p style="opacity:0.4; font-size:14px; margin-bottom:25px">Создай свой цифровой профиль</p>
+            <input type="text" id="r-nick" placeholder="Имя профиля">
+            <div style="height:10px"></div>
+            <input type="email" id="r-email" placeholder="Email адрес">
+            <button class="btn-main" onclick="nextCard('welcome')">ПРОДОЛЖИТЬ</button>
         </div>
         <div id="card-welcome" class="card">
-            <h1>Почти всё!</h1>
-            <button class="btn" style="width:100%; padding:18px; border-radius:22px; background:var(--accent); border:none; font-weight:800; margin-top:20px" onclick="finishIntro()">ВОЙТИ</button>
+            <h1 style="font-size:50px">👋</h1>
+            <h2 style="margin:15px 0">Добро пожаловать!</h2>
+            <button class="btn-main" onclick="finishIntro()">ЗАПУСТИТЬ СИСТЕМУ</button>
         </div>
     </div>
 
     <div id="app">
         <section id="sc-chat" class="screen active">
-            <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px">
-                <h1 style="font-size:26px; font-weight:800">Облако</h1>
+            <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px">
+                <h1 style="font-size:28px; font-weight:800; letter-spacing:-1px">Облако</h1>
                 <div class="online-chip"><div class="pulse"></div><span id="on-count">1</span> online</div>
             </header>
             <div id="chat-flow"></div>
         </section>
 
         <section id="sc-settings" class="screen">
-            <h1>Настройки</h1>
-            <div class="set-group" style="margin-top:20px">
-                <h3>Профиль</h3>
-                <input type="text" id="set-nick-inp" placeholder="Ник" onchange="save()">
-                <input type="text" id="set-ava-inp" placeholder="URL аватара" onchange="save()">
+            <h1 style="font-size:28px; font-weight:800; margin-bottom:25px">Настройки</h1>
+            <div class="set-group">
+                <h3>Аккаунт</h3>
+                <input type="text" id="set-nick-inp" placeholder="Никнейм" onchange="save()">
+                <div style="height:10px"></div>
+                <input type="text" id="set-ava-inp" placeholder="Ссылка на фото (URL)" onchange="save()">
             </div>
             <div class="set-group">
-                <h3>Визуал</h3>
+                <h3>Интерфейс</h3>
                 <div class="set-row"><span>Размытие</span> <input type="range" min="0" max="60" value="30" oninput="document.documentElement.style.setProperty('--blur-val', this.value+'px')"></div>
-                <div class="set-row"><span>Яркость неона</span> <input type="range" min="0" max="40" value="10" oninput="document.getElementById('orb').style.opacity = this.value/100"></div>
+                <div class="set-row"><span>Неон</span> <input type="range" min="0" max="40" value="10" oninput="document.getElementById('orb').style.opacity = this.value/100"></div>
             </div>
             <div class="set-group">
-                <h3>Приватность</h3>
                 <div class="set-row"><span>Инкогнито</span> <div id="inc-toggle" class="toggle" onclick="this.classList.toggle('on'); document.body.classList.toggle('incognito')"></div></div>
             </div>
-            <button onclick="localStorage.clear(); location.reload();" style="width:100%; padding:15px; background:rgba(255,0,0,0.1); border:none; color:#ff4d4d; border-radius:15px; font-weight:800">ВЫЙТИ</button>
+            <button onclick="localStorage.clear(); location.reload();" style="width:100%; padding:15px; background:rgba(255,50,50,0.08); border:none; color:#ff4d4d; border-radius:18px; font-weight:700; cursor:pointer">ВЫЙТИ ИЗ СИСТЕМЫ</button>
         </section>
 
         <div class="ui-nav">
             <div class="input-bar active" id="input-ui">
-                <input type="text" id="m-text" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') send()">
-                <button onclick="send()" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%; font-weight:800; cursor:pointer">></button>
+                <input type="text" id="m-text" placeholder="Написать сообщение..." onkeypress="if(event.key==='Enter') send()">
+                <button class="send-btn" onclick="send()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
             </div>
             <nav class="dock">
                 <div class="dock-item active" onclick="tab('chat', this)">💬</div>
@@ -126,7 +170,7 @@
         function nextCard(step) {
             const n = document.getElementById('r-nick').value;
             const e = document.getElementById('r-email').value;
-            if(!n || !e) return alert("Заполни данные!");
+            if(!n || !e) return alert("Заполни поля, бро!");
             user = { nick: n, email: e, ava: defAva };
             document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
             setTimeout(() => document.getElementById('card-'+step).classList.add('active'), 50);
@@ -146,7 +190,7 @@
         function initApp() {
             document.getElementById('set-nick-inp').value = user.nick;
             document.getElementById('set-ava-inp').value = user.ava || '';
-            setInterval(ping, 10000); // Пинг каждые 10 секунд
+            setInterval(ping, 12000); 
             setInterval(load, 3000);
             ping(); load();
         }
@@ -158,8 +202,7 @@
         }
 
         async function ping() {
-            // Отправляем невидимое сообщение-сигнал присутствия
-            const signal = { nick: "_system_ping", email: user.email.toLowerCase(), text: "ping", time: Date.now(), isSystem: true };
+            const signal = { nick: "_sys_p", email: user.email.toLowerCase(), text: "p", time: Date.now() };
             try { await fetch(`${API}/messages`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(signal) }); } catch(e) {}
         }
 
@@ -175,16 +218,13 @@
             try {
                 const res = await fetch(`${API}/messages`);
                 const all = await res.json();
-                
-                // Считаем онлайн по всем сигналам (и чат, и пинг) за последние 40 секунд
                 const now = Date.now();
-                const online = new Set(all.filter(m => now - (m.time || 0) < 40000).map(m => m.email));
+                const online = new Set(all.filter(m => now - (m.time || 0) < 45000).map(m => m.email));
                 document.getElementById('on-count').innerText = online.size || 1;
 
-                // Фильтруем системные пинги, чтобы не показывать их в чате
-                const msgs = all.filter(m => m.nick !== "_system_ping");
-
+                const msgs = all.filter(m => m.nick !== "_sys_p");
                 if(msgs.length === lastCount) return;
+                
                 const flow = document.getElementById('chat-flow');
                 flow.innerHTML = msgs.map(m => `
                     <div class="msg ${m.email?.toLowerCase() === user.email?.toLowerCase() ? 'sent' : 'received'}">
