@@ -3,111 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Speeky OS | Cloud Sync</title>
+    <title>Speeky OS | Live Sync</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --accent: #00f2ff;
             --bg: #030406;
-            --glass: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 255, 255, 0.08);
-            --card: rgba(15, 17, 23, 0.95);
-            --radius: 30px;
-            --blur: 20px;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --card: rgba(15, 17, 23, 0.9);
+            --radius: 28px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
 
-        /* ФОН */
-        .bg-wrapper { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
-        .orb { position: absolute; width: 600px; height: 600px; background: var(--accent); filter: blur(120px); opacity: 0.1; border-radius: 50%; animation: float 20s infinite alternate; }
-        @keyframes float { from { transform: translate(-10%, -10%); } to { transform: translate(20%, 20%); } }
+        /* АНИМИРОВАННЫЙ ФОН */
+        .bg { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 50% 50%, #0a0c10 0%, #030406 100%); }
+        .orb { position: absolute; width: 400px; height: 400px; background: var(--accent); filter: blur(120px); opacity: 0.08; border-radius: 50%; animation: move 15s infinite alternate; }
+        @keyframes move { from { transform: translate(-10%, -10%); } to { transform: translate(40%, 40%); } }
 
-        /* AUTH */
-        #auth-layer { position: fixed; inset: 0; z-index: 5000; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .auth-card { width: 100%; max-width: 400px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); backdrop-filter: blur(var(--blur)); padding: 40px; }
+        /* АВТОРИЗАЦИЯ */
+        #auth-layer { position: fixed; inset: 0; z-index: 1000; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .auth-card { width: 100%; max-width: 380px; padding: 40px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); backdrop-filter: blur(20px); }
         .auth-form { display: none; }
-        .auth-form.active { display: block; animation: fadeIn 0.4s ease; }
-        
-        input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 18px; border-radius: 20px; color: #fff; margin-bottom: 15px; outline: none; }
-        .btn-main { width: 100%; padding: 20px; border-radius: 20px; border: none; background: var(--accent); color: #000; font-weight: 800; cursor: pointer; }
+        .auth-form.active { display: block; animation: fadeIn 0.5s ease; }
+        input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 18px; border-radius: 18px; color: #fff; margin-bottom: 12px; outline: none; }
+        .btn-main { width: 100%; padding: 18px; border-radius: 18px; border: none; background: var(--accent); color: #000; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        .btn-main:hover { box-shadow: 0 0 20px rgba(0, 242, 255, 0.3); }
 
-        /* APP */
+        /* ИНТЕРФЕЙС */
         #app { display: none; height: 100vh; flex-direction: column; }
-        .screen { display: none; flex: 1; padding: 25px; padding-bottom: 220px; overflow-y: auto; scroll-behavior: smooth; }
+        .screen { display: none; flex: 1; padding: 20px; padding-bottom: 220px; overflow-y: auto; scroll-behavior: smooth; }
         .screen.active { display: flex; flex-direction: column; }
 
-        /* ЧАТ */
-        #chat-flow { display: flex; flex-direction: column; gap: 12px; }
-        .msg { max-width: 80%; padding: 14px 18px; border-radius: 22px; font-size: 15px; position: relative; animation: msgIn 0.3s ease; }
-        .msg.sent { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; }
+        /* СООБЩЕНИЯ */
+        #chat-flow { display: flex; flex-direction: column; gap: 8px; }
+        .msg { max-width: 85%; padding: 12px 16px; border-radius: 20px; font-size: 15px; line-height: 1.4; position: relative; animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .msg.sent { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; font-weight: 500; }
         .msg.received { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
-        .msg-sender { font-size: 10px; opacity: 0.5; margin-bottom: 4px; display: block; }
+        .msg b { display: block; font-size: 10px; opacity: 0.5; margin-bottom: 2px; text-transform: uppercase; }
 
-        /* ВВОД И ОСТРОВОК */
-        .controls { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 450px; z-index: 1000; }
-        .input-bar { background: rgba(15, 17, 23, 0.9); backdrop-filter: blur(30px); border: 1px solid var(--border); border-radius: 30px; padding: 8px 10px 8px 20px; display: none; align-items: center; margin-bottom: 12px; }
-        .input-bar.show { display: flex; }
-        .input-bar input { background: none; border: none; color: #fff; flex: 1; padding: 10px; outline: none; }
-        .send-btn { background: var(--accent); border: none; width: 42px; height: 42px; border-radius: 50%; font-weight: 900; cursor: pointer; }
+        /* ПАНЕЛЬ УПРАВЛЕНИЯ */
+        .controls { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 450px; z-index: 500; }
+        .input-box { 
+            background: rgba(15, 17, 23, 0.8); backdrop-filter: blur(30px); border: 1px solid var(--border); 
+            border-radius: 30px; padding: 8px 8px 8px 20px; display: none; align-items: center; margin-bottom: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+        .input-box.show { display: flex; }
+        .input-box input { background: none; border: none; flex: 1; color: #fff; padding: 10px; outline: none; }
+        .send-btn { background: var(--accent); border: none; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-weight: 900; transition: 0.2s; }
+        .send-btn:active { transform: scale(0.9); }
 
-        .nav { background: rgba(10, 12, 18, 0.95); backdrop-filter: blur(40px); border: 1px solid var(--border); border-radius: 40px; padding: 8px; display: flex; justify-content: space-around; }
-        .nav-btn { font-size: 24px; opacity: 0.3; cursor: pointer; padding: 10px; transition: 0.3s; }
-        .nav-btn.active { opacity: 1; color: var(--accent); }
+        .nav { background: rgba(10, 12, 18, 0.9); backdrop-filter: blur(40px); border: 1px solid var(--border); border-radius: 40px; padding: 8px; display: flex; justify-content: space-around; }
+        .nav-btn { font-size: 24px; opacity: 0.3; cursor: pointer; transition: 0.3s; padding: 10px; }
+        .nav-btn.active { opacity: 1; color: var(--accent); transform: scale(1.1); }
 
-        @keyframes msgIn { from { opacity: 0; transform: translateY(10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes pop { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div class="bg-wrapper"><div class="orb"></div></div>
+    <div class="bg"><div class="orb"></div></div>
 
     <div id="auth-layer">
         <div class="auth-card">
             <div id="f-login" class="auth-form active">
-                <h1 style="margin-bottom: 25px;">Speeky ID</h1>
+                <h1 style="margin-bottom: 20px;">Speeky ID</h1>
                 <input type="email" id="l-email" placeholder="Email">
                 <input type="password" id="l-pass" placeholder="Пароль">
                 <button class="btn-main" onclick="login()">ВОЙТИ</button>
-                <p onclick="toggleForm('f-reg')" style="text-align:center; margin-top:20px; cursor:pointer; opacity:0.5;">Регистрация</p>
+                <p onclick="toggleF('f-reg')" style="text-align:center; margin-top:20px; cursor:pointer; opacity:0.5;">Создать аккаунт</p>
             </div>
             <div id="f-reg" class="auth-form">
-                <h1 style="margin-bottom: 25px;">Новый аккаунт</h1>
+                <h1 style="margin-bottom: 20px;">Регистрация</h1>
                 <input type="text" id="r-nick" placeholder="Никнейм">
                 <input type="email" id="r-email" placeholder="Email">
                 <input type="password" id="r-pass" placeholder="Пароль">
-                <button class="btn-main" onclick="register()">СОЗДАТЬ</button>
-                <p onclick="toggleForm('f-login')" style="text-align:center; margin-top:20px; cursor:pointer; opacity:0.5;">Уже есть ID</p>
+                <button class="btn-main" onclick="register()">ГОТОВО</button>
+                <p onclick="toggleF('f-login')" style="text-align:center; margin-top:20px; cursor:pointer; opacity:0.5;">Есть аккаунт</p>
             </div>
         </div>
     </div>
 
     <div id="app">
         <section id="sc-chat" class="screen active">
-            <h1 style="font-size: 34px; margin-bottom: 25px;">Чаты</h1>
+            <h1 style="font-size: 32px; font-weight: 800; margin-bottom: 20px;">Чаты</h1>
             <div id="chat-flow"></div>
         </section>
 
-        <section id="sc-settings" class="screen">
+        <section id="sc-set" class="screen">
             <h1>Профиль</h1>
-            <div style="background:var(--glass); padding:30px; border-radius:30px; margin-top:20px; text-align:center; border: 1px solid var(--border);">
-                <div id="u-avatar" style="width:80px; height:80px; background:var(--accent); border-radius:50%; margin: 0 auto 15px; display:flex; align-items:center; justify-content:center; color:#000; font-size:32px; font-weight:800;">?</div>
+            <div style="background:var(--glass); padding:30px; border-radius:30px; margin-top:20px; text-align:center;">
+                <div id="u-avatar" style="width:80px; height:80px; background:var(--accent); border-radius:50%; margin: 0 auto 15px; color:#000; display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:800;">?</div>
                 <h2 id="u-nick">...</h2>
                 <p id="u-email" style="opacity:0.4;">...</p>
-                <button onclick="logout()" style="margin-top:20px; background:none; border:none; color:#ff4444; font-weight:800; cursor:pointer;">ВЫЙТИ</button>
+                <button onclick="logout()" style="margin-top:20px; color:#ff4444; background:none; border:none; font-weight:800; cursor:pointer;">ВЫЙТИ</button>
             </div>
         </section>
 
         <div class="controls">
-            <div class="input-bar show" id="chat-input-box">
-                <input type="text" id="m-text" placeholder="Напишите сообщение..." onkeypress="if(event.key==='Enter') broadcast()">
-                <button class="send-btn" onclick="broadcast()">></button>
+            <div class="input-box show" id="in-box">
+                <input type="text" id="m-text" placeholder="Написать..." onkeypress="if(event.key==='Enter') send()">
+                <button class="send-btn" onclick="send()">></button>
             </div>
             <nav class="nav">
                 <div class="nav-btn active" onclick="go('chat', this)">💬</div>
-                <div class="nav-btn" onclick="go('settings', this)">⚙️</div>
+                <div class="nav-btn" onclick="go('set', this)">⚙️</div>
             </nav>
         </div>
     </div>
@@ -115,24 +119,23 @@
     <script>
         let db; let user = null;
 
-        // 1. Инициализация БД
-        const request = indexedDB.open("SpeekyGlobalV1", 1);
-        request.onupgradeneeded = (e) => {
+        // DB INIT
+        const req = indexedDB.open("SpeekyV5", 1);
+        req.onupgradeneeded = (e) => {
             db = e.target.result;
             db.createObjectStore("users", { keyPath: "email" });
-            db.createObjectStore("messages", { autoIncrement: true });
+            db.createObjectStore("msgs", { autoIncrement: true });
         };
-        request.onsuccess = (e) => { db = e.target.result; checkSession(); };
+        req.onsuccess = (e) => { db = e.target.result; check(); };
 
-        // 2. Авторизация
-        function toggleForm(id) {
+        function toggleF(id) {
             document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
             document.getElementById(id).classList.add('active');
         }
 
         function register() {
-            const data = { nick: document.getElementById('r-nick').value, email: document.getElementById('r-email').value, pass: document.getElementById('r-pass').value };
-            db.transaction("users", "readwrite").objectStore("users").add(data).onsuccess = () => toggleForm('f-login');
+            const u = { nick: document.getElementById('r-nick').value, email: document.getElementById('r-email').value, pass: document.getElementById('r-pass').value };
+            db.transaction("users", "readwrite").objectStore("users").add(u).onsuccess = () => toggleF('f-login');
         }
 
         function login() {
@@ -141,14 +144,14 @@
             db.transaction("users").objectStore("users").get(email).onsuccess = (e) => {
                 const u = e.target.result;
                 if(u && u.pass === pass) {
-                    localStorage.setItem('spk_user', JSON.stringify(u));
+                    localStorage.setItem('spk_session', JSON.stringify(u));
                     location.reload();
                 } else alert("Ошибка");
             };
         }
 
-        function checkSession() {
-            const s = localStorage.getItem('spk_user');
+        function check() {
+            const s = localStorage.getItem('spk_session');
             if(s) {
                 user = JSON.parse(s);
                 document.getElementById('auth-layer').style.display = 'none';
@@ -156,66 +159,57 @@
                 document.getElementById('u-nick').innerText = user.nick;
                 document.getElementById('u-email').innerText = user.email;
                 document.getElementById('u-avatar').innerText = user.nick[0].toUpperCase();
-                loadMessages();
+                load();
             }
         }
 
-        // 3. ЛОГИКА СООБЩЕНИЙ (REAL-TIME ЭМУЛЯЦИЯ)
-        function broadcast() {
+        // ЛОГИКА СООБЩЕНИЙ
+        function send() {
             const inp = document.getElementById('m-text');
             if(!inp.value.trim()) return;
 
-            const msgData = {
-                sender: user.nick,
-                email: user.email,
-                text: inp.value,
-                time: Date.now()
-            };
-
-            // Сохраняем в IndexedDB
-            const tx = db.transaction("messages", "readwrite");
-            tx.objectStore("messages").add(msgData).onsuccess = () => {
-                // Триггерим событие для других вкладок
-                localStorage.setItem('spk_last_msg', JSON.stringify(msgData));
+            const m = { nick: user.nick, email: user.email, text: inp.value, ts: Date.now() };
+            const tx = db.transaction("msgs", "readwrite");
+            tx.objectStore("msgs").add(m).onsuccess = () => {
+                // Это заставляет другие вкладки «проснуться»
+                localStorage.setItem('spk_sync', Date.now()); 
                 inp.value = '';
-                loadMessages();
+                load();
             };
         }
 
-        // Слушаем «приход» сообщения от другого (из другой вкладки)
+        // ЖЕСТКАЯ СИНХРОНИЗАЦИЯ
         window.addEventListener('storage', (e) => {
-            if(e.key === 'spk_last_msg') {
-                loadMessages();
+            if(e.key === 'spk_sync') {
+                load(); // Перерисовываем чат, если в другой вкладке что-то написали
             }
         });
 
-        function loadMessages() {
+        function load() {
             const flow = document.getElementById('chat-flow');
-            flow.innerHTML = '';
-            
-            db.transaction("messages").objectStore("messages").getAll().onsuccess = (e) => {
-                const allMsgs = e.target.result;
-                allMsgs.forEach(m => {
-                    const div = document.createElement('div');
+            db.transaction("msgs").objectStore("msgs").getAll().onsuccess = (e) => {
+                flow.innerHTML = '';
+                e.target.result.forEach(m => {
                     const isMe = m.email === user.email;
-                    div.className = `msg ${isMe ? 'sent' : 'received'}`;
-                    div.innerHTML = `<span class="msg-sender">${isMe ? 'Вы' : m.sender}</span>${m.text}`;
-                    flow.appendChild(div);
+                    const d = document.createElement('div');
+                    d.className = `msg ${isMe ? 'sent' : 'received'}`;
+                    d.innerHTML = `<b>${isMe ? 'Вы' : m.nick}</b>${m.text}`;
+                    flow.appendChild(d);
                 });
-                const screen = document.getElementById('sc-chat');
-                screen.scrollTop = screen.scrollHeight;
+                const sc = document.getElementById('sc-chat');
+                sc.scrollTop = sc.scrollHeight;
             };
         }
 
-        function go(scr, el) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('sc-' + scr).classList.add('active');
+        function go(s, el) {
+            document.querySelectorAll('.screen').forEach(scr => scr.classList.remove('active'));
+            document.getElementById('sc-' + s).classList.add('active');
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
-            document.getElementById('chat-input-box').classList.toggle('show', scr === 'chat');
+            document.getElementById('in-box').classList.toggle('show', s === 'chat');
         }
 
-        function logout() { localStorage.removeItem('spk_user'); location.reload(); }
+        function logout() { localStorage.removeItem('spk_session'); location.reload(); }
     </script>
 </body>
 </html>
