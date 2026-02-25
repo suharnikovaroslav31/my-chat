@@ -3,68 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Speeky OS | Private Messenger v4</title>
+    <title>Speeky OS | Identity Foundation</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { 
             --accent: #00f2ff; 
             --bg: #020305; 
             --glass: rgba(255, 255, 255, 0.03); 
-            --border: rgba(255, 255, 255, 0.1); 
+            --border: rgba(255, 255, 255, 0.08); 
             --blur-val: 25px;
             --orb-op: 0.15;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
-
-        /* NEBULA BACKGROUND */
-        .nebula-wrap { position: fixed; inset: 0; z-index: -2; background: #000; overflow: hidden; pointer-events: none; }
-        .blob { position: absolute; width: 80vw; height: 80vw; background: radial-gradient(circle, var(--accent) 0%, transparent 70%); filter: blur(100px); opacity: var(--orb-op); border-radius: 50%; animation: move 25s infinite alternate; }
-        .blob-2 { background: radial-gradient(circle, #7000ff 0%, transparent 70%); animation-delay: -8s; left: 40%; top: 20%; }
-        @keyframes move { from { transform: translate(-15%, -15%) scale(1); } to { transform: translate(25%, 25%) scale(1.2); } }
-
-        /* AUTH */
-        .overlay { position: fixed; inset: 0; z-index: 3000; background: #000; display: flex; align-items: center; justify-content: center; transition: 0.8s; }
-        .card { width: 92%; max-width: 400px; padding: 35px; background: rgba(10, 12, 18, 0.9); border: 1px solid var(--border); border-radius: 40px; backdrop-filter: blur(40px); text-align: center; }
-        .overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-
-        input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 16px; border-radius: 20px; color: #fff; outline: none; margin-bottom: 10px; }
-        input:focus { border-color: var(--accent); }
-        .btn-main { width: 100%; padding: 18px; border-radius: 20px; border: none; background: var(--accent); color: #000; font-weight: 800; cursor: pointer; }
-
-        /* INTERFACE */
-        .screen { flex: 1; padding: 25px; display: none; width: 100%; max-width: 800px; margin: 0 auto; height: 100%; overflow-y: auto; }
-        .screen.active { display: flex; flex-direction: column; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* CONTACTS */
-        .contact-item { background: var(--glass); border: 1px solid var(--border); padding: 18px; border-radius: 28px; display: flex; align-items: center; gap: 15px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; }
-        .contact-item:active { transform: scale(0.97); }
-        .contact-ava { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: #111; }
-
-        /* CHAT MESSAGES */
-        #chat-flow { display: flex; flex-direction: column; gap: 10px; padding-bottom: 160px; }
-        .msg { max-width: 80%; padding: 14px 18px; border-radius: 22px; animation: msgIn 0.3s ease-out forwards; line-height: 1.4; }
-        @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .msg.sent { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; font-weight: 500; }
-        .msg.received { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 4px; backdrop-filter: blur(15px); }
-
-        /* UI ELEMENTS */
-        .ui-nav { position: fixed; bottom: 25px; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; z-index: 1000; }
-        .input-bar { width: 92%; max-width: 600px; background: rgba(10, 12, 18, 0.95); border: 1px solid var(--border); border-radius: 40px; padding: 8px; display: none; align-items: center; backdrop-filter: blur(30px); }
-        .input-bar.active { display: flex; }
-        .input-bar input { background: none; border: none; flex: 1; padding: 0 15px; margin-bottom: 0; color: #fff; }
+        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; opacity: 0; animation: appStart 1.5s ease forwards; }
         
-        .dock { width: 92%; max-width: 360px; background: rgba(10, 12, 18, 0.98); border: 1px solid var(--border); border-radius: 40px; padding: 12px; display: flex; justify-content: space-around; backdrop-filter: blur(25px); }
-        .dock-item { font-size: 26px; opacity: 0.3; transition: 0.3s; cursor: pointer; }
-        .dock-item.active { opacity: 1; color: var(--accent); }
+        @keyframes appStart { 
+            0% { opacity: 0; filter: blur(20px); transform: scale(1.1); } 
+            100% { opacity: 1; filter: blur(0); transform: scale(1); } 
+        }
 
-        /* MODERN SLIDERS */
-        .set-group { background: var(--glass); border: 1px solid var(--border); border-radius: 30px; padding: 25px; margin-bottom: 15px; }
-        .set-row-v2 { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
-        input[type="range"] { -webkit-appearance: none; width: 100%; height: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; background: #fff; border: 4px solid var(--accent); border-radius: 50%; cursor: pointer; }
+        /* NEBULA */
+        .nebula-wrap { position: fixed; inset: 0; z-index: -2; background: #000; overflow: hidden; pointer-events: none; }
+        .blob { position: absolute; width: 80vw; height: 80vw; background: radial-gradient(circle, var(--accent) 0%, transparent 70%); filter: blur(100px); opacity: var(--orb-op); border-radius: 50%; animation: move 20s infinite alternate cubic-bezier(0.45, 0.05, 0.55, 0.95); }
+        .blob-2 { background: radial-gradient(circle, #7000ff 0%, transparent 70%); animation-delay: -5s; left: 40%; top: 20%; }
+        @keyframes move { from { transform: translate(-10%, -10%) rotate(0deg); } to { transform: translate(20%, 20%) rotate(180deg); } }
+
+        /* AUTH & CARDS */
+        .overlay { position: fixed; inset: 0; z-index: 3000; background: #000; display: flex; align-items: center; justify-content: center; transition: 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card { 
+            width: 92%; max-width: 400px; padding: 40px; background: rgba(10, 12, 18, 0.8); 
+            border: 1px solid var(--border); border-radius: 40px; backdrop-filter: blur(40px); 
+            text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            animation: cardIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+        }
+        @keyframes cardIn { from { opacity: 0; transform: translateY(40px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .overlay.hidden { opacity: 0; visibility: hidden; transform: scale(1.2); }
+
+        input { 
+            width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); 
+            padding: 18px; border-radius: 24px; color: #fff; outline: none; margin-bottom: 12px; 
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        input:focus { border-color: var(--accent); background: rgba(255,255,255,0.08); box-shadow: 0 0 20px rgba(0,242,255,0.1); }
+
+        .btn-main { 
+            width: 100%; padding: 20px; border-radius: 24px; border: none; 
+            background: var(--accent); color: #000; font-weight: 800; cursor: pointer;
+            transition: 0.3s; box-shadow: 0 10px 20px rgba(0,242,255,0.2);
+        }
+        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(0,242,255,0.3); }
+        .btn-main:active { transform: scale(0.95); }
+
+        /* SCREENS */
+        .screen { flex: 1; padding: 30px; display: none; width: 100%; max-width: 800px; margin: 0 auto; height: 100%; overflow-y: auto; overflow-x: hidden; }
+        .screen.active { display: flex; flex-direction: column; animation: screenIn 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes screenIn { from { opacity: 0; transform: translateX(20px); filter: blur(10px); } to { opacity: 1; transform: translateX(0); filter: blur(0); } }
+
+        /* CONTACTS & CHAT */
+        .contact-item { 
+            background: var(--glass); border: 1px solid var(--border); padding: 20px; 
+            border-radius: 30px; display: flex; align-items: center; gap: 15px; margin-bottom: 12px; 
+            cursor: pointer; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: itemIn 0.5s ease backwards;
+        }
+        @keyframes itemIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .contact-item:hover { background: rgba(255,255,255,0.07); border-color: var(--accent); transform: scale(1.02); }
+
+        #chat-flow { display: flex; flex-direction: column; gap: 8px; padding-bottom: 180px; }
+        .msg { 
+            max-width: 80%; padding: 14px 20px; border-radius: 26px; 
+            line-height: 1.5; font-size: 15px; position: relative;
+            animation: msgPop 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.2) forwards;
+        }
+        @keyframes msgPop { from { opacity: 0; transform: scale(0.5) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .msg.sent { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; font-weight: 600; }
+        .msg.received { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 4px; backdrop-filter: blur(20px); }
+
+        /* UI NAV & INPUT */
+        .ui-nav { position: fixed; bottom: 30px; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 15px; z-index: 1000; }
+        .input-bar { 
+            width: 92%; max-width: 600px; background: rgba(15, 18, 25, 0.9); 
+            border: 1px solid var(--border); border-radius: 50px; padding: 10px; 
+            display: none; align-items: center; backdrop-filter: blur(40px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4); transform: translateY(20px); transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .input-bar.active { display: flex; transform: translateY(0); }
+        .input-bar input { background: none; border: none; margin-bottom: 0; padding: 0 20px; box-shadow: none; }
+        
+        .dock { 
+            width: 92%; max-width: 380px; background: rgba(10, 12, 18, 0.95); 
+            border: 1px solid var(--border); border-radius: 50px; padding: 14px; 
+            display: flex; justify-content: space-around; backdrop-filter: blur(30px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .dock-item { font-size: 28px; opacity: 0.2; transition: 0.4s; cursor: pointer; filter: grayscale(1); }
+        .dock-item.active { opacity: 1; filter: grayscale(0); transform: translateY(-5px) scale(1.1); color: var(--accent); }
+
+        /* CUSTOM SCROLL */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -73,57 +111,56 @@
 
     <div id="intro-overlay" class="overlay">
         <div class="card">
-            <h1 style="font-weight:800; font-size:32px;">Speeky ID</h1>
-            <p id="auth-sub" style="opacity:0.4; margin-bottom:25px">Личный доступ</p>
-            <input type="text" id="r-user" placeholder="@username (тег для поиска)">
-            <input type="text" id="r-nick" placeholder="Отображаемое имя">
-            <input type="email" id="r-email" placeholder="Email">
-            <input type="password" id="r-pass" placeholder="Пароль">
-            <button class="btn-main" onclick="handleAuth()">ВОЙТИ / СОЗДАТЬ</button>
-            <p onclick="toggleAuthMode()" style="margin-top:20px; font-size:14px; color:var(--accent); cursor:pointer">Сменить режим</p>
+            <div style="font-size: 40px; margin-bottom: 10px;">✨</div>
+            <h1 style="font-weight:800; font-size:32px; letter-spacing:-1px">Speeky Foundation</h1>
+            <p id="auth-sub" style="opacity:0.4; margin-bottom:30px">Вход в персональное облако</p>
+            <div id="auth-fields">
+                <input type="text" id="r-user" placeholder="@username">
+                <input type="text" id="r-nick" placeholder="Как вас называть?">
+                <input type="email" id="r-email" placeholder="Email">
+                <input type="password" id="r-pass" placeholder="Пароль">
+            </div>
+            <button class="btn-main" onclick="handleAuth()">ПРОДОЛЖИТЬ</button>
+            <p onclick="toggleAuthMode()" style="margin-top:20px; font-size:14px; color:var(--accent); cursor:pointer; opacity:0.6">Уже есть аккаунт? Войти</p>
         </div>
     </div>
 
     <div id="app" style="display:none; flex-direction:column; height:100vh;">
         
         <section id="sc-contacts" class="screen active">
-            <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px">
-                <h1 style="font-size:32px; font-weight:800">Чаты</h1>
-                <button onclick="searchUser()" style="background:var(--accent); border:none; padding:10px 20px; border-radius:20px; font-weight:800; cursor:pointer">+ ЧАТ</button>
+            <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:40px">
+                <h1 style="font-size:36px; font-weight:800; letter-spacing:-1px">Чаты</h1>
+                <button onclick="searchUser()" style="background:var(--accent); border:none; width:50px; height:50px; border-radius:50%; font-size:24px; font-weight:800; cursor:pointer; box-shadow: 0 10px 20px rgba(0,242,255,0.2)">+</button>
             </header>
             <div id="contacts-list"></div>
         </section>
 
         <section id="sc-chat" class="screen">
-            <header style="display:flex; align-items:center; gap:15px; margin-bottom:20px">
-                <button onclick="tab('contacts')" style="background:none; border:none; color:var(--accent); font-size:24px; cursor:pointer">←</button>
+            <header style="display:flex; align-items:center; gap:20px; margin-bottom:30px; background:var(--glass); padding:15px; border-radius:25px; border:1px solid var(--border)">
+                <button onclick="tab('contacts')" style="background:none; border:none; color:var(--accent); font-size:28px; cursor:pointer">←</button>
                 <div>
-                    <h2 id="chat-with-name" style="font-size:20px">Чат</h2>
-                    <p id="chat-with-tag" style="font-size:12px; opacity:0.5">@tag</p>
+                    <h2 id="chat-with-name" style="font-size:18px">...</h2>
+                    <p id="chat-with-tag" style="font-size:12px; opacity:0.4">@...</p>
                 </div>
             </header>
             <div id="chat-flow"></div>
         </section>
 
         <section id="sc-settings" class="screen">
-            <h1 style="font-size:32px; font-weight:800; margin-bottom:25px">Профиль</h1>
-            <div class="set-group">
-                <p style="margin-bottom:10px">Твой ID: <b id="my-tag-display" style="color:var(--accent)">@</b></p>
-                <input type="text" id="set-nick-inp" placeholder="Сменить имя" onchange="save()">
-                <input type="text" id="set-ava-inp" placeholder="Ссылка на фото" onchange="save()">
+            <h1 style="font-size:36px; font-weight:800; margin-bottom:30px">Профиль</h1>
+            <div class="set-group" style="background:var(--glass); padding:30px; border-radius:35px; border:1px solid var(--border); margin-bottom:20px">
+                <p style="font-size:13px; opacity:0.4; margin-bottom:15px">ВАШ УНИКАЛЬНЫЙ ID</p>
+                <h2 id="my-tag-display" style="color:var(--accent); font-size:24px; margin-bottom:25px">@username</h2>
+                <input type="text" id="set-nick-inp" placeholder="Имя" onchange="save()">
+                <input type="text" id="set-ava-inp" placeholder="URL аватара" onchange="save()">
             </div>
-            <div class="set-group">
-                <h3 style="opacity:0.4; font-size:12px; text-transform:uppercase">Стиль</h3>
-                <div class="set-row-v2"><span>Размытие</span><input type="range" min="0" max="60" value="25" oninput="document.documentElement.style.setProperty('--blur-val', this.value+'px')"></div>
-                <div class="set-row-v2"><span>Цвет</span><input type="color" value="#00f2ff" oninput="document.documentElement.style.setProperty('--accent', this.value)"></div>
-            </div>
-            <button onclick="logout()" style="width:100%; padding:20px; background:rgba(255,50,50,0.1); border:none; color:#ff4d4d; border-radius:25px; font-weight:800; cursor:pointer">ВЫЙТИ ИЗ ID</button>
+            <button onclick="logout()" style="width:100%; padding:22px; background:rgba(255,50,50,0.05); border:1px solid rgba(255,50,50,0.2); color:#ff4d4d; border-radius:30px; font-weight:800; cursor:pointer">ВЫЙТИ ИЗ СИСТЕМЫ</button>
         </section>
 
         <div class="ui-nav">
             <div class="input-bar" id="input-ui">
-                <input type="text" id="m-text" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') send()">
-                <button onclick="send()" style="background:var(--accent); border:none; width:44px; height:44px; border-radius:50%; font-weight:bold; cursor:pointer">➔</button>
+                <input type="text" id="m-text" placeholder="Твое сообщение..." onkeypress="if(event.key==='Enter') send()">
+                <button onclick="send()" style="background:var(--accent); border:none; width:46px; height:46px; border-radius:50%; font-weight:bold; cursor:pointer">➔</button>
             </div>
             <nav class="dock">
                 <div class="dock-item active" id="btn-tab-chats" onclick="tab('contacts')">💬</div>
@@ -137,40 +174,33 @@
         const defAva = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
         let user = JSON.parse(localStorage.getItem('spk_user'));
         let activePeer = null;
-        let knownMessages = 0;
+        let lastMsgCount = 0;
 
         function toggleAuthMode() {
-            const isLogin = document.getElementById('r-nick').style.display === 'none';
-            document.getElementById('r-nick').style.display = isLogin ? 'block' : 'none';
-            document.getElementById('r-user').style.display = isLogin ? 'block' : 'none';
+            const isL = document.getElementById('r-nick').style.display === 'none';
+            document.getElementById('r-nick').style.display = isL ? 'block' : 'none';
+            document.getElementById('r-user').style.display = isL ? 'block' : 'none';
+            document.getElementById('auth-sub').innerText = isL ? "Создать Speeky ID" : "Вход в Speeky ID";
         }
 
         function handleAuth() {
-            const u = document.getElementById('r-user').value.trim().replace('@', '');
+            const u = document.getElementById('r-user').value.trim().replace('@','');
             const n = document.getElementById('r-nick').value.trim();
             const e = document.getElementById('r-email').value.trim().toLowerCase();
             const p = document.getElementById('r-pass').value.trim();
-
-            if(!e || !p) return alert("Email и Пароль обязательны!");
-
-            user = { 
-                username: u || e.split('@')[0], 
-                nick: n || u || "Пользователь", 
-                email: e, 
-                ava: defAva 
-            };
+            if(!e || !p) return alert("Заполни данные");
+            user = { username: u || e.split('@')[0], nick: n || u || "User", email: e, ava: defAva };
             localStorage.setItem('spk_user', JSON.stringify(user));
             location.reload();
         }
 
         function initApp() {
             document.getElementById('app').style.display = 'flex';
-            document.getElementById('intro-overlay').style.display = 'none';
+            document.getElementById('intro-overlay').classList.add('hidden');
             document.getElementById('my-tag-display').innerText = '@' + user.username;
             document.getElementById('set-nick-inp').value = user.nick;
-            
             setInterval(load, 2500);
-            load();
+            load(true);
         }
 
         function tab(name) {
@@ -178,60 +208,38 @@
             document.getElementById('sc-' + name).classList.add('active');
             document.getElementById('input-ui').classList.toggle('active', name === 'chat');
             document.querySelectorAll('.dock-item').forEach(d => d.classList.remove('active'));
-            if(name === 'contacts') {
-                activePeer = null;
-                document.getElementById('btn-tab-chats').classList.add('active');
-            } else if(name === 'settings') {
-                document.getElementById('btn-tab-sets').classList.add('active');
-            }
+            if(name === 'contacts') { activePeer = null; document.getElementById('btn-tab-chats').classList.add('active'); }
+            else if(name === 'settings') { document.getElementById('btn-tab-sets').classList.add('active'); }
         }
 
         function searchUser() {
             let tag = prompt("Введите @username собеседника:");
-            if(tag) {
-                tag = tag.replace('@', '').trim();
-                openChat(tag, tag);
-            }
+            if(tag) openChat(tag.replace('@','').trim(), tag);
         }
 
         function openChat(username, nickname) {
             activePeer = { username, nick: nickname };
             document.getElementById('chat-with-name').innerText = nickname;
             document.getElementById('chat-with-tag').innerText = '@' + username;
-            document.getElementById('chat-flow').innerHTML = ''; // Чистим перед загрузкой
+            document.getElementById('chat-flow').innerHTML = ''; 
+            lastMsgCount = 0; // Сброс для полной перерисовки при смене чата
             tab('chat');
-            load(true); // Форсированная загрузка
+            load(true);
         }
 
         async function send() {
             const inp = document.getElementById('m-text');
             if(!inp.value.trim() || !activePeer) return;
-
-            const msg = {
-                from: user.username,
-                to: activePeer.username,
-                text: inp.value.trim(),
-                time: Date.now(),
-                type: 'private'
-            };
-
+            const msg = { from: user.username, to: activePeer.username, text: inp.value.trim(), time: Date.now() };
             renderMsg(msg); 
             inp.value = '';
-
-            try {
-                await fetch(`${API}/messages`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(msg)
-                });
-            } catch(e) { console.error("Ошибка отправки"); }
+            await fetch(`${API}/messages`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(msg) });
         }
 
         function renderMsg(m) {
             const flow = document.getElementById('chat-flow');
-            const isMe = m.from === user.username;
             const div = document.createElement('div');
-            div.className = `msg ${isMe ? 'sent' : 'received'}`;
+            div.className = `msg ${m.from === user.username ? 'sent' : 'received'}`;
             div.innerHTML = `<span>${m.text}</span>`;
             flow.appendChild(div);
             document.getElementById('sc-chat').scrollTop = document.getElementById('sc-chat').scrollHeight;
@@ -242,7 +250,7 @@
                 const res = await fetch(`${API}/messages`);
                 const all = await res.json();
                 
-                // 1. Фильтруем личные контакты
+                // Фильтр чатов
                 const contactMap = new Map();
                 all.forEach(m => {
                     if(m.from && m.to) {
@@ -252,33 +260,30 @@
                 });
 
                 const list = document.getElementById('contacts-list');
-                if(contactMap.size > 0 && (all.length !== knownMessages || force)) {
+                if(contactMap.size > 0 && (force || list.children.length !== contactMap.size)) {
                     list.innerHTML = '';
                     contactMap.forEach((name, tag) => {
                         const div = document.createElement('div');
                         div.className = 'contact-item';
                         div.onclick = () => openChat(tag, tag);
-                        div.innerHTML = `<img src="${defAva}" class="contact-ava"><div><b>${tag}</b><br><small style="opacity:0.4">Нажмите, чтобы войти</small></div>`;
+                        div.innerHTML = `<div style="width:12px; height:12px; background:var(--accent); border-radius:50%; box-shadow:0 0 10px var(--accent)"></div><div><b>${tag}</b><br><small style="opacity:0.4">Личный чат</small></div>`;
                         list.appendChild(div);
                     });
-                } else if(contactMap.size === 0) {
-                    list.innerHTML = '<p style="opacity:0.3; text-align:center; margin-top:50px">Пока нет чатов. Нажми + ЧАТ чтобы найти друга</p>';
                 }
 
-                // 2. Если открыт чат — рендерим только его историю
-                if(activePeer && (all.length !== knownMessages || force)) {
-                    const myMsgs = all.filter(m => 
-                        (m.from === user.username && m.to === activePeer.username) || 
-                        (m.from === activePeer.username && m.to === user.username)
-                    );
-                    document.getElementById('chat-flow').innerHTML = '';
-                    myMsgs.forEach(m => renderMsg(m));
+                // Умная подгрузка сообщений (без мерцания)
+                if(activePeer) {
+                    const myMsgs = all.filter(m => (m.from === user.username && m.to === activePeer.username) || (m.from === activePeer.username && m.to === user.username));
+                    if(myMsgs.length > lastMsgCount) {
+                        const newOnes = myMsgs.slice(lastMsgCount);
+                        newOnes.forEach(m => renderMsg(m));
+                        lastMsgCount = myMsgs.length;
+                    }
                 }
-                knownMessages = all.length;
-            } catch(e) { console.warn("Сервер спит..."); }
+            } catch(e) {}
         }
 
-        function logout() { if(confirm("Выйти?")) { localStorage.clear(); location.reload(); } }
+        function logout() { localStorage.clear(); location.reload(); }
         function save() {
             user.nick = document.getElementById('set-nick-inp').value;
             user.ava = document.getElementById('set-ava-inp').value || defAva;
@@ -286,6 +291,7 @@
         }
 
         if(user) initApp();
+        else document.body.style.opacity = 1;
     </script>
 </body>
 </html>
