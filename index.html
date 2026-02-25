@@ -3,111 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Speeky | Singularity Ultra</title>
+    <title>Speeky | Absolute Singularity 2.0</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #00f2ff; --bg: #010204; --glass: rgba(255, 255, 255, 0.03); --border: rgba(255, 255, 255, 0.1); --spring: cubic-bezier(0.4, 0, 0.2, 1); }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        :root { --accent: #00f2ff; --bg: #010204; --border: rgba(255, 255, 255, 0.1); }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         
-        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; perspective: 2000px; }
+        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
 
-        /* ЖИВОЙ ФОН */
-        #universe { position: fixed; inset: 0; z-index: -1; filter: contrast(120%); }
-        .nebula { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; pointer-events: none; transition: 2s; }
+        /* ФИКС НАЛОЖЕНИЯ (СНИМОК 121) */
+        .view { 
+            position: absolute; inset: 0; 
+            display: none; /* Жесткое скрытие */
+            padding: 60px 25px 120px; 
+            flex-direction: column; 
+            z-index: 10; 
+        }
+        .view.active { display: flex; z-index: 20; }
 
-        /* ИНТЕРФЕЙС */
-        .view { position: absolute; inset: 0; display: none; padding: 70px 25px 120px; flex-direction: column; z-index: 10; opacity: 0; transform: translateZ(0); }
-        .view.active { display: flex; opacity: 1; }
+        /* ФИКС БЕЛОЙ ЗАЛИВКИ (СНИМОК 119) */
+        input:-webkit-autofill { -webkit-text-fill-color: var(--accent) !important; -webkit-box-shadow: 0 0 0px 1000px #0a0c10 inset !important; }
+        input { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 20px; border-radius: 25px; color: #fff; outline: none; transition: 0.3s; }
 
-        /* КАРТОЧКИ И ВВОД */
-        .card { background: rgba(10, 15, 25, 0.7); border: 1px solid var(--border); border-radius: 40px; backdrop-filter: blur(50px); padding: 35px; box-shadow: 0 50px 100px rgba(0,0,0,0.8); }
-        input { width: 100%; background: var(--glass); border: 1px solid var(--border); padding: 22px; border-radius: 25px; color: #fff; outline: none; transition: 0.4s var(--spring); font-size: 16px; }
-        input:focus { border-color: var(--accent); background: rgba(0, 242, 255, 0.05); box-shadow: 0 0 20px rgba(0, 242, 255, 0.1); }
+        #universe { position: fixed; inset: 0; z-index: -1; }
+        .nebula { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.3; pointer-events: none; }
+
+        .card { background: rgba(15, 20, 30, 0.6); border: 1px solid var(--border); border-radius: 40px; backdrop-filter: blur(40px); padding: 40px; }
         
         /* СООБЩЕНИЯ */
-        #flow { flex: 1; overflow-y: auto; padding-right: 10px; scroll-behavior: smooth; }
-        .msg-wrap { display: flex; flex-direction: column; max-width: 80%; margin-bottom: 12px; transition: 0.5s var(--spring); }
+        #flow { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        .msg-wrap { display: flex; flex-direction: column; max-width: 80%; }
         .msg-wrap.me { align-self: flex-end; }
-        .bubble { padding: 16px 22px; border-radius: 25px; font-size: 15px; position: relative; backdrop-filter: blur(10px); cursor: pointer; border: 1px solid transparent; }
-        .me .bubble { background: var(--accent); color: #000; font-weight: 700; border-bottom-right-radius: 5px; box-shadow: 0 10px 25px rgba(0, 242, 255, 0.2); }
-        .he .bubble { background: var(--glass); border-color: var(--border); border-bottom-left-radius: 5px; }
-        
-        /* СТАТУС ПЕЧАТАЕТ */
-        #typing { font-size: 12px; color: var(--accent); opacity: 0; transition: 0.3s; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
-        .dot { width: 4px; height: 4px; background: var(--accent); border-radius: 50%; animation: blink 1.4s infinite; }
+        .bubble { padding: 16px 22px; border-radius: 25px; font-size: 15px; cursor: pointer; backdrop-filter: blur(10px); transition: 0.2s; }
+        .me .bubble { background: var(--accent); color: #000; font-weight: 900; border-bottom-right-radius: 4px; }
+        .he .bubble { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
 
-        /* ОТВЕТ (REPLY) */
-        #reply-bar { display: none; background: var(--glass); padding: 15px; border-radius: 20px; border-left: 4px solid var(--accent); margin-bottom: 10px; position: relative; }
+        /* МЕНЮ */
+        #ctx { position: fixed; background: rgba(10,15,25,0.98); border: 1px solid var(--border); border-radius: 20px; display: none; flex-direction: column; z-index: 9999; backdrop-filter: blur(30px); width: 170px; }
+        .ctx-item { padding: 15px 20px; font-size: 14px; cursor: pointer; border-bottom: 1px solid var(--border); }
+        .ctx-item:last-child { border: none; color: #ff4d4d; }
 
-        /* КОНТЕКСТНОЕ МЕНЮ */
-        #ctx { position: fixed; background: rgba(10,15,25,0.98); border: 1px solid var(--border); border-radius: 22px; display: none; flex-direction: column; z-index: 9999; backdrop-filter: blur(30px); overflow: hidden; width: 180px; }
-        .ctx-item { padding: 15px 20px; font-size: 14px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
-        .ctx-item:hover { background: var(--accent); color: #000; }
+        /* ДОК */
+        .dock { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); border: 1px solid var(--border); padding: 12px 40px; border-radius: 50px; display: none; gap: 50px; z-index: 1000; backdrop-filter: blur(20px); }
+        .dock i { font-size: 24px; opacity: 0.3; cursor: pointer; transition: 0.4s; }
+        .dock i.active { opacity: 1; color: var(--accent); transform: scale(1.2); }
 
-        /* DOCK */
-        .dock { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); border: 1px solid var(--border); padding: 12px 45px; border-radius: 40px; display: none; gap: 50px; z-index: 2000; backdrop-filter: blur(20px); }
-        .dock i { font-size: 24px; opacity: 0.3; cursor: pointer; transition: 0.4s var(--spring); }
-        .dock i.active { opacity: 1; color: var(--accent); transform: scale(1.3) translateY(-5px); }
-
-        @keyframes blink { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+        .typing-dot { width: 5px; height: 5px; background: var(--accent); border-radius: 50%; display: inline-block; animation: hop 1s infinite; }
+        @keyframes hop { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
     </style>
 </head>
 <body>
 
     <div id="universe"></div>
-
     <div id="ctx">
-        <div class="ctx-item" onclick="setReply()">↩ Ответить</div>
-        <div class="ctx-item" style="color:#ff4d4d" onclick="burnMessage()">✕ Удалить</div>
+        <div class="ctx-item" onclick="reply()">Ответить</div>
+        <div class="ctx-item" onclick="disintegrate()">Удалить</div>
     </div>
 
     <section id="view-auth" class="view">
         <div class="card" style="margin: auto; text-align: center;">
-            <h1 style="font-size:50px; font-weight:900; letter-spacing:-3px; margin-bottom:5px;">Speeky</h1>
-            <p style="opacity:0.3; font-size:12px; margin-bottom:35px;">SINGULARITY CORE V15</p>
-            <input type="text" id="reg-name" placeholder="Твой позывной">
-            <input type="email" id="reg-email" placeholder="Канал восстановления (email)">
-            <button onclick="auth()" style="width:100%; padding:22px; background:var(--accent); color:#000; border:none; border-radius:22px; font-weight:900; margin-top:15px; cursor:pointer;">ИНИЦИАЛИЗИРОВАТЬ</button>
+            <h1 style="font-size:45px; font-weight:900; margin-bottom:30px;">Speeky</h1>
+            <input type="text" id="reg-name" placeholder="Твой ник">
+            <input type="email" id="reg-email" placeholder="Email (восстановление)">
+            <button onclick="saveProfile()" style="width:100%; padding:20px; background:var(--accent); color:#000; border:none; border-radius:20px; font-weight:900; margin-top:15px; cursor:pointer;">ИНИЦИАЛИЗИРОВАТЬ</button>
         </div>
     </section>
 
     <section id="view-chats" class="view">
-        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:40px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:40px;">
             <h1 style="font-size:50px; font-weight:900;">Связи</h1>
-            <div onclick="openSearch()" style="color:var(--accent); font-weight:700; cursor:pointer; font-size:14px; letter-spacing:1px;">+ ПОИСК</div>
+            <div onclick="addContact()" style="color:var(--accent); cursor:pointer;">+ ПОИСК</div>
         </div>
         <div id="chats-list"></div>
     </section>
 
     <section id="view-room" class="view">
-        <div style="display:flex; align-items:center; gap:20px; margin-bottom:25px;">
-            <div onclick="nav('chats')" style="cursor:pointer; font-size:28px;">←</div>
+        <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+            <div onclick="nav('chats')" style="font-size:25px; cursor:pointer;">←</div>
             <div>
                 <h2 id="p-title" style="font-weight:900;">@...</h2>
-                <div style="display:flex; align-items:center; gap:5px; font-size:11px; color:var(--accent);"><div style="width:6px; height:6px; background:var(--accent); border-radius:50%; box-shadow: 0 0 10px var(--accent);"></div> онлайн</div>
+                <div id="typing-status" style="font-size:12px; color:var(--accent); display:none;">печатает<span class="typing-dot"></span></div>
             </div>
         </div>
         <div id="flow"></div>
-        <div id="typing"><div class="dot"></div><div class="dot" style="animation-delay:0.2s"></div><div class="dot" style="animation-delay:0.4s"></div> <span>собеседник печатает...</span></div>
-        <div id="reply-bar">
-            <div id="reply-text" style="font-size:13px; opacity:0.6;"></div>
-            <div onclick="cancelReply()" style="position:absolute; right:15px; top:12px; cursor:pointer;">✕</div>
-        </div>
-        <div style="display:flex; gap:12px; background:rgba(255,255,255,0.03); padding:10px; border-radius:30px; border:1px solid var(--border);">
-            <input type="text" id="m-in" placeholder="Введите сигнал..." style="background:none; border:none; margin:0;" oninput="handleTyping()">
-            <button onclick="send()" style="width:55px; height:55px; background:var(--accent); border:none; border-radius:50%; cursor:pointer; font-size:20px;">➔</button>
+        <div id="reply-preview" style="display:none; padding:10px; background:rgba(255,255,255,0.05); border-left:3px solid var(--accent); margin:10px 0; border-radius:5px;"></div>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <input type="text" id="m-in" placeholder="Твой сигнал..." oninput="showTyping()">
+            <button onclick="sendMsg()" style="width:60px; height:60px; background:var(--accent); border:none; border-radius:50%; font-size:20px;">➔</button>
         </div>
     </section>
 
     <section id="view-sets" class="view">
         <h1 style="font-size:50px; font-weight:900; margin-bottom:40px;">Ядро</h1>
         <div class="card" style="text-align: center;">
-            <div id="qrcode" style="background:#fff; padding:15px; border-radius:25px; display:inline-block; margin-bottom:20px;"></div>
-            <h2 id="my-nick" style="font-size:32px; color:var(--accent);">@...</h2>
-            <p id="my-email" style="opacity:0.4; margin-bottom:35px;"></p>
-            <button onclick="logout()" style="color:#ff4d4d; background:none; border:none; font-weight:900; cursor:pointer; font-size:14px; letter-spacing:2px;">ДЕАКТИВАЦИЯ СИСТЕМЫ</button>
+            <div id="qrcode" style="background:#fff; padding:15px; border-radius:20px; display:inline-block; margin-bottom:20px;"></div>
+            <h2 id="m-nick" style="color:var(--accent); font-size:35px;">@...</h2>
+            <p id="m-email" style="opacity:0.4; margin-bottom:30px;"></p>
+            <button onclick="logout()" style="color:#ff4d4d; background:none; border:none; font-weight:900; cursor:pointer;">ДЕАКТИВАЦИЯ</button>
         </div>
     </section>
 
@@ -115,43 +109,33 @@
 
     <script>
         const API = 'https://my-chat-itp3.onrender.com/messages';
-        const KEY = 'SPEEKY_ULTRA_V15';
+        const KEY = 'SPEEKY_V2_CORE';
         let user = JSON.parse(localStorage.getItem(KEY));
-        let peer = null, selectedMsg = null, replyTo = null;
+        let peer = null, selected = null, replyText = "";
 
-        // ИНИЦИАЛИЗАЦИЯ ФОНА
-        for(let i=0; i<5; i++) {
+        // ФОН
+        for(let i=0; i<4; i++) {
             const n = document.createElement('div'); n.className = 'nebula';
-            n.style.width = n.style.height = Math.random()*400 + 300 + 'px';
-            n.style.background = i % 2 === 0 ? 'rgba(0,242,255,0.1)' : 'rgba(120,0,255,0.05)';
-            n.style.left = Math.random()*100 + '%'; n.style.top = Math.random()*100 + '%';
+            n.style.width = n.style.height = '400px'; n.style.background = 'rgba(0,242,255,0.05)';
+            n.style.left = Math.random()*80 + '%'; n.style.top = Math.random()*80 + '%';
             document.getElementById('universe').appendChild(n);
         }
 
-        window.addEventListener('mousemove', (e) => {
-            const x = (e.clientX / window.innerWidth - 0.5);
-            const y = (e.clientY / window.innerHeight - 0.5);
-            gsap.to(".nebula", { x: x*100, y: y*100, duration: 3, stagger: 0.2 });
-            gsap.to(".view", { rotationY: x*5, rotationX: -y*5, duration: 1.5 });
-        });
-
         function nav(page) {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            // ФАТАЛЬНОЕ СКРЫТИЕ ВСЕХ СЛОЕВ (РЕШЕНИЕ СНИМКА 121)
+            document.querySelectorAll('.view').forEach(v => {
+                v.classList.remove('active');
+                v.style.display = 'none';
+            });
             const nxt = document.getElementById('view-' + page);
             nxt.style.display = 'flex';
-            setTimeout(() => nxt.classList.add('active'), 20);
-            gsap.fromTo(nxt, { opacity:0, scale:0.95, z:-100 }, { opacity:1, scale:1, z:0, duration:0.6, ease:"expo.out" });
+            setTimeout(() => nxt.classList.add('active'), 10);
+            
+            gsap.fromTo(nxt, { opacity:0, y:20 }, { opacity:1, y:0, duration:0.4 });
             document.getElementById('dock').style.display = user ? 'flex' : 'none';
             document.querySelectorAll('.dock i').forEach(i => i.classList.remove('active'));
             const ico = document.getElementById('btn-' + (page === 'room' ? 'chats' : page));
             if(ico) ico.classList.add('active');
-        }
-
-        async function send() {
-            const i = document.getElementById('m-in'); if(!i.value.trim()) return;
-            const text = replyTo ? `[В ответ на: ${replyTo}] ${i.value}` : i.value;
-            await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ from:user.name, to:peer, text:text, time:Date.now() }) });
-            i.value = ''; cancelReply(); sync();
         }
 
         async function sync() {
@@ -159,86 +143,80 @@
             const r = await fetch(API); const d = await r.json();
             if(peer) {
                 const f = document.getElementById('flow');
-                const myMsgs = d.filter(m => (m.from === user.name && m.to === peer) || (m.from === peer && m.to === user.name));
-                if(f.children.length !== myMsgs.length) {
+                const msgs = d.filter(m => (m.from === user.name && m.to === peer) || (m.from === peer && m.to === user.name));
+                if(f.children.length !== msgs.length) {
                     f.innerHTML = '';
-                    myMsgs.forEach(m => {
+                    msgs.forEach(m => {
                         const w = document.createElement('div'); w.className = `msg-wrap ${m.from === user.name ? 'me' : 'he'}`;
                         const b = document.createElement('div'); b.className = 'bubble'; b.innerText = m.text;
-                        b.oncontextmenu = (e) => { e.preventDefault(); selectedMsg = b; showCtx(e); };
+                        b.oncontextmenu = (e) => { e.preventDefault(); selected = b; openCtx(e); };
                         w.appendChild(b); f.appendChild(w);
-                        gsap.from(w, { opacity:0, y:15, duration:0.4, ease:"back.out" });
                     });
                     f.scrollTop = f.scrollHeight;
                 }
             }
-            const chats = new Set(); d.forEach(m => { if(m.from === user.name) chats.add(m.to); if(m.to === user.name) chats.add(m.from); });
+            const chats = [...new Set(d.map(m => m.from === user.name ? m.to : (m.to === user.name ? m.from : null)))].filter(Boolean);
             const list = document.getElementById('chats-list');
-            if(list.children.length !== chats.size) {
-                list.innerHTML = '';
-                chats.forEach(c => {
-                    const n = document.createElement('div'); n.className = 'card'; n.style.marginBottom = '15px'; n.style.padding = '25px'; n.innerHTML = `<b style="font-size:20px; color:var(--accent)">@${c}</b><p style="font-size:12px; opacity:0.3; margin-top:5px;">Соединение активно</p>`;
-                    n.onclick = () => { peer = c; document.getElementById('p-title').innerText = '@'+c; nav('room'); sync(); };
-                    list.appendChild(n);
-                    gsap.from(n, { opacity:0, x:-20, duration:0.5 });
-                });
-            }
+            list.innerHTML = '';
+            chats.forEach(c => {
+                const n = document.createElement('div'); n.className = 'card'; n.style.padding = '20px'; n.style.marginBottom = '15px';
+                n.innerHTML = `<b style="color:var(--accent)">@${c}</b>`;
+                n.onclick = () => { peer = c; document.getElementById('p-title').innerText = '@'+c; nav('room'); sync(); };
+                list.appendChild(n);
+            });
         }
 
-        function showCtx(e) {
-            const c = document.getElementById('ctx'); c.style.display = 'flex';
-            c.style.left = e.pageX + 'px'; c.style.top = e.pageY + 'px';
-            gsap.from(c, { scale:0.8, opacity:0, duration:0.2 });
+        function openCtx(e) {
+            const ctx = document.getElementById('ctx'); ctx.style.display = 'flex';
+            ctx.style.left = e.pageX + 'px'; ctx.style.top = e.pageY + 'px';
         }
 
-        function setReply() {
-            replyTo = selectedMsg.innerText.substring(0, 20) + '...';
-            document.getElementById('reply-bar').style.display = 'block';
-            document.getElementById('reply-text').innerText = replyTo;
+        function disintegrate() {
+            const el = selected.closest('.msg-wrap');
+            gsap.to(el, { scale:0, opacity:0, duration:0.3, onComplete:() => el.remove() });
             document.getElementById('ctx').style.display = 'none';
         }
 
-        function burnMessage() {
-            const el = selectedMsg.closest('.msg-wrap');
-            const rect = el.getBoundingClientRect();
-            for(let i=0; i<50; i++) {
-                const p = document.createElement('div');
-                p.style.cssText = `position:fixed; width:4px; height:4px; background:var(--accent); left:${rect.left+rect.width/2}px; top:${rect.top+rect.height/2}px; border-radius:50%; z-index:9999; box-shadow:0 0 10px var(--accent);`;
-                document.body.appendChild(p);
-                gsap.to(p, { x:(Math.random()-0.5)*400, y:(Math.random()-0.5)*400, opacity:0, duration:1.5, onComplete:()=>p.remove() });
-            }
-            gsap.to(el, { scale:0, opacity:0, filter:"blur(20px)", duration:0.5, onComplete:()=>el.remove() });
+        function reply() {
+            replyText = selected.innerText;
+            const pr = document.getElementById('reply-preview');
+            pr.style.display = 'block'; pr.innerText = "Ответ на: " + replyText;
             document.getElementById('ctx').style.display = 'none';
         }
 
-        function handleTyping() {
-            // Имитация "печатает" для визуального теста
-            const t = document.getElementById('typing'); t.style.opacity = 1;
-            clearTimeout(window.typeTimer);
-            window.typeTimer = setTimeout(() => t.style.opacity = 0, 2000);
+        async function sendMsg() {
+            const i = document.getElementById('m-in'); if(!i.value) return;
+            const final = replyText ? `[Re: ${replyText}] ${i.value}` : i.value;
+            await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({from:user.name, to:peer, text:final}) });
+            i.value = ''; replyText = ""; document.getElementById('reply-preview').style.display = 'none';
+            sync();
         }
 
-        function openSearch() {
-            const n = prompt("Никнейм в пустоте:");
-            if(n) { peer = n.replace('@',''); document.getElementById('p-title').innerText = '@'+peer; nav('room'); sync(); }
+        function showTyping() {
+            const s = document.getElementById('typing-status'); s.style.display = 'block';
+            clearTimeout(window.t); window.t = setTimeout(() => s.style.display = 'none', 2000);
         }
 
-        function auth() {
+        function addContact() {
+            const n = prompt("Никнейм контакта:");
+            if(n) { peer = n; document.getElementById('p-title').innerText = '@'+n; nav('room'); }
+        }
+
+        function saveProfile() {
             const n = document.getElementById('reg-name').value;
             const e = document.getElementById('reg-email').value;
             if(n && e) { localStorage.setItem(KEY, JSON.stringify({name:n, email:e})); location.reload(); }
         }
 
         function logout() { localStorage.removeItem(KEY); location.reload(); }
-        function cancelReply() { replyTo = null; document.getElementById('reply-bar').style.display = 'none'; }
         window.onclick = () => document.getElementById('ctx').style.display = 'none';
 
         window.onload = () => {
             if(user) {
-                document.getElementById('my-nick').innerText = '@' + user.name;
-                document.getElementById('my-email').innerText = user.email;
-                new QRCode(document.getElementById("qrcode"), { text: `SPEEKY_USER:${user.name}`, width: 140, height: 140 });
-                nav('chats'); setInterval(sync, 3000); sync();
+                document.getElementById('m-nick').innerText = '@' + user.name;
+                document.getElementById('m-email').innerText = user.email;
+                new QRCode(document.getElementById("qrcode"), { text: user.name, width: 150, height: 150 });
+                nav('chats'); setInterval(sync, 3000);
             } else { nav('auth'); }
         };
     </script>
