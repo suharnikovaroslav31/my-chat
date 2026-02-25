@@ -3,193 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Speeky OS | Foundation v7 Legacy</title>
+    <title>Speeky OS | Foundation Ultimate v7</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --accent: #00f2ff; --bg: #000; --glass: rgba(25, 28, 32, 0.95); 
-            --border: rgba(255,255,255,0.1); --blur: 25px; --bright: 1;
+            --accent: #00f2ff; --bg: #000; --glass: rgba(20, 24, 28, 0.96); 
+            --border: rgba(255,255,255,0.08); --blur: 30px; --bright: 1;
+            --font: 'Inter', sans-serif;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
 
-        /* ЭФФЕКТ ТУМАНА И ФОНА (МАКЕТ 111, 112) */
-        #fx { position: fixed; inset: 0; z-index: -1; filter: brightness(var(--bright)); transition: 0.8s ease; }
-        .nebula { position: absolute; width: 140vw; height: 140vw; background: radial-gradient(circle, var(--accent) 0%, transparent 65%); filter: blur(130px); opacity: 0.1; top: -20%; left: -20%; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); -webkit-tap-highlight-color: transparent; outline: none; }
+        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; position: relative; }
 
-        /* АНИМАЦИИ ВЫЛЕТА И ТУМАНА */
-        .fog-reveal { animation: fogIn 0.9s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
-        @keyframes fogIn {
-            0% { filter: blur(30px); opacity: 0; transform: scale(0.95) translateY(30px); }
+        /* МНОГОСЛОЙНЫЙ ТУМАННЫЙ ФОН */
+        #os-background { position: fixed; inset: 0; z-index: -1; filter: brightness(var(--bright)); transition: 0.5s; overflow: hidden; }
+        .nebula { position: absolute; width: 140vw; height: 140vw; background: radial-gradient(circle, var(--accent) 0%, transparent 60%); filter: blur(120px); opacity: 0.12; top: -30%; left: -30%; animation: drift 25s infinite alternate; }
+        .stars { position: absolute; inset: 0; background-image: radial-gradient(white 1px, transparent 1px); background-size: 50px 50px; opacity: 0.1; }
+
+        @keyframes drift { from { transform: translate(0,0) rotate(0deg); } to { transform: translate(10%, 5%) rotate(5deg); } }
+
+        /* АНИМАЦИИ ПОЯВЛЕНИЯ (ТОТ САМЫЙ ВЫЛЕТ) */
+        .reveal { animation: fogLaunch 0.9s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
+        @keyframes fogLaunch {
+            0% { filter: blur(40px); opacity: 0; transform: scale(0.8) translateY(50px); }
             100% { filter: blur(0px); opacity: 1; transform: scale(1) translateY(0); }
         }
 
+        .fade-in { animation: fadeIn 0.5s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
         /* ЭКРАНЫ */
-        .screen { display: none; width: 100%; max-width: 480px; margin: 0 auto; height: 100vh; padding: 25px; flex-direction: column; }
+        .screen { display: none; width: 100%; max-width: 480px; margin: 0 auto; height: 100vh; padding: 30px 20px; flex-direction: column; position: relative; z-index: 10; }
         .screen.active { display: flex; }
 
-        /* ТА САМАЯ КАРТОЧКА ВХОДА (МАКЕТ 113, 116) */
-        .auth-card { background: var(--glass); border: 1px solid var(--border); border-radius: 35px; padding: 40px 30px; width: 100%; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
-        .os-logo { font-weight: 900; font-size: 42px; text-align: center; letter-spacing: -1px; margin-bottom: 5px; }
-        .os-ver { font-size: 10px; opacity: 0.4; letter-spacing: 4px; text-align: center; text-transform: uppercase; margin-bottom: 40px; }
+        /* КАРТОЧКИ И ЭЛЕМЕНТЫ (МАКЕТ 116) */
+        .card { background: var(--glass); border: 1px solid var(--border); border-radius: 40px; padding: 35px; backdrop-filter: blur(var(--blur)); box-shadow: 0 30px 60px rgba(0,0,0,0.6); margin-bottom: 20px; }
+        .logo-area { text-align: center; margin-bottom: 40px; }
+        .logo-text { font-weight: 900; font-size: 48px; letter-spacing: -2px; line-height: 1; }
+        .ver-tag { font-size: 10px; opacity: 0.4; letter-spacing: 5px; text-transform: uppercase; margin-top: 10px; display: block; }
+
+        input { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); padding: 20px 25px; border-radius: 22px; color: #fff; margin-bottom: 15px; font-size: 16px; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        input:focus { border-color: var(--accent); background: rgba(0, 242, 255, 0.05); box-shadow: 0 0 20px rgba(0,242,255,0.1); }
         
-        input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 18px 22px; border-radius: 18px; color: #fff; margin-bottom: 12px; font-size: 16px; transition: 0.3s; }
-        input:focus { border-color: var(--accent); background: rgba(0,242,255,0.05); }
-        
-        .btn-neon { width: 100%; padding: 18px; background: var(--accent); color: #000; border: none; border-radius: 18px; font-weight: 900; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 25px rgba(0,242,255,0.4); margin-top: 10px; }
+        .btn-action { width: 100%; padding: 20px; background: var(--accent); color: #000; border: none; border-radius: 22px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 10px 30px rgba(0,242,255,0.3); transition: 0.3s; }
+        .btn-action:active { transform: scale(0.96); opacity: 0.9; }
 
-        /* ДИАЛОГИ (МОБИЛЬНЫЙ МАКЕТ) */
-        .header-title { font-size: 34px; font-weight: 900; margin-bottom: 30px; letter-spacing: -1px; }
-        .chat-item { background: var(--glass); border: 1px solid var(--border); border-radius: 25px; padding: 22px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; }
-        .chat-item:active { transform: scale(0.97); background: rgba(255,255,255,0.08); }
+        /* ЧАТЫ (МАКЕТ 2026-02-26) */
+        .page-title { font-size: 38px; font-weight: 900; margin-bottom: 30px; letter-spacing: -1px; }
+        #chat-list { display: flex; flex-direction: column; gap: 15px; }
+        .chat-preview { background: var(--glass); border: 1px solid var(--border); padding: 22px 28px; border-radius: 30px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: space-between; }
+        .chat-preview:active { transform: scale(0.98); background: rgba(255,255,255,0.05); }
 
-        /* ЧАТ (2026-02-25) */
-        #chat-flow { display: flex; flex-direction: column; gap: 12px; padding-bottom: 200px; overflow-y: auto; }
-        .bubble { max-width: 80%; padding: 15px 20px; border-radius: 22px; font-size: 15px; animation: fogIn 0.4s ease forwards; }
-        .bubble.me { align-self: flex-end; background: var(--accent); color: #000; font-weight: 600; border-bottom-right-radius: 4px; }
-        .bubble.he { align-self: flex-start; background: rgba(255,255,255,0.08); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+        /* ПУЗЫРЬКИ СООБЩЕНИЙ [cite: 2026-02-25] */
+        #flow { display: flex; flex-direction: column; gap: 12px; padding-bottom: 220px; overflow-y: auto; scroll-behavior: smooth; }
+        .bubble { max-width: 82%; padding: 16px 22px; border-radius: 28px; font-size: 15px; line-height: 1.5; position: relative; cursor: pointer; animation: fogLaunch 0.4s ease forwards; }
+        .bubble.me { align-self: flex-end; background: var(--accent); color: #000; font-weight: 600; border-bottom-right-radius: 6px; box-shadow: 0 8px 25px rgba(0, 242, 255, 0.2); }
+        .bubble.he { align-self: flex-start; background: rgba(255,255,255,0.08); border: 1px solid var(--border); border-bottom-left-radius: 6px; }
 
-        /* НАВИГАЦИЯ (DOCK) */
-        .nav-zone { position: fixed; bottom: 30px; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 15px; }
-        .dock { background: rgba(15,15,15,0.9); border: 1px solid var(--border); border-radius: 50px; padding: 12px 35px; display: flex; gap: 45px; backdrop-filter: blur(20px); }
-        .dock-btn { font-size: 26px; opacity: 0.2; cursor: pointer; transition: 0.3s; }
-        .dock-btn.active { opacity: 1; color: var(--accent); transform: scale(1.1); }
+        /* КОНТЕКСТНОЕ МЕНЮ (МАКЕТ 115) */
+        #context { position: fixed; background: rgba(25, 30, 35, 0.98); border: 1px solid var(--border); border-radius: 25px; z-index: 10000; display: none; min-width: 200px; backdrop-filter: blur(40px); box-shadow: 0 25px 60px rgba(0,0,0,0.7); overflow: hidden; }
+        .ctx-opt { padding: 18px 25px; font-size: 14px; cursor: pointer; border-bottom: 1px solid var(--border); transition: 0.2s; }
+        .ctx-opt:active { background: var(--accent); color: #000; }
 
-        .input-bar { width: 92%; max-width: 480px; background: var(--glass); border: 1px solid var(--border); border-radius: 50px; padding: 8px; display: none; align-items: center; }
-        .input-bar.active { display: flex; }
+        /* ДОК И ВВОД */
+        .os-nav { position: fixed; bottom: 35px; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 15px; z-index: 9999; }
+        .dock { background: rgba(10, 10, 10, 0.95); border: 1px solid var(--border); border-radius: 60px; padding: 15px 45px; display: flex; gap: 60px; backdrop-filter: blur(30px); }
+        .dock-item { font-size: 30px; opacity: 0.2; cursor: pointer; transition: 0.4s; }
+        .dock-item.active { opacity: 1; color: var(--accent); transform: scale(1.2) translateY(-5px); }
+
+        .input-wrapper { width: 92%; max-width: 480px; background: var(--glass); border: 1px solid var(--border); border-radius: 60px; padding: 10px; display: none; align-items: center; backdrop-filter: blur(20px); }
+        .input-wrapper.active { display: flex; animation: fogLaunch 0.5s ease; }
     </style>
 </head>
 <body>
 
-    <div id="fx"><div class="nebula"></div></div>
+    <div id="os-background"><div class="stars"></div><div class="nebula"></div></div>
 
-    <section id="sc-auth" class="screen" style="justify-content:center;">
-        <div class="os-logo fog-reveal">Speeky OS</div>
-        <div class="os-ver fog-reveal">FOUNDATION v7</div>
-        
-        <div class="auth-card fog-reveal" style="animation-delay: 0.2s">
-            <h2 style="text-align:center; margin-bottom:25px; font-weight:600">Вход в систему</h2>
-            <input type="text" id="reg-n" placeholder="@username">
-            <input type="email" id="reg-e" placeholder="Email (восстановление)">
-            <button class="btn-neon" onclick="sysReg()">ВОЙТИ</button>
+    <div id="context">
+        <div class="ctx-opt" onclick="osAction('copy')">Копировать текст</div>
+        <div class="ctx-opt" onclick="osAction('reply')">Ответить в чате</div>
+        <div class="ctx-opt" style="color:#ff5252" onclick="osAction('del')">Удалить навсегда</div>
+    </div>
+
+    <section id="view-auth" class="screen" style="justify-content:center;">
+        <div class="logo-area reveal">
+            <span class="logo-text">Speeky OS</span>
+            <span class="ver-tag">FOUNDATION v7</span>
+        </div>
+        <div class="card reveal" style="animation-delay: 0.15s">
+            <h2 style="text-align:center; margin-bottom:30px; font-weight:600; opacity:0.8">Вход в аккаунт</h2>
+            <input type="text" id="reg-name" placeholder="@username">
+            <input type="email" id="reg-email" placeholder="Email адрес">
+            <button class="btn-action" onclick="osRegister()">ПОДКЛЮЧИТЬСЯ</button>
+            <p style="text-align:center; margin-top:20px; font-size:12px; opacity:0.3; cursor:pointer" onclick="alert('Для восстановления введите ваш Email в поле регистрации')">Забыли данные?</p>
         </div>
     </section>
 
-    <div id="ui-root" style="display:none;">
-        <section id="sc-list" class="screen">
-            <h1 class="header-title fog-reveal">Диалоги</h1>
-            <div id="chat-stack"></div>
-            <button onclick="findPeer()" style="margin-top:20px; color:var(--accent); background:none; border:none; font-weight:900; cursor:pointer; width:100%">+ Найти по нику</button>
+    <div id="os-core" style="display:none;">
+        <section id="view-chats" class="screen">
+            <h1 class="page-title reveal">Диалоги</h1>
+            <div id="chat-list" class="reveal" style="animation-delay: 0.1s"></div>
+            <button class="btn-action" style="background:none; border:1px solid var(--border); color:var(--accent); margin-top:30px" onclick="osNewChat()">+ НАЙТИ ПОЛЬЗОВАТЕЛЯ</button>
         </section>
 
-        <section id="sc-room" class="screen">
-            <h2 id="room-peer" onclick="nav('list')" style="cursor:pointer; margin-bottom:25px; font-size:20px">← @...</h2>
-            <div id="chat-flow"></div>
+        <section id="view-room" class="screen">
+            <div style="display:flex; align-items:center; gap:15px; margin-bottom:30px" class="fade-in">
+                <div onclick="osNav('chats')" style="width:50px; height:50px; background:var(--glass); border:1px solid var(--border); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:24px">←</div>
+                <div>
+                    <h2 id="room-title" style="font-size:22px">@...</h2>
+                    <span style="font-size:10px; color:var(--accent); text-transform:uppercase; letter-spacing:2px">secure tunnel</span>
+                </div>
+            </div>
+            <div id="flow"></div>
         </section>
 
-        <section id="sc-sets" class="screen">
-            <h1 class="header-title fog-reveal">Настройки</h1>
-            <div class="auth-card fog-reveal">
-                <p style="font-size:11px; opacity:0.4; margin-bottom:5px">ВАШ ПРОФИЛЬ [cite: 2026-02-23]</p>
-                <h3 id="u-name" style="font-size:24px; color:var(--accent)">...</h3>
-                <p id="u-mail" style="font-size:14px; opacity:0.6; margin-bottom:15px">...</p>
-                <p style="font-size:11px; opacity:0.4">Регистрация: <span id="u-date">...</span></p>
+        <section id="view-sets" class="screen">
+            <h1 class="page-title reveal">Настройки</h1>
+            <div class="card reveal" style="animation-delay: 0.1s">
+                <p style="font-size:11px; opacity:0.4; margin-bottom:10px; letter-spacing:1px">ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ [cite: 2026-02-23]</p>
+                <h3 id="set-n" style="font-size:28px; color:var(--accent); margin-bottom:5px">...</h3>
+                <p id="set-e" style="font-size:15px; opacity:0.6; margin-bottom:20px">...</p>
+                <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:15px; font-size:12px; opacity:0.5">
+                    ID Аккаунта: <span id="set-id">...</span><br>
+                    Дата регистрации: <span id="set-d">...</span>
+                </div>
                 
-                <hr style="border:none; border-top:1px solid var(--border); margin:25px 0">
+                <hr style="border:none; border-top:1px solid var(--border); margin:30px 0">
                 
-                <label style="font-size:12px; opacity:0.5">Размытие (Blur)</label>
-                <input type="range" min="0" max="100" value="25" oninput="setVis('blur', this.value)">
+                <p style="font-size:11px; opacity:0.4; margin-bottom:15px">ИНТЕРФЕЙС</p>
+                <label style="font-size:13px; margin-bottom:10px; display:block">Сила тумана (Blur)</label>
+                <input type="range" min="0" max="100" value="30" oninput="osVisual('blur', this.value)">
                 
-                <button onclick="sysLogout()" style="margin-top:30px; color:#ff4d4d; background:none; border:none; width:100%; cursor:pointer; font-weight:900">ВЫЙТИ ИЗ ОС</button>
+                <label style="font-size:13px; margin:15px 0 10px; display:block">Яркость системы</label>
+                <input type="range" min="0.1" max="2" step="0.1" value="1" oninput="osVisual('bright', this.value)">
+                
+                <button onclick="osLogout()" style="margin-top:40px; background:rgba(255,82,82,0.1); color:#ff5252; border:1px solid rgba(255,82,82,0.2); width:100%; padding:15px; border-radius:18px; cursor:pointer; font-weight:900">ВЫЙТИ ИЗ СИСТЕМЫ</button>
             </div>
         </section>
 
-        <div class="nav-zone">
-            <div id="bar-msg" class="input-bar">
-                <input type="text" id="m-val" placeholder="Сообщение..." style="margin:0" onkeypress="if(event.key==='Enter') send()">
-                <button onclick="send()" style="width:45px; height:45px; border-radius:50%; background:var(--accent); border:none; margin-left:10px">➔</button>
+        <div class="os-nav">
+            <div id="os-input-bar" class="input-wrapper">
+                <input type="text" id="os-msg-val" placeholder="Введите сообщение..." style="margin:0" onkeypress="if(event.key==='Enter') osSend()">
+                <button onclick="osSend()" style="width:50px; height:50px; border-radius:50%; background:var(--accent); border:none; margin-left:12px; cursor:pointer; flex-shrink:0">➔</button>
             </div>
             <nav class="dock">
-                <div class="dock-btn active" id="btn-list" onclick="nav('list')">💬</div>
-                <div class="dock-btn" id="btn-sets" onclick="nav('sets')">⚙️</div>
+                <div class="dock-item active" id="btn-chats" onclick="osNav('chats')">💬</div>
+                <div class="dock-item" id="btn-sets" onclick="osNav('sets')">⚙️</div>
             </nav>
         </div>
     </div>
 
     <script>
         const API = 'https://my-chat-itp3.onrender.com/messages';
-        const DB = 'SPEEKY_LEGACY_V7';
-        let user = JSON.parse(localStorage.getItem(DB));
-        let peer = null;
+        const STORAGE_KEY = 'SPEEKY_OS_FOUNDATION_V7_ULTIMATE';
+        let user = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        let activePeer = null; let selectedMsg = null;
 
-        function sysReg() {
-            const n = document.getElementById('reg-n').value.trim().replace('@','');
-            const e = document.getElementById('reg-e').value.trim();
-            if(!n || !e) return;
-            user = { name: n, email: e, date: new Date().toLocaleDateString() };
-            localStorage.setItem(DB, JSON.stringify(user));
+        function osRegister() {
+            const n = document.getElementById('reg-name').value.trim().replace('@','');
+            const e = document.getElementById('reg-email').value.trim();
+            if(!n || !e) return alert("Заполните все данные!");
+            user = { name: n, email: e, date: new Date().toLocaleDateString(), id: Math.random().toString(36).substr(2, 9).toUpperCase() };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
             location.reload();
         }
 
-        function init() {
-            if(!user) { document.getElementById('sc-auth').classList.add('active'); return; }
-            document.getElementById('ui-root').style.display = 'block';
-            document.getElementById('u-name').innerText = '@' + user.name;
-            document.getElementById('u-mail').innerText = user.email;
-            document.getElementById('u-date').innerText = user.date;
-            nav('list'); setInterval(sync, 3000); sync();
+        function osInit() {
+            if(!user) { document.getElementById('view-auth').classList.add('active'); return; }
+            document.getElementById('os-core').style.display = 'block';
+            document.getElementById('set-n').innerText = '@' + user.name;
+            document.getElementById('set-e').innerText = user.email;
+            document.getElementById('set-d').innerText = user.date;
+            document.getElementById('set-id').innerText = user.id;
+            osNav('chats'); setInterval(osSync, 3000); osSync();
         }
 
-        function nav(s) {
-            document.querySelectorAll('.screen').forEach(x => x.classList.remove('active'));
-            document.getElementById('sc-' + s).classList.add('active');
-            document.getElementById('bar-msg').classList.toggle('active', s === 'room');
-            document.querySelectorAll('.dock-btn').forEach(b => b.classList.remove('active'));
-            const id = s === 'room' ? 'btn-list' : 'btn-' + s;
-            if(document.getElementById(id)) document.getElementById(id).classList.add('active');
+        function osNav(tab) {
+            document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active', 'reveal'); void s.offsetWidth; });
+            const target = document.getElementById('view-' + tab);
+            target.classList.add('active', 'reveal');
+            
+            document.getElementById('os-input-bar').classList.toggle('active', tab === 'room');
+            document.querySelectorAll('.dock-item').forEach(i => i.classList.remove('active'));
+            const bId = tab === 'room' ? 'btn-chats' : 'btn-' + tab;
+            if(document.getElementById(bId)) document.getElementById(bId).classList.add('active');
         }
 
-        function setVis(k, v) { document.documentElement.style.setProperty('--' + k, v + 'px'); }
-
-        function findPeer() {
-            const p = prompt("Введите @username:");
-            if(p) { peer = p.replace('@',''); document.getElementById('room-peer').innerText = '← @' + peer; nav('room'); }
+        function osVisual(k, v) { 
+            const val = k === 'blur' ? v + 'px' : v;
+            document.documentElement.style.setProperty('--' + k, val); 
         }
 
-        async function send() {
-            const i = document.getElementById('m-val');
-            if(!i.value.trim() || !peer) return;
-            await fetch(API, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ from: user.name, to: peer, text: i.value, time: Date.now() }) });
-            i.value = ''; sync();
+        function osNewChat() {
+            const p = prompt("Ник @username собеседника:");
+            if(p) { activePeer = p.replace('@',''); document.getElementById('room-title').innerText = '@' + activePeer; osNav('room'); }
         }
 
-        async function sync() {
+        // КОНТЕКСТНОЕ МЕНЮ
+        document.addEventListener('contextmenu', e => {
+            const m = e.target.closest('.bubble');
+            if(m) {
+                e.preventDefault(); selectedMsg = JSON.parse(m.dataset.raw);
+                const menu = document.getElementById('context');
+                menu.style.display = 'block'; menu.style.left = e.pageX + 'px'; menu.style.top = e.pageY + 'px';
+            }
+        });
+        document.addEventListener('click', () => document.getElementById('context').style.display = 'none');
+
+        function osAction(type) {
+            if(type === 'copy') navigator.clipboard.writeText(selectedMsg.text);
+            if(type === 'reply') document.getElementById('os-msg-val').value = `[Re: ${selectedMsg.text.slice(0,15)}...] `;
+            if(type === 'del') osSend("🚫 Сообщение было удалено");
+        }
+
+        async function osSend(overrideText = null) {
+            const input = document.getElementById('os-msg-val');
+            const txt = overrideText || input.value.trim();
+            if(!txt || !activePeer) return;
+            input.value = '';
+            await fetch(API, { 
+                method: 'POST', 
+                headers: {'Content-Type':'application/json'}, 
+                body: JSON.stringify({ from: user.name, to: activePeer, text: txt, time: Date.now() }) 
+            });
+            osSync();
+        }
+
+        async function osSync() {
             try {
                 const r = await fetch(API); const d = await r.json();
-                if(peer) {
-                    const flow = document.getElementById('chat-flow'); flow.innerHTML = '';
-                    d.filter(m => (m.from === user.name && m.to === peer) || (m.from === peer && m.to === user.name))
+                if(activePeer) {
+                    const flow = document.getElementById('flow'); flow.innerHTML = '';
+                    d.filter(m => (m.from === user.name && m.to === activePeer) || (m.from === activePeer && m.to === user.name))
                      .forEach(m => {
-                        const b = document.createElement('div');
-                        b.className = `bubble ${m.from === user.name ? 'me' : 'he'}`;
-                        b.innerText = m.text; flow.appendChild(b);
+                        const div = document.createElement('div');
+                        div.className = `bubble ${m.from === user.name ? 'me' : 'he'}`;
+                        div.innerText = m.text; div.dataset.raw = JSON.stringify(m);
+                        flow.appendChild(div);
                      });
-                    document.getElementById('sc-room').scrollTop = document.getElementById('sc-room').scrollHeight;
+                    document.getElementById('view-room').scrollTop = document.getElementById('view-room').scrollHeight;
                 }
-                const cs = new Set();
-                d.forEach(m => { if(m.from === user.name) cs.add(m.to); if(m.to === user.name) cs.add(m.from); });
-                const stack = document.getElementById('chat-stack'); stack.innerHTML = '';
-                cs.forEach(c => {
-                    const div = document.createElement('div'); div.className = 'chat-item fog-reveal';
-                    div.innerHTML = `<b style="color:var(--accent)">@${c}</b><p style="font-size:12px; opacity:0.4; margin-top:5px">Открыть диалог</p>`;
-                    div.onclick = () => { peer = c; document.getElementById('room-peer').innerText = '← @' + c; nav('room'); };
-                    stack.appendChild(div);
+                const contacts = new Set();
+                d.forEach(m => { if(m.from === user.name) contacts.add(m.to); if(m.to === user.name) contacts.add(m.from); });
+                const list = document.getElementById('chat-list'); list.innerHTML = '';
+                contacts.forEach(c => {
+                    const item = document.createElement('div'); item.className = 'chat-preview reveal';
+                    item.innerHTML = `<div><b style="font-size:18px; color:var(--accent)">@${c}</b><p style="font-size:12px; opacity:0.4; margin-top:5px">Нажмите, чтобы открыть диалог</p></div><div style="opacity:0.2">➔</div>`;
+                    item.onclick = () => { activePeer = c; document.getElementById('room-title').innerText = '@' + c; osNav('room'); };
+                    list.appendChild(item);
                 });
             } catch(e) {}
         }
 
-        function sysLogout() { localStorage.removeItem(DB); location.reload(); }
-        init();
+        function osLogout() { if(confirm("Выйти из системы? Данные на этом устройстве будут удалены.")) { localStorage.removeItem(STORAGE_KEY); location.reload(); } }
+        osInit();
     </script>
 </body>
 </html>
