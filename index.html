@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Speeky | Infinity Smooth</title>
+    <title>Speeky | Liquid Search Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&display=swap" rel="stylesheet">
     <style>
@@ -12,16 +12,17 @@
             --accent-rgb: 0, 242, 255;
             --bg: #010204;
             --glass: rgba(255, 255, 255, 0.03);
-            --glass-thick: rgba(10, 12, 16, 0.98);
+            --glass-deep: rgba(10, 12, 16, 0.98);
             --border: rgba(255, 255, 255, 0.08);
+            --spring-ease: cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; position: relative; }
 
-        /* --- ФОН С ЖИВЫМ ОТКЛИКОМ --- */
+        /* --- ФОН --- */
         #bg-canvas { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 50% 120%, rgba(var(--accent-rgb), 0.1) 0%, #000 70%); }
-        .orb { position: absolute; width: 100vw; height: 100vw; background: radial-gradient(circle, rgba(var(--accent-rgb), 0.04) 0%, transparent 70%); filter: blur(100px); border-radius: 50%; }
+        .orb { position: absolute; width: 120vw; height: 120vw; background: radial-gradient(circle, rgba(var(--accent-rgb), 0.04) 0%, transparent 70%); filter: blur(100px); top: -20%; left: -10%; }
 
         /* --- ВЕРХНИЙ ОСТРОВОК --- */
         .island-top {
@@ -30,68 +31,66 @@
             padding: 6px 16px; border-radius: 20px; backdrop-filter: blur(20px);
             z-index: 2000; display: flex; align-items: center; gap: 8px;
         }
-        .status-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 10px var(--accent); }
+        .status-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 10px var(--accent); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } }
 
-        /* --- КОНТЕЙНЕРЫ ЭКРАНОВ (GSAP управляемые) --- */
-        .view {
-            position: absolute; inset: 0; display: none; padding: 90px 25px 140px;
-            flex-direction: column; z-index: 10; opacity: 0;
-        }
+        /* --- ЭКРАНЫ --- */
+        .view { position: absolute; inset: 0; display: none; padding: 90px 25px 140px; flex-direction: column; z-index: 10; opacity: 0; }
 
-        /* --- КАРТОЧКИ ЧАТОВ --- */
-        .chat-node {
-            background: var(--glass); border: 1px solid var(--border);
-            border-radius: 30px; padding: 22px; margin-bottom: 15px;
-            display: flex; align-items: center; gap: 18px; cursor: pointer;
-            will-change: transform, opacity;
+        /* --- КАСТОМНАЯ МОДАЛКА ПОИСКА (ВМЕСТО PROMPT) --- */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(0px); display: none; align-items: flex-end; 
+            justify-content: center; z-index: 3000;
         }
-        .avatar {
-            width: 60px; height: 60px; border-radius: 22px;
-            background: linear-gradient(135deg, var(--accent), #1a1a1a);
-            display: flex; align-items: center; justify-content: center; font-weight: 900;
+        .modal-sheet {
+            width: 100%; max-width: 500px; background: var(--glass-deep);
+            border: 1px solid var(--border); border-radius: 40px 40px 0 0;
+            padding: 40px 30px 60px; transform: translateY(100%);
+            box-shadow: 0 -20px 60px rgba(0,0,0,0.5);
         }
+        .modal-sheet h2 { font-size: 28px; font-weight: 900; margin-bottom: 10px; text-align: center; }
+        .modal-sheet p { opacity: 0.4; font-size: 14px; text-align: center; margin-bottom: 30px; }
 
-        /* --- ЧАТ И СООБЩЕНИЯ --- */
+        /* --- ИНПУТЫ --- */
+        .elite-input {
+            width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+            padding: 22px; border-radius: 25px; color: #fff; font-size: 17px; margin-bottom: 20px;
+            outline: none; transition: 0.4s var(--spring-ease);
+        }
+        .elite-input:focus { border-color: var(--accent); background: rgba(255,255,255,0.08); transform: scale(1.02); }
+
+        .btn-confirm {
+            width: 100%; padding: 22px; background: var(--accent); color: #000;
+            border: none; border-radius: 25px; font-weight: 900; font-size: 16px;
+            cursor: pointer; transition: 0.3s;
+        }
+        .btn-confirm:active { transform: scale(0.95); }
+
+        /* --- ЧАТЫ И СООБЩЕНИЯ --- */
+        .chat-node { background: var(--glass); border: 1px solid var(--border); border-radius: 30px; padding: 22px; margin-bottom: 15px; display: flex; align-items: center; gap: 18px; cursor: pointer; }
+        .avatar { width: 60px; height: 60px; border-radius: 22px; background: linear-gradient(135deg, var(--accent), #1a1a1a); display: flex; align-items: center; justify-content: center; font-weight: 900; }
         #chat-scroller { flex: 1; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; padding-bottom: 20px; }
-        .msg-pop {
-            max-width: 80%; padding: 16px 22px; border-radius: 28px; font-size: 15px;
-            line-height: 1.5; position: relative; will-change: transform;
-        }
-        .msg-pop.me { align-self: flex-end; background: var(--accent); color: #000; font-weight: 600; border-bottom-right-radius: 4px; box-shadow: 0 10px 20px rgba(var(--accent-rgb), 0.1); }
-        .msg-pop.he { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 4px; backdrop-filter: blur(10px); }
+        .msg-pop { max-width: 80%; padding: 16px 22px; border-radius: 28px; font-size: 15px; line-height: 1.5; }
+        .msg-pop.me { align-self: flex-end; background: var(--accent); color: #000; font-weight: 600; border-bottom-right-radius: 4px; }
+        .msg-pop.he { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
 
-        /* --- СЕРЬЕЗНАЯ РЕГИСТРАЦИЯ [cite: 2026-02-23] --- */
-        .auth-box {
-            margin: auto; width: 100%; max-width: 400px;
-            background: var(--glass-thick); padding: 50px; border-radius: 45px;
-            border: 1px solid var(--border); backdrop-filter: blur(50px);
-            box-shadow: 0 50px 100px rgba(0,0,0,0.5);
+        /* --- НИЖНИЙ ОСТРОВОК --- */
+        .nav-island {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: rgba(10, 10, 12, 0.95); border: 1px solid var(--border);
+            padding: 12px 35px; border-radius: 40px; display: flex; gap: 50px;
+            z-index: 1000; backdrop-filter: blur(30px);
         }
-        input {
-            width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-            padding: 22px; border-radius: 25px; color: #fff; font-size: 16px; margin-bottom: 15px;
-            outline: none; transition: 0.3s;
-        }
-        input:focus { border-color: var(--accent); background: rgba(255,255,255,0.07); }
+        .nav-ico { font-size: 24px; opacity: 0.2; cursor: pointer; transition: 0.3s; }
+        .nav-ico.active { opacity: 1; color: var(--accent); transform: scale(1.2); }
 
-        /* --- ПЛАВАЮЩИЙ ИНПУТ --- */
         .bottom-controls {
             position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
             width: 90%; max-width: 450px; background: var(--glass-thick);
             border: 1px solid var(--border); border-radius: 35px; padding: 6px;
             display: none; align-items: center; backdrop-filter: blur(30px); z-index: 1500;
         }
-
-        /* --- НИЖНИЙ ОСТРОВОК (УЛЬТРА МАЛЕНЬКИЙ) --- */
-        .nav-island {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background: rgba(10, 10, 12, 0.95); border: 1px solid var(--border);
-            padding: 12px 35px; border-radius: 40px; display: flex; gap: 50px;
-            z-index: 1000; backdrop-filter: blur(30px); box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-        }
-        .nav-ico { font-size: 24px; opacity: 0.2; cursor: pointer; transition: 0.3s; }
-        .nav-ico.active { opacity: 1; color: var(--accent); transform: scale(1.1); }
-
     </style>
 </head>
 <body>
@@ -100,23 +99,32 @@
 
     <div class="island-top">
         <div class="status-dot"></div>
-        <span style="font-size: 9px; font-weight: 900; letter-spacing: 1px;">SPEEKY • <span id="live-info">ENCRYPTED</span></span>
+        <span style="font-size: 9px; font-weight: 900; letter-spacing: 1.5px;">SPEEKY • <span id="live-info">LIVE</span></span>
+    </div>
+
+    <div id="search-modal" class="modal-overlay" onclick="closeSearch(event)">
+        <div class="modal-sheet" id="modal-sheet">
+            <h2>Найти собеседника</h2>
+            <p>Введите @username для начала диалога</p>
+            <input type="text" id="search-nick" class="elite-input" placeholder="@alex_elite">
+            <button class="btn-confirm" onclick="confirmSearch()">Начать чат</button>
+            <button style="width:100%; background:none; border:none; color:rgba(255,255,255,0.3); margin-top:15px; cursor:pointer;" onclick="closeSearch(null, true)">Отмена</button>
+        </div>
     </div>
 
     <section id="view-auth" class="view">
-        <div class="auth-box">
-            <h1 style="font-size: 34px; font-weight: 900; margin-bottom: 8px;">Speeky Elite</h1>
-            <p style="opacity: 0.4; font-size: 14px; margin-bottom: 35px;">Создание постоянного аккаунта</p>
-            <input type="text" id="reg-name" placeholder="@username">
-            <input type="email" id="reg-email" placeholder="Email для восстановления">
-            <button onclick="initAuth()" style="width:100%; padding:22px; background:var(--accent); color:#000; border:none; border-radius:25px; font-weight:900; cursor:pointer; font-size:15px;">ВОЙТИ</button>
+        <div style="margin: auto; width: 100%; max-width: 400px; background: var(--glass-deep); padding: 50px; border-radius: 45px; border: 1px solid var(--border); text-align: center;">
+            <h1 style="font-size: 34px; font-weight: 900; margin-bottom: 30px;">Speeky Messenger</h1>
+            <input type="text" id="reg-name" class="elite-input" placeholder="Ваш никнейм">
+            <input type="email" id="reg-email" class="elite-input" placeholder="Recovery Email">
+            <button class="btn-confirm" onclick="initAuth()">ИНИЦИАЛИЗИРОВАТЬ</button>
         </div>
     </section>
 
     <section id="view-chats" class="view">
         <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:40px;">
-            <h1 style="font-size: 46px; font-weight: 900; letter-spacing: -2px;">Чаты</h1>
-            <div onclick="findPeer()" style="color:var(--accent); font-weight:600; cursor:pointer;">+ Найти</div>
+            <h1 style="font-size: 46px; font-weight: 900;">Чаты</h1>
+            <div onclick="openSearch()" style="color:var(--accent); font-weight:600; cursor:pointer; font-size:18px;">+ Найти</div>
         </div>
         <div id="chats-container"></div>
     </section>
@@ -124,19 +132,17 @@
     <section id="view-room" class="view">
         <div style="display:flex; align-items:center; gap:20px; margin-bottom:20px;">
             <div onclick="goTo('chats')" style="cursor:pointer; font-size: 24px;">←</div>
-            <h2 id="peer-title" style="font-weight: 900; font-size: 22px;">@username</h2>
+            <h2 id="peer-title" style="font-weight: 900;">@username</h2>
         </div>
         <div id="chat-scroller"></div>
     </section>
 
     <section id="view-sets" class="view">
         <h1 style="font-size: 46px; font-weight: 900; margin-bottom:40px;">Профиль</h1>
-        <div class="auth-box" style="max-width:100%; text-align:left; padding:35px;">
-            <p style="font-size: 10px; opacity: 0.3; letter-spacing: 2px;">IDENTIFICATION</p>
-            <h2 id="me-nick" style="font-size: 32px; color:var(--accent); margin: 10px 0;">@...</h2>
-            <p id="me-mail" style="opacity: 0.5;"></p>
-            <p id="me-date" style="font-size: 12px; margin-top:20px; opacity: 0.3;"></p>
-            <button onclick="logout()" style="margin-top:40px; color:#ff4d4d; background:none; border:none; cursor:pointer; font-weight:900;">ДЕАКТИВИРОВАТЬ</button>
+        <div style="background: var(--glass-deep); border: 1px solid var(--border); border-radius: 40px; padding: 40px;">
+            <h2 id="me-nick" style="font-size: 32px; color:var(--accent);">@...</h2>
+            <p id="me-mail" style="opacity: 0.5; margin-bottom: 30px;"></p>
+            <button onclick="logout()" style="color:#ff4d4d; background:none; border:none; cursor:pointer; font-weight:900;">ВЫЙТИ ИЗ АККАУНТА</button>
         </div>
     </section>
 
@@ -152,18 +158,17 @@
 
     <script>
         const API = 'https://my-chat-itp3.onrender.com/messages';
-        const DB = 'SPEEKY_ULTRA_SMOOTH';
+        const DB = 'SPEEKY_LIQUID_V4';
         let user = JSON.parse(localStorage.getItem(DB));
         let peer = null;
-        let lastMsgHash = "";
 
-        // ПЛАВНЫЙ ПЕРЕХОД МЕЖДУ ЭКРАНАМИ
+        // ПЛАВНАЯ НАВИГАЦИЯ
         function goTo(target) {
             const current = document.querySelector('.view[style*="display: flex"]');
             const next = document.getElementById('view-' + target);
             
             if(current) {
-                gsap.to(current, { opacity: 0, y: -20, scale: 0.95, filter: "blur(10px)", duration: 0.5, ease: "power4.in", onComplete: () => {
+                gsap.to(current, { opacity: 0, y: -20, duration: 0.4, ease: "power2.in", onComplete: () => {
                     current.style.display = 'none';
                     showNext();
                 }});
@@ -171,15 +176,8 @@
 
             function showNext() {
                 next.style.display = 'flex';
-                gsap.fromTo(next, 
-                    { opacity: 0, y: 30, scale: 1.05, filter: "blur(15px)" },
-                    { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 0.8, ease: "power4.out" }
-                );
-                
-                // Анимация элементов внутри списка чатов (Stagger)
-                if(target === 'chats') {
-                    gsap.from(".chat-node", { opacity: 0, x: -20, stagger: 0.1, duration: 0.6, ease: "back.out(1.7)" });
-                }
+                gsap.fromTo(next, { opacity: 0, y: 30, scale: 0.98 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "power4.out" });
+                if(target === 'chats') gsap.from(".chat-node", { opacity: 0, x: -20, stagger: 0.08, duration: 0.5 });
             }
 
             document.getElementById('room-input').style.display = (target === 'room') ? 'flex' : 'none';
@@ -189,12 +187,41 @@
             if(ico) ico.classList.add('active');
         }
 
+        // УЛЬТРА-ПЛАВНЫЙ ПОИСК
+        function openSearch() {
+            const overlay = document.getElementById('search-modal');
+            const sheet = document.getElementById('modal-sheet');
+            overlay.style.display = 'flex';
+            gsap.to(overlay, { backdropFilter: "blur(15px)", duration: 0.6 });
+            gsap.to(sheet, { y: 0, duration: 0.8, ease: "power4.out" });
+            document.getElementById('search-nick').focus();
+        }
+
+        function closeSearch(e, force = false) {
+            if(force || e.target === document.getElementById('search-modal')) {
+                const sheet = document.getElementById('modal-sheet');
+                gsap.to(sheet, { y: "100%", duration: 0.5, ease: "power4.in", onComplete: () => {
+                    document.getElementById('search-modal').style.display = 'none';
+                }});
+                gsap.to("#search-modal", { backdropFilter: "blur(0px)", duration: 0.4 });
+            }
+        }
+
+        function confirmSearch() {
+            const nick = document.getElementById('search-nick').value.trim().replace('@','');
+            if(nick) {
+                peer = nick;
+                document.getElementById('peer-title').innerText = '@' + peer;
+                closeSearch(null, true);
+                goTo('room');
+                sync();
+            }
+        }
+
         async function push() {
             const i = document.getElementById('m-val');
             if(!i.value.trim()) return;
             const text = i.value; i.value = '';
-            
-            // Анимация "вылета" сообщения
             await fetch(API, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ from: user.name, to: peer, text, time: Date.now() }) });
             sync();
         }
@@ -202,9 +229,6 @@
         async function sync() {
             try {
                 const r = await fetch(API); const d = await r.json();
-                const hash = JSON.stringify(d.slice(-10));
-                if(hash === lastMsgHash) return; lastMsgHash = hash;
-
                 if(peer) {
                     const scroller = document.getElementById('chat-scroller');
                     const filtered = d.filter(m => (m.from === user.name && m.to === peer) || (m.from === peer && m.to === user.name));
@@ -214,17 +238,14 @@
                         b.className = `msg-pop ${m.from === user.name ? 'me' : 'he'}`;
                         b.innerText = m.text;
                         scroller.appendChild(b);
-                        gsap.from(b, { opacity: 0, y: 20, scale: 0.8, duration: 0.5, ease: "back.out(2)" });
                     });
                     scroller.scrollTop = scroller.scrollHeight;
                 }
-
                 const chats = new Set(); d.forEach(m => { if(m.from === user.name) chats.add(m.to); if(m.to === user.name) chats.add(m.from); });
-                const container = document.getElementById('chats-container');
-                container.innerHTML = '';
+                const container = document.getElementById('chats-container'); container.innerHTML = '';
                 chats.forEach(c => {
                     const node = document.createElement('div'); node.className = 'chat-node';
-                    node.innerHTML = `<div class="avatar">${c[0].toUpperCase()}</div><div><b style="font-size:18px;">@${c}</b><p style="opacity:0.3; font-size:12px;">Живой канал связи</p></div>`;
+                    node.innerHTML = `<div class="avatar">${c[0].toUpperCase()}</div><div><b style="font-size:18px;">@${c}</b><p style="opacity:0.3; font-size:12px;">Secure Session</p></div>`;
                     node.onclick = () => { peer = c; document.getElementById('peer-title').innerText = '@' + c; goTo('room'); };
                     container.appendChild(node);
                 });
@@ -240,20 +261,9 @@
             location.reload();
         }
 
-        function findPeer() {
-            const p = prompt("Введите @username:");
-            if(p) { peer = p.replace('@',''); document.getElementById('peer-title').innerText = '@' + peer; goTo('room'); sync(); }
-        }
-
-        // ЖИВОЙ ОТКЛИК ФОНА НА МЫШЬ
-        document.addEventListener('mousemove', (e) => {
-            gsap.to(".orb", { x: (e.clientX - window.innerWidth/2) * 0.05, y: (e.clientY - window.innerHeight/2) * 0.05, duration: 2, ease: "power2.out" });
-        });
-
         if(user) {
             document.getElementById('me-nick').innerText = '@' + user.name;
             document.getElementById('me-mail').innerText = user.email;
-            document.getElementById('me-date').innerText = "В сети с " + user.date;
             goTo('chats'); setInterval(sync, 3000); sync();
         } else { goTo('auth'); }
         function logout() { localStorage.removeItem(DB); location.reload(); }
