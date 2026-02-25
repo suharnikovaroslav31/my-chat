@@ -3,86 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Speeky OS | Liquid Foundation v8</title>
+    <title>Speeky OS | Stable Foundation v9</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { 
             --accent: #00f2ff; 
             --bg: #000; 
-            --glass: rgba(255, 255, 255, 0.03); 
-            --border: rgba(255, 255, 255, 0.08);
+            --glass: rgba(255, 255, 255, 0.05); 
+            --border: rgba(255, 255, 255, 0.1);
             --blur: 20px;
-            --bg-bright: 1;
+            --bright: 1;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
 
-        /* ФОН С ЯРКОСТЬЮ */
-        .nebula-wrap { position: fixed; inset: 0; z-index: -1; filter: brightness(var(--bg-bright)); }
+        /* ФОН */
+        .nebula-wrap { position: fixed; inset: 0; z-index: -1; filter: brightness(var(--bright)); }
         .blob { position: absolute; width: 100vw; height: 100vw; background: radial-gradient(circle, var(--accent) 0%, transparent 70%); filter: blur(100px); opacity: 0.15; animation: move 20s infinite alternate linear; }
-        @keyframes move { from { transform: translate(-30%, -30%); } to { transform: translate(30%, 30%); } }
+        @keyframes move { from { transform: translate(-20%, -20%); } to { transform: translate(20%, 20%); } }
 
-        /* ПРИВЕТСТВИЕ - ФИКС ЗАВИСАНИЯ */
+        /* ПЛАВНОЕ ПРИВЕТСТВИЕ */
         #welcome-layer { 
             position: fixed; inset: 0; z-index: 9999; background: #000; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            transition: 1s cubic-bezier(0.19, 1, 0.22, 1); pointer-events: none;
+            transition: 0.8s cubic-bezier(0.19, 1, 0.22, 1);
         }
-        #welcome-layer.fade { opacity: 0; visibility: hidden; transform: translateY(-100%); }
-        .welcome-title { font-size: 38px; font-weight: 800; animation: pulse 2s infinite ease-in-out; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.98); opacity: 0.7; } }
+        #welcome-layer.hide { opacity: 0; visibility: hidden; transform: scale(1.1); }
 
-        /* ИНТЕРФЕЙС */
+        /* КАРТОЧКИ И ПОЛЯ */
         .card { 
             background: rgba(15, 18, 25, 0.8); border: 1px solid var(--border); 
-            border-radius: 35px; backdrop-filter: blur(var(--blur)); padding: 30px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5); margin-bottom: 15px;
+            border-radius: 30px; backdrop-filter: blur(var(--blur)); padding: 30px; margin-bottom: 15px;
         }
 
+        input { width: 100%; background: var(--glass); border: 1px solid var(--border); padding: 18px; border-radius: 20px; color: #fff; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--accent); }
+
+        /* ЭКРАНЫ */
         .screen { flex: 1; padding: 25px; display: none; width: 100%; max-width: 600px; margin: 0 auto; height: 100%; overflow-y: auto; }
-        .screen.active { display: flex; flex-direction: column; animation: reveal 0.6s cubic-bezier(0.19, 1, 0.22, 1); }
-        @keyframes reveal { from { opacity: 0; transform: scale(0.95); filter: blur(10px); } to { opacity: 1; transform: scale(1); filter: blur(0); } }
-
-        /* МЕНЮ И КНОПКИ */
-        .menu { 
-            position: fixed; background: rgba(20, 25, 30, 0.98); border: 1px solid var(--border); 
-            border-radius: 20px; backdrop-filter: blur(20px); z-index: 10000; display: none; width: 160px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8); overflow: hidden;
-        }
-        .menu-item { padding: 15px; font-size: 14px; cursor: pointer; transition: 0.2s; }
-        .menu-item:hover { background: var(--accent); color: #000; }
+        .screen.active { display: flex; flex-direction: column; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* СООБЩЕНИЯ */
-        #chat-flow { display: flex; flex-direction: column; gap: 10px; padding-bottom: 150px; }
-        .msg { 
-            max-width: 85%; padding: 14px 20px; border-radius: 22px; font-size: 15px; 
-            transition: 0.2s; cursor: pointer; position: relative;
-        }
+        #chat-flow { display: flex; flex-direction: column; gap: 10px; padding-bottom: 160px; }
+        .msg { max-width: 85%; padding: 14px 20px; border-radius: 22px; cursor: pointer; position: relative; transition: 0.2s; }
         .msg.sent { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; }
         .msg.received { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
         
+        /* МЕНЮ */
+        .menu { position: fixed; background: #111; border: 1px solid var(--border); border-radius: 15px; z-index: 10000; display: none; overflow: hidden; box-shadow: 0 10px 30px #000; }
+        .menu-item { padding: 12px 20px; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        .menu-item:hover { background: var(--accent); color: #000; }
+
         /* НАВИГАЦИЯ */
         .dock { 
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 350px; background: rgba(10, 12, 15, 0.9);
-            border: 1px solid var(--border); border-radius: 50px; padding: 12px;
-            display: flex; justify-content: space-around; backdrop-filter: blur(20px); z-index: 1000;
+            width: 140px; background: rgba(10, 10, 15, 0.9); border: 1px solid var(--border); 
+            border-radius: 40px; padding: 10px; display: flex; justify-content: space-around; backdrop-filter: blur(20px);
         }
-        .dock-item { font-size: 24px; opacity: 0.3; transition: 0.3s; cursor: pointer; }
-        .dock-item.active { opacity: 1; color: var(--accent); transform: scale(1.1); }
+        .dock-item { font-size: 22px; opacity: 0.3; cursor: pointer; transition: 0.3s; }
+        .dock-item.active { opacity: 1; color: var(--accent); }
 
         .input-bar { 
-            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+            position: fixed; bottom: 95px; left: 50%; transform: translateX(-50%);
             width: 90%; max-width: 550px; background: rgba(15, 20, 25, 0.95);
             border: 1px solid var(--border); border-radius: 50px; padding: 8px;
-            display: none; align-items: center; z-index: 1000;
+            display: none; align-items: center;
         }
         .input-bar.active { display: flex; }
-        input[type="text"] { background: none; border: none; color: #fff; padding: 0 15px; flex: 1; outline: none; }
-
-        /* СЛАЙДЕРЫ ИЗ ТВОЕГО СКРИНШОТА */
-        input[type="range"] { width: 100%; accent-color: var(--accent); margin-top: 10px; cursor: pointer; }
+        input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
     </style>
 </head>
 <body>
@@ -90,8 +80,8 @@
     <div class="nebula-wrap"><div class="blob"></div></div>
 
     <div id="welcome-layer">
-        <div class="welcome-title">Speeky OS</div>
-        <p style="opacity:0.3; font-size:10px; letter-spacing:3px; margin-top:10px">INITIALIZING...</p>
+        <h1 style="font-weight:800; letter-spacing:-1px">Speeky OS</h1>
+        <p style="opacity:0.4; font-size:12px; margin-top:10px">FOUNDATION v9</p>
     </div>
 
     <div id="msg-menu" class="menu">
@@ -100,11 +90,11 @@
         <div class="menu-item" style="color:#ff4d4d" onclick="msgAction('delete')">Удалить</div>
     </div>
 
-    <div id="auth-screen" class="screen" style="display:flex; justify-content:center; align-items:center;">
-        <div class="card" style="width:100%">
-            <h2 style="margin-bottom:20px; font-weight:800">Вход в систему</h2>
-            <input type="text" id="r-user" placeholder="@username" style="width:100%; background:var(--glass); border:1px solid var(--border); padding:15px; border-radius:15px; color:#fff; margin-bottom:10px">
-            <button onclick="login()" style="width:100%; background:var(--accent); border:none; padding:15px; border-radius:15px; font-weight:800; cursor:pointer">ВОЙТИ</button>
+    <div id="auth-screen" class="screen" style="display:flex; align-items:center; justify-content:center;">
+        <div class="card" style="width:100%; text-align:center;">
+            <h2 style="margin-bottom:20px">Вход в систему</h2>
+            <input type="text" id="r-user" placeholder="@username" style="margin-bottom:15px">
+            <button onclick="login()" style="width:100%; padding:18px; background:var(--accent); border:none; border-radius:20px; font-weight:800; cursor:pointer">ВОЙТИ</button>
         </div>
     </div>
 
@@ -112,7 +102,7 @@
         <section id="sc-contacts" class="screen">
             <h1 style="font-size:32px; font-weight:800; margin-bottom:30px">Чаты</h1>
             <div id="contacts-list"></div>
-            <button onclick="addUser()" style="margin-top:20px; width:100%; padding:15px; background:var(--glass); border:1px solid var(--border); color:#fff; border-radius:20px; cursor:pointer">+ Найти собеседника</button>
+            <button onclick="addUser()" style="margin-top:20px; width:100%; padding:15px; background:var(--glass); border:1px solid var(--border); color:#fff; border-radius:15px; cursor:pointer">+ Найти</button>
         </section>
 
         <section id="sc-chat" class="screen">
@@ -126,25 +116,25 @@
         <section id="sc-settings" class="screen">
             <h1 style="font-size:32px; font-weight:800; margin-bottom:30px">Настройки</h1>
             <div class="card">
-                <p style="font-size:12px; opacity:0.5">МОЙ ПРОФИЛЬ</p>
-                <h3 id="my-name-display" style="margin:10px 0 20px 0">yaroslav</h3>
+                <p style="font-size:11px; opacity:0.5; margin-bottom:5px">МОЙ ПРОФИЛЬ</p>
+                <h3 id="my-name-display" style="margin-bottom:20px">...</h3>
                 
-                <p style="font-size:12px; opacity:0.5">ВИЗУАЛ</p>
-                <div style="margin:15px 0">
-                    <label>Размытие</label>
+                <p style="font-size:11px; opacity:0.5; margin-bottom:5px">ВИЗУАЛ</p>
+                <div style="margin-bottom:15px">
+                    <label style="font-size:14px">Размытие</label>
                     <input type="range" min="0" max="50" value="20" oninput="updateVisual('blur', this.value)">
                 </div>
-                <div style="margin:15px 0">
-                    <label>Яркость фона</label>
+                <div style="margin-bottom:15px">
+                    <label style="font-size:14px">Яркость фона</label>
                     <input type="range" min="0.1" max="2" step="0.1" value="1" oninput="updateVisual('bright', this.value)">
                 </div>
-                <button onclick="logout()" style="width:100%; padding:15px; background:rgba(255,50,50,0.1); border:1px solid rgba(255,50,50,0.2); color:#ff4d4d; border-radius:15px; margin-top:10px; cursor:pointer">Выйти из аккаунта</button>
+                <button onclick="logout()" style="width:100%; padding:15px; background:rgba(255,50,50,0.1); border:none; color:#ff4d4d; border-radius:15px; cursor:pointer">Выйти</button>
             </div>
         </section>
 
         <div class="input-bar" id="chat-input-ui">
             <input type="text" id="m-text" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') sendMsg()">
-            <button onclick="sendMsg()" style="background:var(--accent); border:none; width:40px; height:40px; border-radius:50%; cursor:pointer">➔</button>
+            <button onclick="sendMsg()" style="background:var(--accent); border:none; width:42px; height:42px; border-radius:50%; cursor:pointer">➔</button>
         </div>
 
         <nav class="dock">
@@ -155,33 +145,32 @@
 
     <script>
         const API = 'https://my-chat-itp3.onrender.com';
-        let user = JSON.parse(localStorage.getItem('speeky_v8'));
+        let user = JSON.parse(localStorage.getItem('spk_user_v9'));
         let activePeer = null;
         let selectedMsg = null;
         let renderedIds = new Set();
 
         function login() {
             const nick = document.getElementById('r-user').value.trim();
-            if(!nick) return alert("Введите имя");
+            if(!nick) return;
             user = { username: nick.replace('@','') };
-            localStorage.setItem('speeky_v8', JSON.stringify(user));
+            localStorage.setItem('spk_user_v9', JSON.stringify(user));
             location.reload();
         }
 
         function init() {
             if(!user) {
                 document.getElementById('auth-screen').style.display = 'flex';
-                document.getElementById('welcome-layer').classList.add('fade');
+                document.getElementById('welcome-layer').classList.add('hide');
                 return;
             }
             document.getElementById('app').style.display = 'flex';
             document.getElementById('my-name-display').innerText = user.username;
             
-            // Фикс зависания: принудительно убираем слой через 2 сек
             setTimeout(() => {
-                document.getElementById('welcome-layer').classList.add('fade');
+                document.getElementById('welcome-layer').classList.add('hide');
                 tab('contacts');
-            }, 2000);
+            }, 1500);
 
             setInterval(load, 2500);
             load();
@@ -197,15 +186,15 @@
 
         function updateVisual(type, val) {
             if(type === 'blur') document.documentElement.style.setProperty('--blur', val + 'px');
-            if(type === 'bright') document.documentElement.style.setProperty('--bg-bright', val);
+            if(type === 'bright') document.documentElement.style.setProperty('--bright', val);
         }
 
         function addUser() {
             const p = prompt("Введите @username:");
-            if(p) { activePeer = p.replace('@',''); tab('chat'); document.getElementById('peer-name').innerText = activePeer; }
+            if(p) { activePeer = p.replace('@',''); tab('chat'); document.getElementById('peer-name').innerText = '@'+activePeer; }
         }
 
-        // РАБОЧЕЕ КОНТЕКСТНОЕ МЕНЮ
+        // КОНТЕКСТНОЕ МЕНЮ
         document.addEventListener('contextmenu', e => {
             const m = e.target.closest('.msg');
             if(m) {
@@ -221,7 +210,7 @@
 
         function msgAction(type) {
             if(type === 'copy') navigator.clipboard.writeText(selectedMsg.text);
-            if(type === 'reply') document.getElementById('m-text').value = `[Ответ: ${selectedMsg.text.slice(0,10)}...] `;
+            if(type === 'reply') document.getElementById('m-text').value = `[Ответ: ${selectedMsg.text.slice(0,15)}...] `;
             if(type === 'delete') sendMsg("🚫 Сообщение удалено", selectedMsg.id);
         }
 
@@ -251,21 +240,17 @@
             try {
                 const res = await fetch(`${API}/messages`);
                 const all = await res.json();
+                if(activePeer) all.filter(m => (m.from === user.username && m.to === activePeer) || (m.from === activePeer && m.to === user.username)).forEach(m => renderMsg(m));
                 
-                if(activePeer) {
-                    all.filter(m => (m.from === user.username && m.to === activePeer) || (m.from === activePeer && m.to === user.username))
-                       .forEach(m => renderMsg(m));
-                }
-
                 const contacts = new Set();
                 all.forEach(m => { if(m.from === user.username) contacts.add(m.to); if(m.to === user.username) contacts.add(m.from); });
                 const list = document.getElementById('contacts-list');
                 list.innerHTML = '';
                 contacts.forEach(c => {
                     const d = document.createElement('div');
-                    d.className = 'card'; d.style.padding = '15px'; d.style.cursor = 'pointer';
+                    d.className = 'card'; d.style.padding = '20px'; d.style.cursor = 'pointer';
                     d.innerText = '@' + c;
-                    d.onclick = () => { activePeer = c; tab('chat'); document.getElementById('peer-name').innerText = c; };
+                    d.onclick = () => { activePeer = c; tab('chat'); document.getElementById('peer-name').innerText = '@'+c; };
                     list.appendChild(d);
                 });
             } catch(e) {}
