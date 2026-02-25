@@ -3,72 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Speeky | Fixed Elite</title>
+    <title>Speeky | Particles & ID</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #00f2ff; --bg: #050608; --glass: rgba(255, 255, 255, 0.04); --border: rgba(255, 255, 255, 0.1); }
+        :root { --accent: #00f2ff; --bg: #050608; --glass: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1); }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
 
-        /* --- UI VIEWS --- */
-        .view { position: absolute; inset: 0; display: none; padding: 100px 20px 140px; flex-direction: column; opacity: 0; z-index: 10; }
+        .view { position: absolute; inset: 0; display: none; padding: 80px 20px 140px; flex-direction: column; opacity: 0; }
         .view.active { display: flex; opacity: 1; }
 
-        /* --- CUSTOM MODAL (NO MORE BROWSER WINDOWS) --- */
-        .elite-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(15px);
-            display: none; align-items: center; justify-content: center; z-index: 5000;
+        /* --- ID CARD (POINT 4) --- */
+        .id-card {
+            background: linear-gradient(135deg, #111, #000); border: 1px solid var(--border);
+            border-radius: 35px; padding: 30px; position: relative; overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: left;
         }
-        .elite-modal {
-            width: 90%; max-width: 400px; background: #0a0c10; border: 1px solid var(--border);
-            border-radius: 40px; padding: 40px; text-align: center;
-        }
+        .id-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(45deg, transparent, rgba(0,242,255,0.03), transparent); animation: sweep 3s infinite; }
+        @keyframes sweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 
-        /* --- AUTH FORM --- */
-        .auth-card { margin: auto; width: 100%; max-width: 380px; padding: 40px; background: var(--glass); border-radius: 40px; border: 1px solid var(--border); }
-        input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 18px; border-radius: 20px; color: #fff; outline: none; margin-bottom: 15px; font-size: 16px; transition: 0.3s; }
-        input:focus { border-color: var(--accent); background: rgba(255,255,255,0.1); }
-        .btn-main { width: 100%; padding: 20px; background: var(--accent); color: #000; border: none; border-radius: 20px; font-weight: 900; cursor: pointer; }
-
-        /* --- MESSAGES --- */
-        #flow { flex: 1; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; padding: 5px; }
-        .msg-wrap { display: flex; flex-direction: column; max-width: 85%; position: relative; margin-bottom: 5px; }
+        /* --- MESSAGES & PARTICLES --- */
+        #flow { flex: 1; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+        .msg-wrap { display: flex; flex-direction: column; max-width: 80%; position: relative; }
         .msg-wrap.me { align-self: flex-end; }
-        .bubble { padding: 16px 22px; border-radius: 26px; font-size: 15px; cursor: pointer; }
+        .bubble { padding: 15px 20px; border-radius: 24px; font-size: 15px; cursor: pointer; backdrop-filter: blur(10px); }
         .me .bubble { background: var(--accent); color: #000; font-weight: 600; border-bottom-right-radius: 4px; }
         .he .bubble { background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
 
-        /* --- DOCK & CONTROLS --- */
+        /* --- CONTEXT MENU --- */
+        #ctx {
+            position: fixed; background: rgba(10,12,15,0.95); border: 1px solid var(--border);
+            border-radius: 20px; display: none; flex-direction: column; z-index: 6000;
+            backdrop-filter: blur(20px); overflow: hidden; min-width: 150px;
+        }
+        .ctx-item { padding: 14px 20px; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        .ctx-item:hover { background: var(--glass); color: var(--accent); }
+
+        /* --- MODAL (NO BROWSER POPUPS) --- */
+        .elite-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 5000; }
+        .elite-modal { width: 90%; max-width: 380px; background: #0a0c10; border: 1px solid var(--border); border-radius: 35px; padding: 35px; }
+
+        /* --- DOCK --- */
         .dock { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #000; border: 1px solid var(--border); padding: 10px 45px; border-radius: 40px; display: none; gap: 60px; z-index: 2000; }
-        .dock i { font-size: 24px; opacity: 0.3; cursor: pointer; }
-        .dock i.active { opacity: 1; color: var(--accent); }
+        .dock i { font-size: 24px; opacity: 0.3; cursor: pointer; transition: 0.3s; }
+        .dock i.active { opacity: 1; color: var(--accent); transform: scale(1.1); }
+        
+        input { width: 100%; background: var(--glass); border: 1px solid var(--border); padding: 18px; border-radius: 20px; color: #fff; outline: none; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
     <div id="modal-search" class="elite-overlay">
         <div class="elite-modal">
-            <h2 style="margin-bottom:20px;">Поиск</h2>
-            <input type="text" id="search-nick" placeholder="@никнейм">
-            <button class="btn-main" onclick="confirmSearch()">Найти</button>
-            <p onclick="closeModal()" style="margin-top:15px; opacity:0.4; cursor:pointer;">Отмена</p>
+            <h2 style="margin-bottom:15px; font-weight:900;">Найти</h2>
+            <input type="text" id="search-nick" placeholder="@username">
+            <button onclick="confirmSearch()" style="width:100%; padding:18px; background:var(--accent); border:none; border-radius:20px; font-weight:900; cursor:pointer;">ОТКРЫТЬ ЧАТ</button>
+            <p onclick="closeModal()" style="margin-top:15px; opacity:0.3; text-align:center; cursor:pointer;">Отмена</p>
         </div>
     </div>
 
+    <div id="ctx">
+        <div class="ctx-item" onclick="triggerDelete()">Удалить ✕</div>
+    </div>
+
     <section id="view-auth" class="view">
-        <div class="auth-card">
-            <h1 style="font-size: 32px; font-weight: 900; margin-bottom: 30px;">Вход в Speeky</h1>
-            <input type="text" id="reg-name" placeholder="Придумайте ник">
-            <input type="email" id="reg-email" placeholder="Email для восстановления">
-            <button class="btn-main" onclick="initAuth()">СОЗДАТЬ АККАУНТ</button>
+        <div style="margin:auto; width:100%; max-width:350px; text-align:center;">
+            <h1 style="font-size:36px; font-weight:900; margin-bottom:30px;">Speeky</h1>
+            <input type="text" id="reg-name" placeholder="Твой ник">
+            <input type="email" id="reg-email" placeholder="Твой email">
+            <button onclick="initAuth()" style="width:100%; padding:20px; background:var(--accent); border:none; border-radius:20px; font-weight:900;">ВОЙТИ</button>
         </div>
     </section>
 
     <section id="view-chats" class="view">
-        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:30px;">
-            <h1 style="font-size: 40px; font-weight: 900;">Чаты</h1>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+            <h1 style="font-size:40px; font-weight:900;">Чаты</h1>
             <div onclick="openModal()" style="color:var(--accent); font-weight:700; cursor:pointer;">+ Найти</div>
         </div>
         <div id="chats-list"></div>
@@ -77,12 +88,23 @@
     <section id="view-room" class="view">
         <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
             <div onclick="nav('chats')" style="cursor:pointer; font-size:24px;">←</div>
-            <h2 id="peer-title" style="font-weight: 800;">@username</h2>
+            <h2 id="peer-title" style="font-weight:900;">@username</h2>
         </div>
         <div id="flow"></div>
-        <div style="margin-top:20px; display:flex; gap:10px;">
-            <input type="text" id="m-in" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') send()">
-            <button onclick="send()" style="width:55px; height:55px; background:var(--accent); border:none; border-radius:20px;">➔</button>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <input type="text" id="m-in" placeholder="Сообщение..." style="margin:0;">
+            <button onclick="send()" style="width:55px; height:55px; background:var(--accent); border:none; border-radius:18px; font-weight:900;">➔</button>
+        </div>
+    </section>
+
+    <section id="view-sets" class="view">
+        <h1 style="font-size:40px; font-weight:900; margin-bottom:40px;">Профиль</h1>
+        <div class="id-card">
+            <p style="font-size:10px; opacity:0.4; letter-spacing:2px;">SPEEKY PASS</p>
+            <h2 id="my-nick" style="font-size:30px; color:var(--accent); margin:10px 0;">@...</h2>
+            <p id="my-email" style="opacity:0.5; font-size:14px; margin-bottom:25px;"></p>
+            <div id="qrcode" style="background:#fff; padding:10px; display:inline-block; border-radius:15px;"></div>
+            <button onclick="logout()" style="display:block; margin-top:35px; color:#ff4d4d; background:none; border:none; font-weight:900; cursor:pointer;">ДЕАКТИВИРОВАТЬ</button>
         </div>
     </section>
 
@@ -93,21 +115,37 @@
 
     <script>
         const API = 'https://my-chat-itp3.onrender.com/messages';
-        const KEY = 'SPEEKY_V7';
+        const KEY = 'SPEEKY_V8';
         let user = JSON.parse(localStorage.getItem(KEY));
-        let peer = null;
+        let peer = null, selectedMsgEl = null;
 
         function nav(page) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             const nxt = document.getElementById('view-' + page);
             nxt.classList.add('active');
-            gsap.fromTo(nxt, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4 });
+            gsap.fromTo(nxt, { opacity:0, y:15 }, { opacity:1, y:0, duration:0.4 });
             document.getElementById('dock').style.display = user ? 'flex' : 'none';
+            document.querySelectorAll('.dock i').forEach(i => i.classList.remove('active'));
+            const ico = document.getElementById('btn-' + (page === 'room' ? 'chats' : page));
+            if(ico) ico.classList.add('active');
         }
+
+        // ТОТ САМЫЙ ЭФФЕКТ РАСПАДА
+        function disintegrate(el) {
+            const rect = el.getBoundingClientRect();
+            for(let i=0; i<45; i++) {
+                const p = document.createElement('div');
+                p.style.cssText = `position:fixed; width:4px; height:4px; background:var(--accent); left:${rect.left + rect.width/2}px; top:${rect.top + rect.height/2}px; border-radius:50%; z-index:9999;`;
+                document.body.appendChild(p);
+                gsap.to(p, { x: (Math.random()-0.5)*350, y: (Math.random()-0.5)*350, opacity:0, scale:0, duration: 1, onComplete: () => p.remove() });
+            }
+            gsap.to(el, { opacity:0, scale:0.5, filter:"blur(8px)", duration:0.4, onComplete: () => el.remove() });
+        }
+
+        function triggerDelete() { if(selectedMsgEl) disintegrate(selectedMsgEl.closest('.msg-wrap')); }
 
         function openModal() { document.getElementById('modal-search').style.display = 'flex'; }
         function closeModal() { document.getElementById('modal-search').style.display = 'none'; }
-
         function confirmSearch() {
             const n = document.getElementById('search-nick').value.trim().replace('@','');
             if(n) { peer = n; document.getElementById('peer-title').innerText = '@' + peer; closeModal(); nav('room'); sync(); }
@@ -126,36 +164,36 @@
                 d.filter(m => (m.from === user.name && m.to === peer) || (m.from === peer && m.to === user.name))
                  .forEach(m => {
                     const w = document.createElement('div'); w.className = `msg-wrap ${m.from === user.name ? 'me' : 'he'}`;
-                    w.innerHTML = `<div class="bubble">${m.text}</div>`;
-                    f.appendChild(w);
+                    const b = document.createElement('div'); b.className = 'bubble'; b.innerText = m.text;
+                    b.oncontextmenu = (e) => { e.preventDefault(); selectedMsgEl = b; const c = document.getElementById('ctx'); c.style.display='flex'; c.style.left=e.pageX+'px'; c.style.top=e.pageY+'px'; };
+                    w.appendChild(b); f.appendChild(w);
                  });
                 f.scrollTop = f.scrollHeight;
             }
             const chats = new Set(); d.forEach(m => { if(m.from === user.name) chats.add(m.to); if(m.to === user.name) chats.add(m.from); });
             const list = document.getElementById('chats-list'); list.innerHTML = '';
             chats.forEach(c => {
-                const n = document.createElement('div'); n.className = 'bubble'; n.style.marginBottom = '10px'; n.style.background = 'var(--glass)';
-                n.innerHTML = `<b>@${c}</b><p style="opacity:0.4; font-size:12px;">Нажми, чтобы открыть чат</p>`;
+                const n = document.createElement('div'); n.className = 'bubble'; n.style.marginBottom = '10px'; n.style.background = 'var(--glass)'; n.innerHTML = `<b>@${c}</b>`;
                 n.onclick = () => { peer = c; document.getElementById('peer-title').innerText = '@' + c; nav('room'); };
                 list.appendChild(n);
             });
         }
 
+        window.onclick = () => document.getElementById('ctx').style.display = 'none';
+
         function initAuth() {
             const n = document.getElementById('reg-name').value.trim();
             const e = document.getElementById('reg-email').value.trim();
-            if(n && e) {
-                user = {name: n, email: e};
-                localStorage.setItem(KEY, JSON.stringify(user));
-                nav('chats'); sync(); setInterval(sync, 4000);
-            }
+            if(n && e) { user = {name: n, email: e}; localStorage.setItem(KEY, JSON.stringify(user)); location.reload(); }
         }
 
-        // ПРОВЕРКА ПРИ ЗАГРУЗКЕ
-        window.onload = () => {
-            if(user) { nav('chats'); sync(); setInterval(sync, 4000); }
-            else { nav('auth'); }
-        };
+        if(user) {
+            document.getElementById('my-nick').innerText = '@' + user.name;
+            document.getElementById('my-email').innerText = user.email;
+            new QRCode(document.getElementById("qrcode"), { text: "speeky://" + user.name, width: 100, height: 100 });
+            nav('chats'); setInterval(sync, 4000); sync();
+        } else { nav('auth'); }
+        function logout() { localStorage.removeItem(KEY); location.reload(); }
     </script>
 </body>
 </html>
