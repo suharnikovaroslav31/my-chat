@@ -3,176 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speeky OS | Legacy Foundation</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Speeky OS | True Base</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --accent: #00f2ff; --bg: #000; --glass: rgba(255,255,255,0.08); 
-            --border: rgba(255,255,255,0.1); --blur: 20px; --bright: 1;
-        }
+        :root { --c-main: #00f2ff; --bg: #000; --brd: rgba(255,255,255,0.1); --blur: 20px; --brt: 1; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
 
         /* ФОН */
-        .nebula { position: fixed; inset: 0; z-index: -1; filter: brightness(var(--bright)); }
-        .blob { position: absolute; width: 100vw; height: 100vw; background: radial-gradient(circle, var(--accent) 0%, transparent 70%); filter: blur(80px); opacity: 0.1; top: -20%; left: -20%; }
+        .fx-bg { position: fixed; inset: 0; z-index: -1; filter: brightness(var(--brt)); }
+        .fx-blob { position: absolute; width: 100vw; height: 100vw; background: radial-gradient(circle, var(--c-main) 0%, transparent 70%); filter: blur(100px); opacity: 0.1; top: -10%; left: -10%; }
 
-        /* ЭКРАНЫ */
-        .screen { flex: 1; padding: 20px; display: none; width: 100%; max-width: 500px; margin: 0 auto; height: 100vh; overflow-y: auto; }
-        .screen.active { display: flex; flex-direction: column; }
-        .card { background: rgba(20, 24, 30, 0.9); border: 1px solid var(--border); border-radius: 25px; backdrop-filter: blur(var(--blur)); padding: 25px; margin-bottom: 15px; }
-        
-        input { width: 100%; background: var(--glass); border: 1px solid var(--border); padding: 15px; border-radius: 15px; color: #fff; outline: none; margin-bottom: 10px; }
-        button.primary { width: 100%; padding: 15px; background: var(--accent); color: #000; border: none; border-radius: 15px; font-weight: 800; cursor: pointer; }
+        /* ИНТЕРФЕЙС */
+        .sc { display: none; height: 100vh; padding: 20px; flex-direction: column; max-width: 500px; margin: 0 auto; overflow-y: auto; }
+        .sc.on { display: flex; }
+        .box { background: rgba(20,20,20,0.9); border: 1px solid var(--brd); border-radius: 20px; backdrop-filter: blur(var(--blur)); padding: 20px; margin-bottom: 15px; }
+
+        input { width: 100%; padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--brd); color: #fff; border-radius: 12px; outline: none; margin-bottom: 10px; }
+        .btn { width: 100%; padding: 15px; background: var(--c-main); color: #000; border: none; border-radius: 12px; font-weight: 900; cursor: pointer; }
 
         /* ЧАТ */
-        #chat-flow { display: flex; flex-direction: column; gap: 10px; padding-bottom: 150px; }
-        .msg { max-width: 80%; padding: 12px 18px; border-radius: 18px; }
-        .msg.sent { align-self: flex-end; background: var(--accent); color: #000; }
-        .msg.received { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); }
+        #chat-list { display: flex; flex-direction: column; gap: 8px; padding-bottom: 140px; }
+        .msg { max-width: 80%; padding: 10px 15px; border-radius: 15px; margin-bottom: 5px; }
+        .msg.my { align-self: flex-end; background: var(--c-main); color: #000; }
+        .msg.not-my { align-self: flex-start; background: rgba(255,255,255,0.1); border: 1px solid var(--brd); }
 
-        /* НАВИГАЦИЯ */
-        .dock { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 140px; background: rgba(10,10,10,0.9); border: 1px solid var(--border); border-radius: 40px; padding: 10px; display: flex; justify-content: space-around; backdrop-filter: blur(20px); }
-        .dock-item { font-size: 22px; opacity: 0.3; cursor: pointer; }
-        .dock-item.active { opacity: 1; color: var(--accent); }
+        /* МЕНЮ И НАВИГАЦИЯ */
+        .dock { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #111; border: 1px solid var(--brd); border-radius: 30px; display: flex; padding: 10px; gap: 20px; z-index: 100; }
+        .dock-i { font-size: 20px; opacity: 0.4; cursor: pointer; }
+        .dock-i.on { opacity: 1; color: var(--c-main); }
 
-        .bar { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; background: #111; border-radius: 30px; padding: 8px; display: none; align-items: center; border: 1px solid var(--border); }
-        .bar.active { display: flex; }
+        .chat-input-ui { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; display: none; gap: 10px; background: #000; padding: 5px; }
+        .chat-input-ui.on { display: flex; }
     </style>
 </head>
 <body>
 
-    <div class="nebula"><div class="blob"></div></div>
+    <div class="fx-bg"><div class="fx-blob"></div></div>
 
-    <div id="sc-auth" class="screen" style="display:flex; align-items:center; justify-content:center;">
-        <div class="card" style="width:100%; text-align:center;">
-            <h2 style="margin-bottom:15px">Speeky OS</h2>
-            <input type="text" id="login-nick" placeholder="@username">
-            <button class="primary" onclick="login()">ВОЙТИ</button>
+    <section id="view-login" class="sc on" style="justify-content:center;">
+        <div class="box" style="text-align:center;">
+            <h1 style="margin-bottom:20px;">Speeky OS</h1>
+            <input type="text" id="in-nick" placeholder="Твой ник">
+            <button class="btn" onclick="sysLogin()">ВОЙТИ</button>
         </div>
-    </div>
+    </section>
 
-    <div id="app" style="display:none;">
-        <section id="sc-list" class="screen">
-            <h2>Чаты</h2>
-            <div id="contact-list" style="margin-top:20px"></div>
-            <button onclick="addPeer()" style="margin-top:20px; color:var(--accent); background:none; border:none; cursor:pointer">+ Найти собеседника</button>
+    <div id="view-app" style="display:none;">
+        <section id="view-chats" class="sc">
+            <h2>Диалоги</h2>
+            <div id="contacts-box" style="margin-top:20px;"></div>
+            <button onclick="sysAdd()" style="margin-top:20px; color:var(--c-main); background:none; border:none; cursor:pointer;">+ Найти по нику</button>
         </section>
 
-        <section id="sc-chat" class="screen">
-            <h2 id="peer-name" onclick="tab('list')" style="cursor:pointer">← Назад</h2>
-            <div id="chat-flow" style="margin-top:20px"></div>
+        <section id="view-room" class="sc">
+            <h3 id="room-name" onclick="go('chats')" style="cursor:pointer; margin-bottom:15px;">← Назад</h3>
+            <div id="chat-list"></div>
         </section>
 
-        <section id="sc-sets" class="screen">
+        <section id="view-profile" class="sc">
             <h2>Настройки</h2>
-            <div class="card" style="margin-top:20px">
-                <p>Профиль: <b id="display-nick">...</b></p>
-                <div style="margin-top:20px">
-                    <label>Размытие</label>
-                    <input type="range" min="0" max="50" value="20" oninput="setVis('blur', this.value)">
+            <div class="box" style="margin-top:20px;">
+                <p>Привет, <b id="user-display">...</b></p>
+                <div style="margin-top:20px;">
+                    <label style="font-size:12px;">Размытие</label>
+                    <input type="range" min="0" max="40" value="20" oninput="sysVis('blur', this.value)">
                 </div>
-                <div style="margin-top:10px">
-                    <label>Яркость фона</label>
-                    <input type="range" min="0.1" max="2" step="0.1" value="1" oninput="setVis('bright', this.value)">
+                <div style="margin-top:10px;">
+                    <label style="font-size:12px;">Яркость</label>
+                    <input type="range" min="0.1" max="2" step="0.1" value="1" oninput="sysVis('brt', this.value)">
                 </div>
-                <button onclick="logout()" style="margin-top:25px; color:red; background:none; border:none; cursor:pointer">Выйти</button>
+                <button onclick="sysExit()" style="margin-top:20px; color:red; background:none; border:none; cursor:pointer;">Выйти</button>
             </div>
         </section>
 
-        <div class="bar" id="chat-bar">
-            <input type="text" id="msg-input" placeholder="Сообщение..." style="margin:0; flex:1" onkeypress="if(event.key==='Enter') send()">
-            <button onclick="send()" style="background:var(--accent); border:none; border-radius:50%; width:40px; height:40px; margin-left:10px">➔</button>
+        <div class="chat-input-ui" id="ui-input">
+            <input type="text" id="m-val" placeholder="Текст..." style="margin:0;">
+            <button onclick="sysSend()" style="width:50px; border-radius:12px; background:var(--c-main); border:none;">➔</button>
         </div>
 
         <nav class="dock">
-            <div class="dock-item active" id="d-list" onclick="tab('list')">💬</div>
-            <div class="dock-item" id="d-sets" onclick="tab('sets')">⚙️</div>
+            <div class="dock-i on" id="btn-chats" onclick="go('chats')">💬</div>
+            <div class="dock-i" id="btn-profile" onclick="go('profile')">⚙️</div>
         </nav>
     </div>
 
     <script>
-        const API = 'https://my-chat-itp3.onrender.com';
-        let user = JSON.parse(localStorage.getItem('LEGACY_BASE_V1'));
-        let currentPeer = null;
+        const API_URL = 'https://my-chat-itp3.onrender.com/messages';
+        // НОВЫЙ КЛЮЧ ЧТОБЫ УБИТЬ КЭШ
+        let ME = JSON.parse(localStorage.getItem('SPK_REBORN_BASE'));
+        let PEER = null;
 
-        function login() {
-            const nick = document.getElementById('login-nick').value.trim();
-            if(!nick) return;
-            user = { name: nick.replace('@', '') };
-            localStorage.setItem('LEGACY_BASE_V1', JSON.stringify(user));
+        function sysLogin() {
+            const n = document.getElementById('in-nick').value.trim();
+            if(!n) return;
+            ME = { name: n.replace('@','') };
+            localStorage.setItem('SPK_REBORN_BASE', JSON.stringify(ME));
             location.reload();
         }
 
-        function init() {
-            if(!user) {
-                document.getElementById('sc-auth').style.display = 'flex';
-                return;
-            }
-            document.getElementById('app').style.display = 'block';
-            document.getElementById('display-nick').innerText = user.name;
-            tab('list');
+        function startup() {
+            if(!ME) return;
+            document.getElementById('view-login').classList.remove('on');
+            document.getElementById('view-app').style.display = 'block';
+            document.getElementById('user-display').innerText = ME.name;
+            go('chats');
             setInterval(sync, 3000); sync();
         }
 
-        function tab(t) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('sc-' + t).classList.add('active');
-            document.getElementById('chat-bar').classList.toggle('active', t === 'chat');
-            document.querySelectorAll('.dock-item').forEach(i => i.classList.remove('active'));
-            document.getElementById('d-' + (t==='chat'?'list':t)).classList.add('active');
+        function go(s) {
+            document.querySelectorAll('.sc').forEach(x => x.classList.remove('on'));
+            document.getElementById('view-' + s).classList.add('on');
+            document.getElementById('ui-input').classList.toggle('on', s === 'room');
+            document.querySelectorAll('.dock-i').forEach(i => i.classList.remove('on'));
+            const btn = s === 'room' ? 'btn-chats' : 'btn-' + s;
+            if(document.getElementById(btn)) document.getElementById(btn).classList.add('on');
         }
 
-        function setVis(k, v) {
-            document.documentElement.style.setProperty(k==='blur'?'--blur':'--bright', k==='blur'?v+'px':v);
+        function sysVis(k, v) {
+            document.documentElement.style.setProperty(k === 'blur' ? '--blur' : '--brt', k === 'blur' ? v + 'px' : v);
         }
 
-        function addPeer() {
+        function sysAdd() {
             const p = prompt("Ник:");
-            if(p) { currentPeer = p.replace('@', ''); tab('chat'); document.getElementById('peer-name').innerText = '← ' + currentPeer; }
+            if(p) { PEER = p.replace('@',''); go('room'); document.getElementById('room-name').innerText = '← @' + PEER; }
         }
 
-        async function send() {
-            const i = document.getElementById('msg-input');
-            if(!i.value || !currentPeer) return;
-            const m = { from: user.name, to: currentPeer, text: i.value, time: Date.now() };
-            i.value = '';
-            await fetch(`${API}/messages`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(m) });
+        async function sysSend() {
+            const input = document.getElementById('m-val');
+            if(!input.value || !PEER) return;
+            const data = { from: ME.name, to: PEER, text: input.value, time: Date.now() };
+            input.value = '';
+            await fetch(API_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
             sync();
         }
 
         async function sync() {
             try {
-                const res = await fetch(`${API}/messages`);
+                const res = await fetch(API_URL);
                 const all = await res.json();
                 
-                if(currentPeer) {
-                    const flow = document.getElementById('chat-flow');
-                    flow.innerHTML = '';
-                    all.filter(m => (m.from === user.name && m.to === currentPeer) || (m.from === currentPeer && m.to === user.name))
+                if(PEER) {
+                    const box = document.getElementById('chat-list');
+                    box.innerHTML = '';
+                    all.filter(m => (m.from === ME.name && m.to === PEER) || (m.from === PEER && m.to === ME.name))
                        .forEach(m => {
                            const d = document.createElement('div');
-                           d.className = `msg ${m.from === user.name ? 'sent' : 'received'}`;
+                           d.className = `msg ${m.from === ME.name ? 'my' : 'not-my'}`;
                            d.innerText = m.text;
-                           flow.appendChild(d);
+                           box.appendChild(d);
                        });
                 }
 
-                const chats = new Set();
-                all.forEach(m => { if(m.from === user.name) chats.add(m.to); if(m.to === user.name) chats.add(m.from); });
-                const list = document.getElementById('contact-list');
-                list.innerHTML = '';
-                chats.forEach(c => {
+                const users = new Set();
+                all.forEach(m => { if(m.from === ME.name) users.add(m.to); if(m.to === ME.name) users.add(m.from); });
+                const cBox = document.getElementById('contacts-box');
+                cBox.innerHTML = '';
+                users.forEach(u => {
                     const d = document.createElement('div');
-                    d.className = 'card'; d.innerText = '@' + c; d.style.padding = '15px';
-                    d.onclick = () => { currentPeer = c; tab('chat'); document.getElementById('peer-name').innerText = '← ' + c; };
-                    list.appendChild(d);
+                    d.className = 'box'; d.innerText = '@' + u; d.style.padding = '15px'; d.style.cursor = 'pointer';
+                    d.onclick = () => { PEER = u; go('room'); document.getElementById('room-name').innerText = '← @' + u; };
+                    cBox.appendChild(d);
                 });
             } catch(e) {}
         }
 
-        function logout() { localStorage.clear(); location.reload(); }
-        init();
+        function sysExit() { localStorage.clear(); location.reload(); }
+        startup();
     </script>
 </body>
 </html>
