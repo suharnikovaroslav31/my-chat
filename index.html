@@ -2,174 +2,236 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speeky OS | True Base</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Speeky OS | Absolute Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --c-main: #00f2ff; --bg: #000; --brd: rgba(255,255,255,0.1); --blur: 20px; --brt: 1; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        :root { 
+            --accent: #00f2ff; --bg: #000; --glass: rgba(255,255,255,0.08); 
+            --border: rgba(255,255,255,0.12); --blur: 20px; --bright: 1;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
 
-        /* ФОН */
-        .fx-bg { position: fixed; inset: 0; z-index: -1; filter: brightness(var(--brt)); }
-        .fx-blob { position: absolute; width: 100vw; height: 100vw; background: radial-gradient(circle, var(--c-main) 0%, transparent 70%); filter: blur(100px); opacity: 0.1; top: -10%; left: -10%; }
+        /* ФОНОВЫЕ ЭФФЕКТЫ (МАКЕТ 111) */
+        .nebula { position: fixed; inset: 0; z-index: -1; filter: brightness(var(--bright)); transition: filter 0.3s; }
+        .blob { position: absolute; width: 100vw; height: 100vw; background: radial-gradient(circle, var(--accent) 0%, transparent 70%); filter: blur(100px); opacity: 0.15; top: -10%; left: -10%; animation: float 20s infinite alternate linear; }
+        @keyframes float { from { transform: translate(0,0); } to { transform: translate(10%, 10%); } }
 
-        /* ИНТЕРФЕЙС */
-        .sc { display: none; height: 100vh; padding: 20px; flex-direction: column; max-width: 500px; margin: 0 auto; overflow-y: auto; }
-        .sc.on { display: flex; }
-        .box { background: rgba(20,20,20,0.9); border: 1px solid var(--brd); border-radius: 20px; backdrop-filter: blur(var(--blur)); padding: 20px; margin-bottom: 15px; }
+        /* ЭКРАНЫ */
+        .screen { flex: 1; padding: 25px; display: none; width: 100%; max-width: 500px; margin: 0 auto; height: 100vh; overflow-y: auto; scroll-behavior: smooth; }
+        .screen.active { display: flex; flex-direction: column; }
 
-        input { width: 100%; padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid var(--brd); color: #fff; border-radius: 12px; outline: none; margin-bottom: 10px; }
-        .btn { width: 100%; padding: 15px; background: var(--c-main); color: #000; border: none; border-radius: 12px; font-weight: 900; cursor: pointer; }
+        /* КАРТОЧКИ И ЭЛЕМЕНТЫ ВВОДА */
+        .card { background: rgba(20, 24, 30, 0.95); border: 1px solid var(--border); border-radius: 30px; backdrop-filter: blur(var(--blur)); padding: 25px; margin-bottom: 15px; transition: backdrop-filter 0.3s; }
+        input[type="text"], input[type="email"] { width: 100%; background: var(--glass); border: 1px solid var(--border); padding: 18px; border-radius: 20px; color: #fff; outline: none; margin-bottom: 12px; font-size: 16px; }
+        .btn-main { width: 100%; padding: 18px; background: var(--accent); color: #000; border: none; border-radius: 20px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+        .btn-main:active { transform: scale(0.98); }
 
-        /* ЧАТ */
-        #chat-list { display: flex; flex-direction: column; gap: 8px; padding-bottom: 140px; }
-        .msg { max-width: 80%; padding: 10px 15px; border-radius: 15px; margin-bottom: 5px; }
-        .msg.my { align-self: flex-end; background: var(--c-main); color: #000; }
-        .msg.not-my { align-self: flex-start; background: rgba(255,255,255,0.1); border: 1px solid var(--brd); }
+        /* СООБЩЕНИЯ (ПРИВАТНЫЕ ЧАТЫ) */
+        #chat-flow { display: flex; flex-direction: column; gap: 12px; padding-bottom: 180px; }
+        .msg { max-width: 85%; padding: 14px 20px; border-radius: 22px; font-size: 15px; position: relative; cursor: pointer; animation: msgIn 0.3s ease; }
+        @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .msg.sent { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; font-weight: 600; }
+        .msg.received { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
 
-        /* МЕНЮ И НАВИГАЦИЯ */
-        .dock { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #111; border: 1px solid var(--brd); border-radius: 30px; display: flex; padding: 10px; gap: 20px; z-index: 100; }
-        .dock-i { font-size: 20px; opacity: 0.4; cursor: pointer; }
-        .dock-i.on { opacity: 1; color: var(--c-main); }
+        /* УМНОЕ МЕНЮ (МАКЕТ 115) */
+        .menu { position: fixed; background: rgba(25, 30, 35, 0.98); border: 1px solid var(--border); border-radius: 20px; z-index: 10000; display: none; min-width: 180px; backdrop-filter: blur(25px); box-shadow: 0 20px 50px rgba(0,0,0,0.5); overflow: hidden; }
+        .menu-item { padding: 15px 20px; font-size: 14px; cursor: pointer; border-bottom: 1px solid var(--border); }
+        .menu-item:last-child { border: none; }
+        .menu-item:active { background: var(--accent); color: #000; }
 
-        .chat-input-ui { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 500px; display: none; gap: 10px; background: #000; padding: 5px; }
-        .chat-input-ui.on { display: flex; }
+        /* НАВИГАЦИЯ И БАР (МАКЕТ 113) */
+        .nav-ui { position: fixed; bottom: 25px; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 15px; z-index: 5000; }
+        .dock { background: rgba(15, 15, 15, 0.9); border: 1px solid var(--border); border-radius: 40px; padding: 12px 30px; display: flex; gap: 45px; backdrop-filter: blur(20px); }
+        .dock-item { font-size: 26px; opacity: 0.3; cursor: pointer; transition: 0.3s; }
+        .dock-item.active { opacity: 1; color: var(--accent); transform: scale(1.1); }
+
+        .input-bar { width: 92%; max-width: 500px; background: rgba(20, 25, 30, 0.98); border: 1px solid var(--border); border-radius: 50px; padding: 8px; display: none; align-items: center; backdrop-filter: blur(20px); }
+        .input-bar.active { display: flex; }
+        
+        input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="fx-bg"><div class="fx-blob"></div></div>
+    <div class="nebula"><div class="blob"></div></div>
 
-    <section id="view-login" class="sc on" style="justify-content:center;">
-        <div class="box" style="text-align:center;">
-            <h1 style="margin-bottom:20px;">Speeky OS</h1>
-            <input type="text" id="in-nick" placeholder="Твой ник">
-            <button class="btn" onclick="sysLogin()">ВОЙТИ</button>
+    <div id="ctx-menu" class="menu">
+        <div class="menu-item" onclick="msgAction('reply')">Ответить</div>
+        <div class="menu-item" onclick="msgAction('copy')">Копировать текст</div>
+        <div class="menu-item" style="color:#ff4d4d" onclick="msgAction('delete')">Удалить у всех</div>
+    </div>
+
+    <section id="sc-auth" class="screen" style="display:flex; align-items:center; justify-content:center;">
+        <div class="card" style="width:100%;">
+            <h1 style="font-weight:800; text-align:center; margin-bottom:5px">Speeky OS</h1>
+            <p style="opacity:0.5; font-size:13px; text-align:center; margin-bottom:25px">Создание постоянного профиля</p>
+            <input type="text" id="reg-nick" placeholder="@username">
+            <input type="email" id="reg-email" placeholder="Email (для восстановления)">
+            <button class="btn-main" onclick="register()">ЗАРЕГИСТРИРОВАТЬСЯ</button>
         </div>
     </section>
 
-    <div id="view-app" style="display:none;">
-        <section id="view-chats" class="sc">
-            <h2>Диалоги</h2>
-            <div id="contacts-box" style="margin-top:20px;"></div>
-            <button onclick="sysAdd()" style="margin-top:20px; color:var(--c-main); background:none; border:none; cursor:pointer;">+ Найти по нику</button>
+    <div id="main-ui" style="display:none;">
+        <section id="sc-list" class="screen">
+            <h1 style="font-size:32px; font-weight:800; margin-bottom:25px">Диалоги</h1>
+            <div id="contacts-list"></div>
+            <button onclick="startChat()" style="margin-top:20px; color:var(--accent); background:none; border:none; font-weight:600; cursor:pointer">+ Найти по нику</button>
         </section>
 
-        <section id="view-room" class="sc">
-            <h3 id="room-name" onclick="go('chats')" style="cursor:pointer; margin-bottom:15px;">← Назад</h3>
-            <div id="chat-list"></div>
+        <section id="sc-chat" class="screen">
+            <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px">
+                <button onclick="changeTab('list')" style="background:none; border:none; color:var(--accent); font-size:24px;">←</button>
+                <div id="chat-header-info">
+                    <h2 id="active-peer-name" style="font-size:18px">@...</h2>
+                    <span style="font-size:10px; opacity:0.5">в сети</span>
+                </div>
+            </div>
+            <div id="chat-flow"></div>
         </section>
 
-        <section id="view-profile" class="sc">
-            <h2>Настройки</h2>
-            <div class="box" style="margin-top:20px;">
-                <p>Привет, <b id="user-display">...</b></p>
-                <div style="margin-top:20px;">
-                    <label style="font-size:12px;">Размытие</label>
-                    <input type="range" min="0" max="40" value="20" oninput="sysVis('blur', this.value)">
-                </div>
-                <div style="margin-top:10px;">
-                    <label style="font-size:12px;">Яркость</label>
-                    <input type="range" min="0.1" max="2" step="0.1" value="1" oninput="sysVis('brt', this.value)">
-                </div>
-                <button onclick="sysExit()" style="margin-top:20px; color:red; background:none; border:none; cursor:pointer;">Выйти</button>
+        <section id="sc-sets" class="screen">
+            <h1 style="font-size:32px; font-weight:800; margin-bottom:25px">Настройки</h1>
+            <div class="card">
+                <p style="font-size:11px; opacity:0.4; margin-bottom:5px">ВАШ ПРОФИЛЬ</p>
+                <h3 id="ui-my-nick" style="font-size:22px">...</h3>
+                <p id="ui-my-email" style="font-size:13px; opacity:0.6; margin-bottom:20px">...</p>
+                <p style="font-size:12px; opacity:0.4; margin-bottom:20px">Дата регистрации: <span id="ui-reg-date">...</span></p>
+                
+                <p style="font-size:11px; opacity:0.4; margin-bottom:5px">ВИЗУАЛЬНЫЕ ЭФФЕКТЫ (МАКЕТ 111)</p>
+                <label style="font-size:13px">Размытие (Blur)</label>
+                <input type="range" id="range-blur" min="0" max="60" value="20" oninput="updStyle('blur', this.value)">
+                
+                <label style="font-size:13px; margin-top:15px; display:block">Яркость (Brightness)</label>
+                <input type="range" id="range-bright" min="0.1" max="2" step="0.1" value="1" oninput="updStyle('bright', this.value)">
+                
+                <button onclick="exitApp()" style="margin-top:40px; color:#ff4d4d; background:rgba(255,77,77,0.05); border:1px solid rgba(255,77,77,0.1); padding:15px; border-radius:15px; font-weight:600; cursor:pointer; width:100%">Выйти из аккаунта</button>
             </div>
         </section>
 
-        <div class="chat-input-ui" id="ui-input">
-            <input type="text" id="m-val" placeholder="Текст..." style="margin:0;">
-            <button onclick="sysSend()" style="width:50px; border-radius:12px; background:var(--c-main); border:none;">➔</button>
+        <div class="nav-ui">
+            <div id="chat-bar" class="input-bar">
+                <input type="text" id="msg-text" placeholder="Сообщение..." style="margin:0" onkeypress="if(event.key==='Enter') send()">
+                <button onclick="send()" style="width:44px; height:44px; border-radius:50%; background:var(--accent); border:none; margin-left:10px; cursor:pointer">➔</button>
+            </div>
+            <nav class="dock">
+                <div class="dock-item active" id="btn-list" onclick="changeTab('list')">💬</div>
+                <div class="dock-item" id="btn-sets" onclick="changeTab('sets')">⚙️</div>
+            </nav>
         </div>
-
-        <nav class="dock">
-            <div class="dock-i on" id="btn-chats" onclick="go('chats')">💬</div>
-            <div class="dock-i" id="btn-profile" onclick="go('profile')">⚙️</div>
-        </nav>
     </div>
 
     <script>
-        const API_URL = 'https://my-chat-itp3.onrender.com/messages';
-        // НОВЫЙ КЛЮЧ ЧТОБЫ УБИТЬ КЭШ
-        let ME = JSON.parse(localStorage.getItem('SPK_REBORN_BASE'));
-        let PEER = null;
+        const API = 'https://my-chat-itp3.onrender.com/messages';
+        let user = JSON.parse(localStorage.getItem('SPEEKY_ACCOUNT_V2'));
+        let peer = null; let selectedMsg = null; let renderedIds = new Set();
 
-        function sysLogin() {
-            const n = document.getElementById('in-nick').value.trim();
-            if(!n) return;
-            ME = { name: n.replace('@','') };
-            localStorage.setItem('SPK_REBORN_BASE', JSON.stringify(ME));
+        function register() {
+            const n = document.getElementById('reg-nick').value.trim().replace('@','');
+            const e = document.getElementById('reg-email').value.trim();
+            if(!n || !e) return alert("Заполни все поля для регистрации!");
+            user = { name: n, email: e, date: new Date().toLocaleDateString() };
+            localStorage.setItem('SPEEKY_ACCOUNT_V2', JSON.stringify(user));
             location.reload();
         }
 
-        function startup() {
-            if(!ME) return;
-            document.getElementById('view-login').classList.remove('on');
-            document.getElementById('view-app').style.display = 'block';
-            document.getElementById('user-display').innerText = ME.name;
-            go('chats');
-            setInterval(sync, 3000); sync();
+        function init() {
+            if(!user) {
+                document.getElementById('sc-auth').style.display = 'flex';
+                return;
+            }
+            document.getElementById('main-ui').style.display = 'block';
+            document.getElementById('ui-my-nick').innerText = '@' + user.name;
+            document.getElementById('ui-my-email').innerText = user.email;
+            document.getElementById('ui-reg-date').innerText = user.date;
+            changeTab('list');
+            setInterval(refresh, 2500); refresh();
         }
 
-        function go(s) {
-            document.querySelectorAll('.sc').forEach(x => x.classList.remove('on'));
-            document.getElementById('view-' + s).classList.add('on');
-            document.getElementById('ui-input').classList.toggle('on', s === 'room');
-            document.querySelectorAll('.dock-i').forEach(i => i.classList.remove('on'));
-            const btn = s === 'room' ? 'btn-chats' : 'btn-' + s;
-            if(document.getElementById(btn)) document.getElementById(btn).classList.add('on');
+        function changeTab(t) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('sc-' + t).classList.add('active');
+            document.getElementById('chat-bar').classList.toggle('active', t === 'chat');
+            document.querySelectorAll('.dock-item').forEach(i => i.classList.remove('active'));
+            const btnId = t === 'chat' ? 'btn-list' : 'btn-' + t;
+            if(document.getElementById(btnId)) document.getElementById(btnId).classList.add('active');
         }
 
-        function sysVis(k, v) {
-            document.documentElement.style.setProperty(k === 'blur' ? '--blur' : '--brt', k === 'blur' ? v + 'px' : v);
+        function updStyle(k, v) {
+            document.documentElement.style.setProperty(k === 'blur' ? '--blur' : '--bright', k === 'blur' ? v + 'px' : v);
         }
 
-        function sysAdd() {
-            const p = prompt("Ник:");
-            if(p) { PEER = p.replace('@',''); go('room'); document.getElementById('room-name').innerText = '← @' + PEER; }
+        function startChat() {
+            const p = prompt("Ник пользователя:");
+            if(p) { peer = p.replace('@',''); document.getElementById('active-peer-name').innerText = '@' + peer; changeTab('chat'); }
         }
 
-        async function sysSend() {
-            const input = document.getElementById('m-val');
-            if(!input.value || !PEER) return;
-            const data = { from: ME.name, to: PEER, text: input.value, time: Date.now() };
+        // КОНТЕКСТНОЕ МЕНЮ (МАКЕТ 115)
+        document.addEventListener('contextmenu', e => {
+            const m = e.target.closest('.msg');
+            if(m) {
+                e.preventDefault(); selectedMsg = JSON.parse(m.dataset.obj);
+                const menu = document.getElementById('ctx-menu');
+                menu.style.display = 'block'; menu.style.left = e.pageX + 'px'; menu.style.top = e.pageY + 'px';
+            }
+        });
+        document.addEventListener('click', () => document.getElementById('ctx-menu').style.display = 'none');
+
+        function msgAction(type) {
+            if(type === 'copy') navigator.clipboard.writeText(selectedMsg.text);
+            if(type === 'reply') document.getElementById('msg-text').value = `[Ответ: ${selectedMsg.text.slice(0,10)}...] `;
+            if(type === 'delete') send("🚫 Сообщение удалено", selectedMsg.id);
+        }
+
+        async function send(ovrText = null, ovrId = null) {
+            const input = document.getElementById('msg-text');
+            const txt = ovrText || input.value.trim();
+            if(!txt || !peer) return;
+            const data = { from: user.name, to: peer, text: txt, time: Date.now(), id: ovrId || Math.random() };
             input.value = '';
-            await fetch(API_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
-            sync();
+            await fetch(API, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
+            refresh();
         }
 
-        async function sync() {
+        async function refresh() {
             try {
-                const res = await fetch(API_URL);
+                const res = await fetch(API);
                 const all = await res.json();
                 
-                if(PEER) {
-                    const box = document.getElementById('chat-list');
-                    box.innerHTML = '';
-                    all.filter(m => (m.from === ME.name && m.to === PEER) || (m.from === PEER && m.to === ME.name))
-                       .forEach(m => {
-                           const d = document.createElement('div');
-                           d.className = `msg ${m.from === ME.name ? 'my' : 'not-my'}`;
-                           d.innerText = m.text;
-                           box.appendChild(d);
-                       });
+                if(peer) {
+                    const flow = document.getElementById('chat-flow');
+                    // Фильтрация: только я и мой собеседник [cite: 2026-02-25]
+                    const filtered = all.filter(m => (m.from === user.name && m.to === peer) || (m.from === peer && m.to === user.name));
+                    
+                    if(filtered.length !== flow.children.length) {
+                        flow.innerHTML = ''; renderedIds.clear();
+                        filtered.forEach(m => {
+                            const d = document.createElement('div');
+                            d.className = `msg ${m.from === user.name ? 'sent' : 'received'}`;
+                            d.innerText = m.text; d.dataset.obj = JSON.stringify(m);
+                            flow.appendChild(d);
+                        });
+                        document.getElementById('sc-chat').scrollTop = document.getElementById('sc-chat').scrollHeight;
+                    }
                 }
 
-                const users = new Set();
-                all.forEach(m => { if(m.from === ME.name) users.add(m.to); if(m.to === ME.name) users.add(m.from); });
-                const cBox = document.getElementById('contacts-box');
-                cBox.innerHTML = '';
-                users.forEach(u => {
+                const contacts = new Set();
+                all.forEach(m => { if(m.from === user.name) contacts.add(m.to); if(m.to === user.name) contacts.add(m.from); });
+                const list = document.getElementById('contacts-list');
+                list.innerHTML = '';
+                contacts.forEach(c => {
                     const d = document.createElement('div');
-                    d.className = 'box'; d.innerText = '@' + u; d.style.padding = '15px'; d.style.cursor = 'pointer';
-                    d.onclick = () => { PEER = u; go('room'); document.getElementById('room-name').innerText = '← @' + u; };
-                    cBox.appendChild(d);
+                    d.className = 'card'; d.style.padding = '20px'; d.style.cursor = 'pointer';
+                    d.innerHTML = `<b style="font-size:18px; color:var(--accent)">@${c}</b><p style="font-size:12px; opacity:0.5; margin-top:5px">Открыть диалог</p>`;
+                    d.onclick = () => { peer = c; document.getElementById('active-peer-name').innerText = '@' + c; changeTab('chat'); };
+                    list.appendChild(d);
                 });
             } catch(e) {}
         }
 
-        function sysExit() { localStorage.clear(); location.reload(); }
-        startup();
+        function exitApp() { if(confirm("Выйти из системы?")) { localStorage.clear(); location.reload(); } }
+        init();
     </script>
 </body>
 </html>
