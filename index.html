@@ -3,200 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Speeky | Elite v6</title>
+    <title>Speeky | Fixed Elite</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #00f2ff; --bg: #050608; --glass: rgba(255, 255, 255, 0.04); --border: rgba(255, 255, 255, 0.08); }
+        :root { --accent: #00f2ff; --bg: #050608; --glass: rgba(255, 255, 255, 0.04); --border: rgba(255, 255, 255, 0.1); }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; position: relative; }
+        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
 
-        /* --- BACKGROUND --- */
-        #bg-canvas { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at top right, #002226, #000); }
-
-        /* --- VIEWS --- */
+        /* --- UI VIEWS --- */
         .view { position: absolute; inset: 0; display: none; padding: 100px 20px 140px; flex-direction: column; opacity: 0; z-index: 10; }
+        .view.active { display: flex; opacity: 1; }
 
-        /* --- ID CARD (POINT 4) --- */
-        .id-card {
-            background: linear-gradient(135deg, #111, #000); border: 1px solid var(--border);
-            border-radius: 35px; padding: 35px; position: relative; overflow: hidden;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.5); transform-style: preserve-3d;
-        }
-        .id-card::after {
-            content: ''; position: absolute; inset: 0; background: linear-gradient(45deg, transparent, rgba(0,242,255,0.05), transparent);
-            transform: translateX(-100%); animation: shine 4s infinite;
-        }
-        @keyframes shine { to { transform: translateX(100%); } }
-
-        /* --- MESSAGES & PARTICLES --- */
-        #flow { flex: 1; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; padding: 5px; }
-        .msg-wrap { display: flex; flex-direction: column; max-width: 85%; position: relative; }
-        .msg-wrap.me { align-self: flex-end; }
-        .bubble { padding: 16px 22px; border-radius: 28px; font-size: 15px; backdrop-filter: blur(10px); position: relative; cursor: pointer; }
-        .me .bubble { background: var(--accent); color: #000; font-weight: 700; border-bottom-right-radius: 4px; }
-        .he .bubble { background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
-
-        /* --- ELITE MODAL (FIX SCREEN 118) --- */
+        /* --- CUSTOM MODAL (NO MORE BROWSER WINDOWS) --- */
         .elite-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(0px);
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(15px);
             display: none; align-items: center; justify-content: center; z-index: 5000;
         }
         .elite-modal {
             width: 90%; max-width: 400px; background: #0a0c10; border: 1px solid var(--border);
-            border-radius: 40px; padding: 40px; transform: scale(0.8); opacity: 0;
+            border-radius: 40px; padding: 40px; text-align: center;
         }
 
-        /* --- INPUT --- */
-        .input-hub {
-            position: fixed; bottom: 100px; left: 5%; width: 90%; background: rgba(10,12,15,0.95);
-            border: 1px solid var(--border); border-radius: 35px; display: flex; align-items: center;
-            padding: 6px; backdrop-filter: blur(20px); z-index: 1000;
-        }
-        input { flex: 1; background: none; border: none; color: #fff; padding: 15px; outline: none; font-size: 16px; }
+        /* --- AUTH FORM --- */
+        .auth-card { margin: auto; width: 100%; max-width: 380px; padding: 40px; background: var(--glass); border-radius: 40px; border: 1px solid var(--border); }
+        input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 18px; border-radius: 20px; color: #fff; outline: none; margin-bottom: 15px; font-size: 16px; transition: 0.3s; }
+        input:focus { border-color: var(--accent); background: rgba(255,255,255,0.1); }
+        .btn-main { width: 100%; padding: 20px; background: var(--accent); color: #000; border: none; border-radius: 20px; font-weight: 900; cursor: pointer; }
 
-        /* --- CONTEXT MENU --- */
-        #ctx {
-            position: fixed; background: rgba(15,18,22,0.98); border: 1px solid var(--border);
-            border-radius: 20px; display: none; flex-direction: column; z-index: 6000;
-            backdrop-filter: blur(20px); overflow: hidden; min-width: 160px;
-        }
-        .ctx-item { padding: 16px 20px; font-size: 14px; cursor: pointer; transition: 0.2s; }
-        .ctx-item:hover { background: var(--glass); color: var(--accent); }
+        /* --- MESSAGES --- */
+        #flow { flex: 1; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; padding: 5px; }
+        .msg-wrap { display: flex; flex-direction: column; max-width: 85%; position: relative; margin-bottom: 5px; }
+        .msg-wrap.me { align-self: flex-end; }
+        .bubble { padding: 16px 22px; border-radius: 26px; font-size: 15px; cursor: pointer; }
+        .me .bubble { background: var(--accent); color: #000; font-weight: 600; border-bottom-right-radius: 4px; }
+        .he .bubble { background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
 
-        /* --- DOCK --- */
-        .dock {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background: #000; border: 1px solid var(--border); padding: 10px 45px;
-            border-radius: 40px; display: flex; gap: 60px; z-index: 2000;
-        }
-        .dock i { font-size: 24px; opacity: 0.3; cursor: pointer; transition: 0.4s; }
-        .dock i.active { opacity: 1; color: var(--accent); transform: scale(1.2); }
+        /* --- DOCK & CONTROLS --- */
+        .dock { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #000; border: 1px solid var(--border); padding: 10px 45px; border-radius: 40px; display: none; gap: 60px; z-index: 2000; }
+        .dock i { font-size: 24px; opacity: 0.3; cursor: pointer; }
+        .dock i.active { opacity: 1; color: var(--accent); }
     </style>
 </head>
 <body>
 
-    <div id="bg-canvas"></div>
-
-    <div id="modal-search" class="elite-overlay" onclick="closeModal(event)">
-        <div class="elite-modal" id="search-content">
-            <h2 style="font-size: 28px; font-weight: 900; margin-bottom: 10px;">Поиск</h2>
-            <p style="opacity: 0.4; font-size: 13px; margin-bottom: 25px;">Введите никнейм для связи</p>
-            <input type="text" id="s-nick" placeholder="@username" style="width:100%; background:var(--glass); border:1px solid var(--border); border-radius:20px; margin-bottom:20px;">
-            <button onclick="confirmSearch()" style="width:100%; padding:20px; background:var(--accent); color:#000; border:none; border-radius:20px; font-weight:900; cursor:pointer;">НАЙТИ</button>
+    <div id="modal-search" class="elite-overlay">
+        <div class="elite-modal">
+            <h2 style="margin-bottom:20px;">Поиск</h2>
+            <input type="text" id="search-nick" placeholder="@никнейм">
+            <button class="btn-main" onclick="confirmSearch()">Найти</button>
+            <p onclick="closeModal()" style="margin-top:15px; opacity:0.4; cursor:pointer;">Отмена</p>
         </div>
     </div>
 
-    <div id="ctx">
-        <div class="ctx-item" onclick="prepareReply()">Ответить ↩</div>
-        <div class="ctx-item" style="color:#ff4d4d" onclick="triggerDelete()">Удалить ✕</div>
-    </div>
+    <section id="view-auth" class="view">
+        <div class="auth-card">
+            <h1 style="font-size: 32px; font-weight: 900; margin-bottom: 30px;">Вход в Speeky</h1>
+            <input type="text" id="reg-name" placeholder="Придумайте ник">
+            <input type="email" id="reg-email" placeholder="Email для восстановления">
+            <button class="btn-main" onclick="initAuth()">СОЗДАТЬ АККАУНТ</button>
+        </div>
+    </section>
 
     <section id="view-chats" class="view">
-        <h1 style="font-size: 46px; font-weight: 900; margin-bottom: 30px;">Speeky</h1>
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:30px;">
+            <h1 style="font-size: 40px; font-weight: 900;">Чаты</h1>
+            <div onclick="openModal()" style="color:var(--accent); font-weight:700; cursor:pointer;">+ Найти</div>
+        </div>
         <div id="chats-list"></div>
-        <div onclick="openSearch()" style="margin-top:20px; color:var(--accent); cursor:pointer; font-weight:600;">+ Найти собеседника</div>
     </section>
 
     <section id="view-room" class="view">
         <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
             <div onclick="nav('chats')" style="cursor:pointer; font-size:24px;">←</div>
-            <h2 id="peer-title" style="font-weight: 900;">@username</h2>
+            <h2 id="peer-title" style="font-weight: 800;">@username</h2>
         </div>
         <div id="flow"></div>
-        <div class="input-hub">
-            <div id="reply-indicator" style="display:none; position:absolute; bottom:100%; left:0; width:100%; background:rgba(0,0,0,0.9); padding:10px 20px; border-radius:20px 20px 0 0; font-size:12px; border:1px solid var(--border);">
-                Ответ на: <span id="reply-txt" style="opacity:0.5"></span>
-                <span onclick="cancelReply()" style="float:right; cursor:pointer;">✕</span>
-            </div>
-            <input type="text" id="m-in" placeholder="Ваше сообщение..." onkeypress="if(event.key==='Enter') sendMsg()">
-            <button onclick="sendMsg()" style="width:48px; height:48px; background:var(--accent); border:none; border-radius:50%; cursor:pointer;">➔</button>
+        <div style="margin-top:20px; display:flex; gap:10px;">
+            <input type="text" id="m-in" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') send()">
+            <button onclick="send()" style="width:55px; height:55px; background:var(--accent); border:none; border-radius:20px;">➔</button>
         </div>
     </section>
 
-    <section id="view-sets" class="view">
-        <h1 style="font-size: 46px; font-weight: 900; margin-bottom: 40px;">Профиль</h1>
-        <div class="id-card" id="my-card">
-            <p style="font-size: 10px; letter-spacing: 3px; opacity: 0.4;">VERIFIED IDENTITY</p>
-            <h2 id="my-nick" style="font-size: 34px; color:var(--accent); margin: 10px 0;">@...</h2>
-            <p id="my-email" style="opacity: 0.5; margin-bottom: 30px;"></p>
-            <div id="qrcode" style="background:#fff; padding:12px; display:inline-block; border-radius:20px;"></div>
-            <button onclick="logout()" style="display:block; margin-top:40px; color:#ff4d4d; background:none; border:none; cursor:pointer; font-weight:900;">ДЕАКТИВИРОВАТЬ</button>
-        </div>
-    </section>
-
-    <nav class="dock" id="dock" style="display:none;">
+    <nav class="dock" id="dock">
         <i id="btn-chats" class="active" onclick="nav('chats')">💬</i>
         <i id="btn-sets" onclick="nav('sets')">👤</i>
     </nav>
 
     <script>
         const API = 'https://my-chat-itp3.onrender.com/messages';
-        const DB = 'SPEEKY_V6_FINAL';
-        let user = JSON.parse(localStorage.getItem(DB));
-        let peer = null, selectedMsg = null, replyTo = null;
+        const KEY = 'SPEEKY_V7';
+        let user = JSON.parse(localStorage.getItem(KEY));
+        let peer = null;
 
         function nav(page) {
-            const cur = document.querySelector('.view[style*="display: flex"]');
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             const nxt = document.getElementById('view-' + page);
-            if(cur) gsap.to(cur, { opacity: 0, y: 15, duration: 0.3, onComplete: () => cur.style.display = 'none' });
-            nxt.style.display = 'flex';
-            gsap.fromTo(nxt, { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.5, delay: 0.2 });
+            nxt.classList.add('active');
+            gsap.fromTo(nxt, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4 });
             document.getElementById('dock').style.display = user ? 'flex' : 'none';
-            document.querySelectorAll('.dock i').forEach(i => i.classList.remove('active'));
-            const ico = document.getElementById('btn-' + (page === 'room' ? 'chats' : page));
-            if(ico) ico.classList.add('active');
         }
 
-        // DISINTEGRATION EFFECT
-        function disintegrate(el) {
-            const rect = el.getBoundingClientRect();
-            for(let i=0; i<40; i++) {
-                const p = document.createElement('div');
-                p.style.cssText = `position:fixed; width:4px; height:4px; background:var(--accent); left:${rect.left + rect.width/2}px; top:${rect.top + rect.height/2}px; border-radius:50%; z-index:9999;`;
-                document.body.appendChild(p);
-                gsap.to(p, { x: (Math.random()-0.5)*300, y: (Math.random()-0.5)*300, opacity:0, scale:0, duration: 1, onComplete: () => p.remove() });
-            }
-            gsap.to(el, { opacity:0, scale:0.5, filter:"blur(10px)", duration:0.4, onComplete: () => el.remove() });
-        }
-
-        function openSearch() {
-            const m = document.getElementById('modal-search'); m.style.display = 'flex';
-            gsap.to(m, { backdropFilter: "blur(20px)", duration: 0.6 });
-            gsap.to("#search-content", { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" });
-        }
-
-        function closeModal(e) { if(e.target.id === 'modal-search') {
-            gsap.to("#search-content", { opacity:0, scale:0.8, duration: 0.3, onComplete: () => document.getElementById('modal-search').style.display = 'none' });
-        }}
+        function openModal() { document.getElementById('modal-search').style.display = 'flex'; }
+        function closeModal() { document.getElementById('modal-search').style.display = 'none'; }
 
         function confirmSearch() {
-            const n = document.getElementById('s-nick').value.trim().replace('@','');
-            if(n) { peer = n; document.getElementById('peer-title').innerText = '@' + peer; 
-                gsap.to("#modal-search", { opacity: 0, duration: 0.3, onComplete: () => {
-                    document.getElementById('modal-search').style.display = 'none';
-                    document.getElementById('modal-search').style.opacity = 1;
-                    nav('room'); sync();
-                }});
-            }
+            const n = document.getElementById('search-nick').value.trim().replace('@','');
+            if(n) { peer = n; document.getElementById('peer-title').innerText = '@' + peer; closeModal(); nav('room'); sync(); }
         }
 
-        async function sendMsg() {
+        async function send() {
             const i = document.getElementById('m-in'); if(!i.value.trim()) return;
-            const msg = { from: user.name, to: peer, text: i.value, reply: replyTo, time: Date.now() };
-            await fetch(API, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(msg) });
-            i.value = ''; cancelReply(); sync();
+            await fetch(API, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ from: user.name, to: peer, text: i.value, time: Date.now() }) });
+            i.value = ''; sync();
         }
-
-        function prepareReply() { 
-            replyTo = selectedMsg.innerText;
-            document.getElementById('reply-txt').innerText = replyTo.substring(0, 30) + '...';
-            document.getElementById('reply-indicator').style.display = 'block';
-            document.getElementById('ctx').style.display = 'none';
-        }
-        function cancelReply() { replyTo = null; document.getElementById('reply-indicator').style.display = 'none'; }
-        function triggerDelete() { disintegrate(selectedMsg.closest('.msg-wrap')); document.getElementById('ctx').style.display = 'none'; }
 
         async function sync() {
             const r = await fetch(API); const d = await r.json();
@@ -205,34 +126,36 @@
                 d.filter(m => (m.from === user.name && m.to === peer) || (m.from === peer && m.to === user.name))
                  .forEach(m => {
                     const w = document.createElement('div'); w.className = `msg-wrap ${m.from === user.name ? 'me' : 'he'}`;
-                    if(m.reply) w.innerHTML += `<div style="font-size:10px; opacity:0.4; margin-bottom:4px; padding:0 10px;">⤤ ${m.reply}</div>`;
-                    const b = document.createElement('div'); b.className = 'bubble'; b.innerText = m.text;
-                    b.oncontextmenu = (e) => { e.preventDefault(); selectedMsg = b; const c = document.getElementById('ctx'); c.style.display='flex'; c.style.left=e.pageX+'px'; c.style.top=e.pageY+'px'; };
-                    w.appendChild(b); f.appendChild(w);
+                    w.innerHTML = `<div class="bubble">${m.text}</div>`;
+                    f.appendChild(w);
                  });
                 f.scrollTop = f.scrollHeight;
             }
             const chats = new Set(); d.forEach(m => { if(m.from === user.name) chats.add(m.to); if(m.to === user.name) chats.add(m.from); });
             const list = document.getElementById('chats-list'); list.innerHTML = '';
             chats.forEach(c => {
-                const n = document.createElement('div'); n.className = 'bubble'; n.style.marginBottom = '10px'; n.style.background = 'var(--glass)'; n.style.border = '1px solid var(--border)';
-                n.innerHTML = `<b style="font-size:18px;">@${c}</b><p style="opacity:0.3; font-size:12px;">Active Secure Session</p>`;
+                const n = document.createElement('div'); n.className = 'bubble'; n.style.marginBottom = '10px'; n.style.background = 'var(--glass)';
+                n.innerHTML = `<b>@${c}</b><p style="opacity:0.4; font-size:12px;">Нажми, чтобы открыть чат</p>`;
                 n.onclick = () => { peer = c; document.getElementById('peer-title').innerText = '@' + c; nav('room'); };
                 list.appendChild(n);
             });
         }
 
-        window.onclick = () => document.getElementById('ctx').style.display = 'none';
-
-        if(user) {
-            document.getElementById('my-nick').innerText = '@' + user.name;
-            document.getElementById('my-email').innerText = user.email;
-            new QRCode(document.getElementById("qrcode"), { text: "speeky://" + user.name, width: 120, height: 120, colorDark: "#000", colorLight: "#fff" });
-            nav('chats'); setInterval(sync, 4000); sync();
-        } else {
-            const n = prompt("Ник:"); const e = prompt("Email:");
-            if(n && e) { localStorage.setItem(DB, JSON.stringify({name:n, email:e})); location.reload(); }
+        function initAuth() {
+            const n = document.getElementById('reg-name').value.trim();
+            const e = document.getElementById('reg-email').value.trim();
+            if(n && e) {
+                user = {name: n, email: e};
+                localStorage.setItem(KEY, JSON.stringify(user));
+                nav('chats'); sync(); setInterval(sync, 4000);
+            }
         }
+
+        // ПРОВЕРКА ПРИ ЗАГРУЗКЕ
+        window.onload = () => {
+            if(user) { nav('chats'); sync(); setInterval(sync, 4000); }
+            else { nav('auth'); }
+        };
     </script>
 </body>
 </html>
