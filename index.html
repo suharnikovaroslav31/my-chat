@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Speeky OS | Private Messenger</title>
+    <title>Speeky OS | Private Messenger v4</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -25,44 +25,46 @@
         @keyframes move { from { transform: translate(-15%, -15%) scale(1); } to { transform: translate(25%, 25%) scale(1.2); } }
 
         /* AUTH */
-        .overlay { position: fixed; inset: 0; z-index: 3000; background: #000; display: flex; align-items: center; justify-content: center; transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
-        .card { width: 92%; max-width: 400px; padding: 35px; background: rgba(10, 12, 18, 0.9); border: 1px solid var(--border); border-radius: 40px; backdrop-filter: blur(40px); text-align: center; position: absolute; opacity: 0; pointer-events: none; transform: translateY(30px) scale(0.95); transition: 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .card.active { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; z-index: 3001; }
+        .overlay { position: fixed; inset: 0; z-index: 3000; background: #000; display: flex; align-items: center; justify-content: center; transition: 0.8s; }
+        .card { width: 92%; max-width: 400px; padding: 35px; background: rgba(10, 12, 18, 0.9); border: 1px solid var(--border); border-radius: 40px; backdrop-filter: blur(40px); text-align: center; }
         .overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
-        input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 16px; border-radius: 20px; color: #fff; outline: none; margin-bottom: 10px; transition: 0.3s; }
-        input:focus { border-color: var(--accent); background: rgba(255,255,255,0.08); }
+        input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 16px; border-radius: 20px; color: #fff; outline: none; margin-bottom: 10px; }
+        input:focus { border-color: var(--accent); }
         .btn-main { width: 100%; padding: 18px; border-radius: 20px; border: none; background: var(--accent); color: #000; font-weight: 800; cursor: pointer; }
 
         /* INTERFACE */
-        .screen { flex: 1; padding: 20px; display: none; width: 100%; max-width: 800px; margin: 0 auto; height: 100%; overflow-y: auto; }
+        .screen { flex: 1; padding: 25px; display: none; width: 100%; max-width: 800px; margin: 0 auto; height: 100%; overflow-y: auto; }
         .screen.active { display: flex; flex-direction: column; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* CONTACTS & CHAT */
-        .contact-item { background: var(--glass); border: 1px solid var(--border); padding: 15px; border-radius: 25px; display: flex; align-items: center; gap: 15px; margin-bottom: 10px; cursor: pointer; transition: 0.3s; }
-        .contact-item:active { transform: scale(0.98); background: rgba(255,255,255,0.1); }
-        .contact-ava { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
+        /* CONTACTS */
+        .contact-item { background: var(--glass); border: 1px solid var(--border); padding: 18px; border-radius: 28px; display: flex; align-items: center; gap: 15px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; }
+        .contact-item:active { transform: scale(0.97); }
+        .contact-ava { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: #111; }
 
-        #chat-flow { display: flex; flex-direction: column; gap: 12px; padding-bottom: 150px; }
-        .msg { max-width: 80%; padding: 14px 18px; border-radius: 24px; animation: msgIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.2) forwards; }
-        @keyframes msgIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .msg.sent { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; }
-        .msg.received { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 4px; backdrop-filter: blur(20px); }
+        /* CHAT MESSAGES */
+        #chat-flow { display: flex; flex-direction: column; gap: 10px; padding-bottom: 160px; }
+        .msg { max-width: 80%; padding: 14px 18px; border-radius: 22px; animation: msgIn 0.3s ease-out forwards; line-height: 1.4; }
+        @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .msg.sent { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; font-weight: 500; }
+        .msg.received { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 4px; backdrop-filter: blur(15px); }
 
-        /* SLIDERS */
-        .set-group { background: var(--glass); border: 1px solid var(--border); border-radius: 30px; padding: 20px; margin-bottom: 15px; }
-        .set-row-v2 { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
-        input[type="range"] { -webkit-appearance: none; width: 100%; height: 10px; background: rgba(255,255,255,0.05); border-radius: 10px; outline: none; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: #fff; border: 3px solid var(--accent); border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px var(--accent); }
-
-        /* DOCK */
+        /* UI ELEMENTS */
         .ui-nav { position: fixed; bottom: 25px; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; z-index: 1000; }
         .input-bar { width: 92%; max-width: 600px; background: rgba(10, 12, 18, 0.95); border: 1px solid var(--border); border-radius: 40px; padding: 8px; display: none; align-items: center; backdrop-filter: blur(30px); }
         .input-bar.active { display: flex; }
+        .input-bar input { background: none; border: none; flex: 1; padding: 0 15px; margin-bottom: 0; color: #fff; }
+        
         .dock { width: 92%; max-width: 360px; background: rgba(10, 12, 18, 0.98); border: 1px solid var(--border); border-radius: 40px; padding: 12px; display: flex; justify-content: space-around; backdrop-filter: blur(25px); }
-        .dock-item { font-size: 24px; opacity: 0.3; transition: 0.3s; cursor: pointer; }
+        .dock-item { font-size: 26px; opacity: 0.3; transition: 0.3s; cursor: pointer; }
         .dock-item.active { opacity: 1; color: var(--accent); }
+
+        /* MODERN SLIDERS */
+        .set-group { background: var(--glass); border: 1px solid var(--border); border-radius: 30px; padding: 25px; margin-bottom: 15px; }
+        .set-row-v2 { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        input[type="range"] { -webkit-appearance: none; width: 100%; height: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; background: #fff; border: 4px solid var(--accent); border-radius: 50%; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -70,64 +72,62 @@
     <div class="nebula-wrap"><div class="blob"></div><div class="blob blob-2"></div></div>
 
     <div id="intro-overlay" class="overlay">
-        <div id="card-auth" class="card active">
-            <h1 style="font-weight:800; font-size:28px;">Speeky Private</h1>
-            <p id="auth-sub" style="opacity:0.4; margin-bottom:20px">Создать Speeky ID</p>
-            <input type="text" id="r-user" placeholder="@username (для поиска)">
-            <input type="text" id="r-nick" placeholder="Имя профиля">
+        <div class="card">
+            <h1 style="font-weight:800; font-size:32px;">Speeky ID</h1>
+            <p id="auth-sub" style="opacity:0.4; margin-bottom:25px">Личный доступ</p>
+            <input type="text" id="r-user" placeholder="@username (тег для поиска)">
+            <input type="text" id="r-nick" placeholder="Отображаемое имя">
             <input type="email" id="r-email" placeholder="Email">
             <input type="password" id="r-pass" placeholder="Пароль">
-            <button class="btn-main" onclick="handleAuth()">ВОЙТИ В СИСТЕМУ</button>
-            <p onclick="toggleAuthMode()" style="margin-top:15px; font-size:13px; color:var(--accent); cursor:pointer">Уже есть аккаунт? Войти</p>
+            <button class="btn-main" onclick="handleAuth()">ВОЙТИ / СОЗДАТЬ</button>
+            <p onclick="toggleAuthMode()" style="margin-top:20px; font-size:14px; color:var(--accent); cursor:pointer">Сменить режим</p>
         </div>
     </div>
 
     <div id="app" style="display:none; flex-direction:column; height:100vh;">
         
         <section id="sc-contacts" class="screen active">
-            <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
-                <h1 style="font-size:28px; font-weight:800">Чаты</h1>
-                <button onclick="searchUser()" style="background:var(--accent); border:none; padding:8px 15px; border-radius:15px; font-weight:700; font-size:12px">КТО-ТО НОВЫЙ?</button>
+            <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px">
+                <h1 style="font-size:32px; font-weight:800">Чаты</h1>
+                <button onclick="searchUser()" style="background:var(--accent); border:none; padding:10px 20px; border-radius:20px; font-weight:800; cursor:pointer">+ ЧАТ</button>
             </header>
-            <div id="contacts-list">
-                <p style="opacity:0.3; text-align:center; margin-top:50px">У вас пока нет активных диалогов</p>
-            </div>
+            <div id="contacts-list"></div>
         </section>
 
         <section id="sc-chat" class="screen">
             <header style="display:flex; align-items:center; gap:15px; margin-bottom:20px">
-                <button onclick="tab('contacts')" style="background:none; border:none; color:var(--accent); font-size:20px">←</button>
+                <button onclick="tab('contacts')" style="background:none; border:none; color:var(--accent); font-size:24px; cursor:pointer">←</button>
                 <div>
-                    <h2 id="chat-with-name">Username</h2>
-                    <p id="chat-with-tag" style="font-size:12px; opacity:0.5">@user</p>
+                    <h2 id="chat-with-name" style="font-size:20px">Чат</h2>
+                    <p id="chat-with-tag" style="font-size:12px; opacity:0.5">@tag</p>
                 </div>
             </header>
             <div id="chat-flow"></div>
         </section>
 
         <section id="sc-settings" class="screen">
-            <h1 style="font-size:28px; font-weight:800; margin-bottom:20px">Профиль</h1>
+            <h1 style="font-size:32px; font-weight:800; margin-bottom:25px">Профиль</h1>
             <div class="set-group">
-                <p style="font-size:12px; opacity:0.5; margin-bottom:10px">ВАШ ТЕГ: <b id="my-tag-display" style="color:var(--accent)">@user</b></p>
+                <p style="margin-bottom:10px">Твой ID: <b id="my-tag-display" style="color:var(--accent)">@</b></p>
                 <input type="text" id="set-nick-inp" placeholder="Сменить имя" onchange="save()">
-                <input type="text" id="set-ava-inp" placeholder="URL аватарки" onchange="save()">
+                <input type="text" id="set-ava-inp" placeholder="Ссылка на фото" onchange="save()">
             </div>
             <div class="set-group">
-                <h3 style="font-size:11px; opacity:0.4; text-transform:uppercase">Визуал</h3>
+                <h3 style="opacity:0.4; font-size:12px; text-transform:uppercase">Стиль</h3>
                 <div class="set-row-v2"><span>Размытие</span><input type="range" min="0" max="60" value="25" oninput="document.documentElement.style.setProperty('--blur-val', this.value+'px')"></div>
-                <div class="set-row-v2"><span>Акцент</span><input type="color" value="#00f2ff" oninput="document.documentElement.style.setProperty('--accent', this.value)"></div>
+                <div class="set-row-v2"><span>Цвет</span><input type="color" value="#00f2ff" oninput="document.documentElement.style.setProperty('--accent', this.value)"></div>
             </div>
-            <button onclick="logout()" style="width:100%; padding:15px; background:rgba(255,50,50,0.1); border:none; color:#ff4d4d; border-radius:20px; font-weight:800">ВЫЙТИ</button>
+            <button onclick="logout()" style="width:100%; padding:20px; background:rgba(255,50,50,0.1); border:none; color:#ff4d4d; border-radius:25px; font-weight:800; cursor:pointer">ВЫЙТИ ИЗ ID</button>
         </section>
 
         <div class="ui-nav">
             <div class="input-bar" id="input-ui">
                 <input type="text" id="m-text" placeholder="Сообщение..." onkeypress="if(event.key==='Enter') send()">
-                <button onclick="send()" style="background:var(--accent); border:none; width:40px; height:40px; border-radius:50%; font-weight:bold">➔</button>
+                <button onclick="send()" style="background:var(--accent); border:none; width:44px; height:44px; border-radius:50%; font-weight:bold; cursor:pointer">➔</button>
             </div>
             <nav class="dock">
-                <div class="dock-item active" id="dock-chats" onclick="tab('contacts')">💬</div>
-                <div class="dock-item" onclick="tab('settings')">⚙️</div>
+                <div class="dock-item active" id="btn-tab-chats" onclick="tab('contacts')">💬</div>
+                <div class="dock-item" id="btn-tab-sets" onclick="tab('settings')">⚙️</div>
             </nav>
         </div>
     </div>
@@ -136,25 +136,29 @@
         const API = 'https://my-chat-itp3.onrender.com';
         const defAva = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
         let user = JSON.parse(localStorage.getItem('spk_user'));
-        let activePeer = null; 
-        let isLoginMode = false;
+        let activePeer = null;
+        let knownMessages = 0;
 
         function toggleAuthMode() {
-            isLoginMode = !isLoginMode;
-            document.getElementById('r-nick').style.display = isLoginMode ? 'none' : 'block';
-            document.getElementById('r-user').style.display = isLoginMode ? 'none' : 'block';
-            document.getElementById('auth-sub').innerText = isLoginMode ? 'Вход в Speeky ID' : 'Создать Speeky ID';
+            const isLogin = document.getElementById('r-nick').style.display === 'none';
+            document.getElementById('r-nick').style.display = isLogin ? 'block' : 'none';
+            document.getElementById('r-user').style.display = isLogin ? 'block' : 'none';
         }
 
         function handleAuth() {
-            const u = document.getElementById('r-user').value.replace('@', '');
-            const n = document.getElementById('r-nick').value;
-            const e = document.getElementById('r-email').value.toLowerCase();
-            const p = document.getElementById('r-pass').value;
+            const u = document.getElementById('r-user').value.trim().replace('@', '');
+            const n = document.getElementById('r-nick').value.trim();
+            const e = document.getElementById('r-email').value.trim().toLowerCase();
+            const p = document.getElementById('r-pass').value.trim();
 
-            if(!e || !p) return alert("Заполни данные!");
-            
-            user = { username: u || 'anon', nick: n || 'Пользователь', email: e, ava: defAva };
+            if(!e || !p) return alert("Email и Пароль обязательны!");
+
+            user = { 
+                username: u || e.split('@')[0], 
+                nick: n || u || "Пользователь", 
+                email: e, 
+                ava: defAva 
+            };
             localStorage.setItem('spk_user', JSON.stringify(user));
             location.reload();
         }
@@ -165,7 +169,7 @@
             document.getElementById('my-tag-display').innerText = '@' + user.username;
             document.getElementById('set-nick-inp').value = user.nick;
             
-            setInterval(load, 3000);
+            setInterval(load, 2500);
             load();
         }
 
@@ -173,20 +177,30 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('sc-' + name).classList.add('active');
             document.getElementById('input-ui').classList.toggle('active', name === 'chat');
-            if(name === 'contacts') activePeer = null;
+            document.querySelectorAll('.dock-item').forEach(d => d.classList.remove('active'));
+            if(name === 'contacts') {
+                activePeer = null;
+                document.getElementById('btn-tab-chats').classList.add('active');
+            } else if(name === 'settings') {
+                document.getElementById('btn-tab-sets').classList.add('active');
+            }
         }
 
         function searchUser() {
-            const tag = prompt("Введите @username пользователя:");
-            if(tag) openChat(tag.replace('@', ''), "Новый контакт");
+            let tag = prompt("Введите @username собеседника:");
+            if(tag) {
+                tag = tag.replace('@', '').trim();
+                openChat(tag, tag);
+            }
         }
 
         function openChat(username, nickname) {
             activePeer = { username, nick: nickname };
             document.getElementById('chat-with-name').innerText = nickname;
             document.getElementById('chat-with-tag').innerText = '@' + username;
+            document.getElementById('chat-flow').innerHTML = ''; // Чистим перед загрузкой
             tab('chat');
-            load();
+            load(true); // Форсированная загрузка
         }
 
         async function send() {
@@ -196,15 +210,21 @@
             const msg = {
                 from: user.username,
                 to: activePeer.username,
-                nick: user.nick,
-                text: inp.value,
-                ava: user.ava,
-                time: Date.now()
+                text: inp.value.trim(),
+                time: Date.now(),
+                type: 'private'
             };
 
-            renderMsg(msg);
+            renderMsg(msg); 
             inp.value = '';
-            await fetch(`${API}/messages`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(msg) });
+
+            try {
+                await fetch(`${API}/messages`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(msg)
+                });
+            } catch(e) { console.error("Ошибка отправки"); }
         }
 
         function renderMsg(m) {
@@ -217,43 +237,48 @@
             document.getElementById('sc-chat').scrollTop = document.getElementById('sc-chat').scrollHeight;
         }
 
-        async function load() {
+        async function load(force = false) {
             try {
                 const res = await fetch(`${API}/messages`);
                 const all = await res.json();
                 
-                // 1. Обновляем список контактов (кто писал мне или кому писал я)
-                const contacts = new Set();
+                // 1. Фильтруем личные контакты
+                const contactMap = new Map();
                 all.forEach(m => {
-                    if(m.from === user.username && m.to) contacts.add(m.to);
-                    if(m.to === user.username && m.from) contacts.add(m.from);
+                    if(m.from && m.to) {
+                        if(m.from === user.username) contactMap.set(m.to, m.to);
+                        if(m.to === user.username) contactMap.set(m.from, m.from);
+                    }
                 });
 
                 const list = document.getElementById('contacts-list');
-                if(contacts.size > 0) {
+                if(contactMap.size > 0 && (all.length !== knownMessages || force)) {
                     list.innerHTML = '';
-                    contacts.forEach(c => {
+                    contactMap.forEach((name, tag) => {
                         const div = document.createElement('div');
                         div.className = 'contact-item';
-                        div.onclick = () => openChat(c, c);
-                        div.innerHTML = `<img src="${defAva}" class="contact-ava"><div><b>${c}</b><br><small style="opacity:0.5">Личный чат</small></div>`;
+                        div.onclick = () => openChat(tag, tag);
+                        div.innerHTML = `<img src="${defAva}" class="contact-ava"><div><b>${tag}</b><br><small style="opacity:0.4">Нажмите, чтобы войти</small></div>`;
                         list.appendChild(div);
                     });
+                } else if(contactMap.size === 0) {
+                    list.innerHTML = '<p style="opacity:0.3; text-align:center; margin-top:50px">Пока нет чатов. Нажми + ЧАТ чтобы найти друга</p>';
                 }
 
-                // 2. Если открыт чат — фильтруем сообщения только для него
-                if(activePeer) {
-                    const privateMsgs = all.filter(m => 
+                // 2. Если открыт чат — рендерим только его историю
+                if(activePeer && (all.length !== knownMessages || force)) {
+                    const myMsgs = all.filter(m => 
                         (m.from === user.username && m.to === activePeer.username) || 
                         (m.from === activePeer.username && m.to === user.username)
                     );
                     document.getElementById('chat-flow').innerHTML = '';
-                    privateMsgs.forEach(m => renderMsg(m));
+                    myMsgs.forEach(m => renderMsg(m));
                 }
-            } catch(e) {}
+                knownMessages = all.length;
+            } catch(e) { console.warn("Сервер спит..."); }
         }
 
-        function logout() { localStorage.clear(); location.reload(); }
+        function logout() { if(confirm("Выйти?")) { localStorage.clear(); location.reload(); } }
         function save() {
             user.nick = document.getElementById('set-nick-inp').value;
             user.ava = document.getElementById('set-ava-inp').value || defAva;
