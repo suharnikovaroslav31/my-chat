@@ -3,183 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Speeky | Absolute Core v11</title>
+    <title>Speeky | Core v12</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #00f2ff; --bg: #000; --border: rgba(0, 242, 255, 0.1); --card: rgba(15, 18, 25, 0.9); }
+        :root { --accent: #00f2ff; --bg: #000; --card: #11141b; --border: rgba(255,255,255,0.08); }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; position: fixed; width: 100%; }
+        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
 
-        /* ЖИВОЙ ФОН */
-        #universe { position: fixed; inset: 0; z-index: -1; }
-        .fluid { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.1; will-change: transform; }
+        /* ФОН */
+        #bg-canvas { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 0% 0%, #0a111a 0%, #000 100%); }
+        .glow { position: absolute; width: 600px; height: 600px; background: radial-gradient(circle, rgba(0,242,255,0.05) 0%, transparent 70%); border-radius: 50%; }
 
-        /* ИНТЕРФЕЙС */
-        .view { position: absolute; inset: 0; display: none; padding: 30px 20px 100px; flex-direction: column; overflow-y: auto; }
+        /* СКРОЛЛ И СЛОИ */
+        .view { position: absolute; inset: 0; display: none; flex-direction: column; padding: 20px; overflow-y: auto; background: var(--bg); padding-bottom: 120px; }
         .view.active { display: flex; z-index: 10; }
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: 30px; padding: 25px; backdrop-filter: blur(30px); margin-bottom: 15px; }
 
-        /* ЭЛЕМЕНТЫ НАСТРОЕК */
-        .set-row { display: flex; justify-content: space-between; align-items: center; padding: 18px; background: rgba(255,255,255,0.03); border-radius: 20px; margin-bottom: 8px; cursor: pointer; transition: 0.2s; }
-        .set-row:active { background: rgba(0, 242, 255, 0.1); transform: scale(0.98); }
-        .set-row.no-click { cursor: default; }
-        .set-row.no-click:active { transform: none; }
-        .val { color: var(--accent); font-size: 14px; font-weight: 700; }
-        .desc { font-size: 12px; opacity: 0.4; margin-top: 4px; }
+        /* СТИЛЬ ТЕЛЕГРАМА */
+        .section-title { font-size: 13px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 25px 0 10px 15px; opacity: 0.8; }
+        .group { background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid var(--border); }
+        .row { display: flex; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
+        .row:last-child { border-bottom: none; }
+        .row:active { background: rgba(255,255,255,0.05); }
+        
+        .icon { width: 35px; height: 35px; background: rgba(0,242,255,0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 15px; color: var(--accent); font-size: 18px; }
+        .label { flex: 1; font-size: 15px; font-weight: 500; }
+        .sub-label { font-size: 12px; opacity: 0.4; margin-top: 2px; }
+        .value { font-size: 14px; color: var(--accent); opacity: 0.7; }
 
-        .back-btn { font-size: 14px; color: var(--accent); margin-bottom: 25px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        h1 { font-size: 32px; font-weight: 900; margin-bottom: 25px; letter-spacing: -1px; }
+        /* ПЕРЕКЛЮЧАТЕЛЬ */
+        .toggle { width: 40px; height: 22px; background: #333; border-radius: 20px; position: relative; transition: 0.3s; }
+        .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: 0.3s; }
+        .toggle.on { background: var(--accent); }
+        .toggle.on::after { left: 20px; }
 
-        .dock { position: fixed; bottom: 25px; left: 15px; right: 15px; background: rgba(0,0,0,0.9); border: 1px solid var(--border); padding: 18px; border-radius: 30px; display: none; justify-content: space-around; z-index: 1000; }
-        .dock i { font-size: 24px; opacity: 0.3; transition: 0.4s; }
-        .dock i.active { opacity: 1; color: var(--accent); transform: scale(1.2); }
+        /* ШАПКА */
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding: 10px 0; }
+        .back-ico { font-size: 24px; cursor: pointer; color: var(--accent); }
+
+        /* ПРОФИЛЬ КАРТОЧКА */
+        .profile-card { text-align: center; padding: 40px 20px; background: linear-gradient(180deg, #11141b 0%, #000 100%); border-bottom: 1px solid var(--border); margin: -20px -20px 0 -20px; }
+        .avatar { width: 100px; height: 100px; background: var(--accent); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 40px; color: #000; font-weight: 900; }
     </style>
 </head>
 <body>
 
-    <div id="universe"></div>
+    <div id="bg-canvas"></div>
 
     <section id="view-sets" class="view">
-        <h1>Ядро</h1>
-        <div class="card" style="text-align:center;">
-            <div id="qrcode" style="background:#fff; padding:10px; border-radius:15px; display:inline-block; margin-bottom:15px;"></div>
-            <h2 id="m-nick" style="color:var(--accent); font-size:24px;">@...</h2>
+        <div class="profile-card">
+            <div class="avatar" id="avatar-char">U</div>
+            <h1 id="user-nick">@User</h1>
+            <p id="user-email" style="opacity: 0.5; font-size: 14px; margin-top: 5px;">user@speeky.com</p>
         </div>
-        
-        <div class="set-row" onclick="nav('set-acc')"><div>Аккаунт<div class="desc">Почта, дата, безопасность</div></div><span class="val">➔</span></div>
-        <div class="set-row" onclick="nav('set-chats')"><div>Чаты<div class="desc">Оформление, фильтры, история</div></div><span class="val">➔</span></div>
-        <div class="set-row" onclick="nav('set-data')"><div>Данные и память<div class="desc">Использование хранилища</div></div><span class="val">➔</span></div>
-        <div class="set-row" onclick="nav('set-dev')"><div>Устройства<div class="desc">Активные сессии и входы</div></div><span class="val">➔</span></div>
-        <div class="set-row" onclick="nav('set-lang')"><div>Язык<div class="desc">Выбор интерфейса</div></div><span class="val">RU</span></div>
-    </section>
 
-    <section id="view-set-acc" class="view">
-        <div class="back-btn" onclick="nav('sets')">← Назад в Ядро</div>
-        <h1>Настройка аккаунта</h1>
-        <div class="card">
-            <div style="margin-bottom:15px;">
-                <div class="desc">Ваш Email</div>
-                <div id="acc-email" style="font-weight:700;">...</div>
+        <div class="section-title">Настройки</div>
+        <div class="group">
+            <div class="row" onclick="nav('set-acc')">
+                <div class="icon">👤</div>
+                <div class="label">Мой аккаунт<div class="sub-label">Имя, почта, био</div></div>
+                <div class="value">➔</div>
             </div>
-            <div>
-                <div class="desc">Дата регистрации</div>
-                <div id="acc-date" style="font-weight:700;">...</div>
+            <div class="row" onclick="nav('set-priv')">
+                <div class="icon">🔒</div>
+                <div class="label">Конфиденциальность<div class="sub-label">Безопасность и блокировки</div></div>
+                <div class="value">➔</div>
+            </div>
+            <div class="row" onclick="nav('set-chats')">
+                <div class="icon">💬</div>
+                <div class="label">Настройки чатов<div class="sub-label">Обои, размер текста, стикеры</div></div>
+                <div class="value">➔</div>
+            </div>
+            <div class="row" onclick="nav('set-data')">
+                <div class="icon">📊</div>
+                <div class="label">Данные и память<div class="sub-label">Кэш и использование сети</div></div>
+                <div class="value">➔</div>
+            </div>
+            <div class="row" onclick="nav('set-dev')">
+                <div class="icon">📱</div>
+                <div class="label">Устройства<div class="sub-label">Сессии на других девайсах</div></div>
+                <div class="value">➔</div>
+            </div>
+            <div class="row" onclick="nav('set-lang')">
+                <div class="icon">🌐</div>
+                <div class="label">Язык<div class="sub-label">Выбран: Русский</div></div>
+                <div class="value">RU</div>
             </div>
         </div>
-        <div class="set-row" style="color:#ff4d4d" onclick="logout()">Деактивировать аккаунт</div>
     </section>
 
     <section id="view-set-dev" class="view">
-        <div class="back-btn" onclick="nav('sets')">← Назад</div>
-        <h1>Устройства</h1>
-        <div class="desc" style="margin-bottom:15px; padding-left:5px;">ТЕКУЩИЙ СЕАНС</div>
-        <div class="card">
-            <div id="dev-name" style="color:var(--accent); font-weight:900; margin-bottom:5px;">Определяем...</div>
-            <div id="dev-time" class="desc">Вход: только что</div>
+        <div class="header"><span class="back-ico" onclick="nav('sets')">←</span><h2>Устройства</h2></div>
+        
+        <div class="section-title">Текущий сеанс</div>
+        <div class="group">
+            <div class="row no-click">
+                <div class="icon">💻</div>
+                <div class="label"><span id="cur-dev">Браузер</span><div class="sub-label" id="cur-ip">IP: 192.168.1.1 • Speeky v12</div></div>
+                <div class="value" style="color:#00ff00; font-size:10px;">● ONLINE</div>
+            </div>
         </div>
-        <button class="set-row" style="width:100%; border:none; text-align:left; color:var(--accent)">Завершить все другие сеансы</button>
+
+        <div class="section-title">Активные сессии</div>
+        <div class="group">
+            <div class="row">
+                <div class="icon" style="background:rgba(255,255,255,0.05)">📱</div>
+                <div class="label">iPhone 15 Pro<div class="sub-label">Speeky Mobile • Москва, Россия</div></div>
+                <div class="value">2 ч. назад</div>
+            </div>
+            <div class="row">
+                <div class="icon" style="background:rgba(255,255,255,0.05)">💻</div>
+                <div class="label">Windows Desktop<div class="sub-label">Desktop App • Берлин, Германия</div></div>
+                <div class="value">Вчера</div>
+            </div>
+        </div>
+        <p style="padding: 15px; font-size: 12px; opacity: 0.4; text-align: center;">Вы можете завершить любой сеанс, если подозреваете взлом.</p>
+        <div class="group" style="margin-top:10px;">
+            <div class="row" style="color:#ff4d4d; justify-content:center; font-weight:700;">Завершить все другие сеансы</div>
+        </div>
     </section>
 
     <section id="view-set-data" class="view">
-        <div class="back-btn" onclick="nav('sets')">← Назад</div>
-        <h1>Данные и память</h1>
-        <div class="card">
-            <div class="set-row no-click" style="background:none; padding:0;">
-                <div>Использовано Speeky</div>
-                <div class="val" id="storage-size">0.02 MB</div>
+        <div class="header"><span class="back-ico" onclick="nav('sets')">←</span><h2>Данные и память</h2></div>
+        
+        <div class="section-title">Использование памяти</div>
+        <div class="group">
+            <div class="row">
+                <div class="label">Использование памяти<div class="sub-label">Настройте срок хранения медиа</div></div>
+                <div class="value">➔</div>
             </div>
-            <div style="width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; margin:15px 0;">
-                <div style="width:10%; height:100%; background:var(--accent); border-radius:2px;"></div>
+            <div class="row">
+                <div class="label">Использование сети<div class="sub-label">Статистика отправленных байт</div></div>
+                <div class="value">➔</div>
             </div>
         </div>
-        <div class="set-row" onclick="alert('Кэш очищен')">Очистить кэш приложения</div>
-        <div class="set-row">Экономия трафика <span class="val">ВЫКЛ</span></div>
+
+        <div class="section-title">Автозагрузка медиа</div>
+        <div class="group">
+            <div class="row">
+                <div class="label">Через мобильную сеть</div>
+                <div class="toggle on"></div>
+            </div>
+            <div class="row">
+                <div class="label">Через Wi-Fi</div>
+                <div class="toggle on"></div>
+            </div>
+        </div>
+
+        <div class="section-title">Настройки диска</div>
+        <div class="group">
+            <div class="row" style="color:#ff4d4d" onclick="alert('Кэш очищен')">
+                <div class="label">Очистить кэш Speeky</div>
+                <div class="value">124.5 MB</div>
+            </div>
+        </div>
     </section>
 
-    <section id="view-set-chats" class="view">
-        <div class="back-btn" onclick="nav('sets')">← Назад</div>
-        <h1>Настройка чатов</h1>
-        <div class="set-row">Размер текста <span class="val">15px</span></div>
-        <div class="set-row">Автоудаление сообщений <span class="val">ОТКЛ</span></div>
-        <div class="set-row">Скрывать время <span class="val">НЕТ</span></div>
-    </section>
+    <section id="view-set-priv" class="view">
+        <div class="header"><span class="back-ico" onclick="nav('sets')">←</span><h2>Приватность</h2></div>
+        
+        <div class="group">
+            <div class="row">
+                <div class="label">Номер телефона</div>
+                <div class="value">Никто</div>
+            </div>
+            <div class="row">
+                <div class="label">Последняя активность</div>
+                <div class="value">Все</div>
+            </div>
+            <div class="row">
+                <div class="label">Фотографии профиля</div>
+                <div class="value">Мои контакты</div>
+            </div>
+            <div class="row">
+                <div class="label">Пересылка сообщений</div>
+                <div class="value">Никто</div>
+            </div>
+        </div>
 
-    <section id="view-set-lang" class="view">
-        <div class="back-btn" onclick="nav('sets')">← Назад</div>
-        <h1>Язык</h1>
-        <div class="set-row" onclick="alert('Уже выбрано')">Русский (RU) <span class="val">✓</span></div>
-        <div class="set-row">English (EN)</div>
+        <div class="section-title">Безопасность</div>
+        <div class="group">
+            <div class="row">
+                <div class="label">Облачный пароль</div>
+                <div class="value">Выкл.</div>
+            </div>
+            <div class="row">
+                <div class="label">Черный список</div>
+                <div class="value">0</div>
+            </div>
+        </div>
     </section>
-
-    <nav class="dock" id="dock"><i id="btn-chats" onclick="location.reload()">📡</i><i id="btn-sets" onclick="nav('sets')" class="active">💎</i></nav>
 
     <script>
         const KEY = 'SPEEKY_ULTRA_CORE_V11';
         let user = JSON.parse(localStorage.getItem(KEY));
 
-        // ОЖИВЛЕНИЕ ФОНА (GSAP)
-        for(let i=0; i<5; i++) {
-            const f = document.createElement('div'); f.className = 'fluid';
-            f.style.width = f.style.height = Math.random()*400 + 300 + 'px';
-            f.style.background = `radial-gradient(circle, ${i%2===0?'#00f2ff22':'#7000ff11'}, transparent)`;
-            f.style.left = Math.random()*100+'%'; f.style.top = Math.random()*100+'%';
-            document.getElementById('universe').appendChild(f);
-            gsap.to(f, { x: "random(-150, 150)", y: "random(-150, 150)", duration: "random(10, 20)", repeat: -1, yoyo: true, ease: "sine.inOut" });
-        }
+        // Анимация фона
+        gsap.to(".glow", { x: "random(-100, 100)", y: "random(-100, 100)", duration: 10, repeat: -1, yoyo: true, ease: "sine.inOut" });
 
         function nav(page) {
-            const all = document.querySelectorAll('.view');
-            const target = document.getElementById('view-'+page);
+            const current = document.querySelector('.view.active');
+            const target = document.getElementById('view-' + page);
             
-            all.forEach(v => {
-                if(v.classList.contains('active')) {
-                    gsap.to(v, { opacity:0, x: -30, duration:0.3, onComplete:()=>v.style.display='none' });
-                    v.classList.remove('active');
-                }
-            });
-
-            target.style.display = 'flex';
-            gsap.fromTo(target, { opacity:0, x: 30 }, { opacity:1, x:0, duration:0.3 });
-            target.classList.add('active');
-
-            // Управление доком
-            const isSubPage = page.startsWith('set-');
-            document.getElementById('dock').style.display = isSubPage ? 'none' : 'flex';
-        }
-
-        function logout() { if(confirm("Выйти из аккаунта?")) { localStorage.removeItem(KEY); location.reload(); } }
-
-        window.onload = () => {
-            if(!user) {
-                // Если нет юзера, кидаем на регу (предполагаем наличие в коде выше)
-                alert("Пожалуйста, зарегистрируйтесь через основной интерфейс.");
-                return;
+            if (current) {
+                gsap.to(current, { opacity: 0, x: -20, duration: 0.25, onComplete: () => current.style.display = 'none' });
+                current.classList.remove('active');
             }
 
-            // Заполнение данных
-            document.getElementById('m-nick').innerText = '@' + user.name;
-            document.getElementById('acc-email').innerText = user.email;
-            document.getElementById('acc-date').innerText = user.date || new Date().toLocaleDateString();
-            
-            // Информация об устройстве
-            const browser = (function(){
-                let ua = navigator.userAgent, tem, 
-                M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
-                if(/trident/i.test(M[1])){ tem = /\brv[ :]+(\d+)/g.exec(ua) || []; return 'IE '+(tem[1] || ''); }
-                if(M[1] === 'Chrome'){ tem = ua.match(/\b(OPR|Edge)\/(\d+)/); if(tem != null) return tem.slice(1).join(' ').replace('OPR', 'Opera'); }
-                M = M[2]? [M[1], M[2]]: [navigator.appName, navigator.appVersion, '-?'];
-                if((tem = ua.match(/version\/(\d+)/i)) != null) M.splice(1, 1, tem[1]);
-                return M.join(' ');
-            })();
-            document.getElementById('dev-name').innerText = browser + " (" + navigator.platform + ")";
-            document.getElementById('dev-time').innerText = "Активен сейчас • " + (user.time || "Только что");
+            target.style.display = 'flex';
+            gsap.fromTo(target, { opacity: 0, x: 20 }, { opacity: 1, x: 0, duration: 0.25 });
+            target.classList.add('active');
+        }
 
-            // QR Код
-            new QRCode(document.getElementById("qrcode"), { text: user.name, width: 130, height: 130, colorDark: "#000", colorLight: "#fff" });
+        // Логика переключателей
+        document.querySelectorAll('.toggle').forEach(t => {
+            t.onclick = () => t.classList.toggle('on');
+        });
 
-            nav('sets');
+        window.onload = () => {
+            if (user) {
+                document.getElementById('user-nick').innerText = '@' + user.name;
+                document.getElementById('user-email').innerText = user.email;
+                document.getElementById('avatar-char').innerText = user.name[0].toUpperCase();
+                document.getElementById('cur-dev').innerText = navigator.platform + " Browser";
+                nav('sets');
+            } else {
+                alert("Ошибка авторизации. Вернитесь на главную.");
+            }
         };
     </script>
 </body>
