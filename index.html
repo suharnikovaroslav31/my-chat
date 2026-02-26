@@ -3,106 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Speeky | Mobile Singularity</title>
+    <title>Speeky | Absolute Elite Messenger</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #00f2ff; --bg: #000; --border: rgba(0, 242, 255, 0.2); }
+        :root { --accent: #00f2ff; --bg: #000; --border: rgba(0, 242, 255, 0.2); --card-bg: rgba(20, 25, 35, 0.7); }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         
         body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; position: fixed; width: 100%; }
 
-        /* ОПТИМИЗИРОВАННЫЙ ФОН */
+        /* ОПТИМИЗИРОВАННЫЙ ФОН (БЕЗ ЛАГОВ) */
         #universe { position: fixed; inset: 0; z-index: -1; background: #010408; }
-        .nebula { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.2; will-change: transform; }
+        .nebula { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.15; will-change: transform; }
 
-        /* ЭКРАНЫ */
+        /* ЭКРАНЫ С ПЛАВНЫМ ПЕРЕКЛЮЧЕНИЕМ */
         .view { 
             position: absolute; inset: 0; display: none; padding: 40px 20px 100px; 
             flex-direction: column; will-change: transform, opacity;
         }
         .view.active { display: flex; z-index: 10; }
 
-        .card { background: rgba(20, 25, 35, 0.7); border: 1px solid var(--border); border-radius: 30px; padding: 30px; }
-
-        /* ГЛИТЧ-ЭФФЕКТ */
-        .glitch { animation: glitch 0.2s steps(2) infinite; color: var(--accent); }
-        @keyframes glitch { 
-            0% { transform: translate(2px,0); text-shadow: 2px 0 red; }
-            50% { transform: translate(-2px,0); text-shadow: -2px 0 blue; }
-            100% { transform: translate(0); }
-        }
+        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 30px; padding: 35px; }
 
         /* СООБЩЕНИЯ */
         #flow { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; -webkit-overflow-scrolling: touch; }
         .msg-wrap { display: flex; flex-direction: column; max-width: 85%; transition: 0.3s; }
         .msg-wrap.me { align-self: flex-end; }
-        .bubble { padding: 14px 18px; border-radius: 22px; font-size: 15px; position: relative; }
+        .bubble { padding: 16px 20px; border-radius: 25px; font-size: 15px; position: relative; }
         .me .bubble { background: var(--accent); color: #000; font-weight: 900; border-bottom-right-radius: 4px; }
         .he .bubble { background: #1a1f26; border: 1px solid var(--border); border-bottom-left-radius: 4px; }
 
         /* ПОЛЯ ВВОДА (ФИКС СНИМКА 119) */
-        input { width: 100%; background: #0d1117; border: 1px solid var(--border); padding: 18px; border-radius: 20px; color: #fff; font-size: 16px; }
+        input { width: 100%; background: #0d1117; border: 1px solid var(--border); padding: 18px; border-radius: 20px; color: #fff; font-size: 16px; transition: 0.3s; }
         input:focus { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 242, 255, 0.2); }
 
-        /* ДОК */
+        /* ДОК (НАВИГАЦИЯ) */
         .dock { 
             position: fixed; bottom: 20px; left: 10px; right: 10px; 
-            background: rgba(0,0,0,0.9); border: 1px solid var(--border); 
-            padding: 15px; border-radius: 25px; display: none; justify-content: space-around; z-index: 1000; 
+            background: rgba(0,0,0,0.95); border: 1px solid var(--border); 
+            padding: 15px; border-radius: 25px; display: none; justify-content: space-around; z-index: 1000; backdrop-filter: blur(10px);
         }
-        .dock i { font-size: 22px; opacity: 0.3; transition: 0.3s; }
-        .dock i.active { opacity: 1; color: var(--accent); transform: scale(1.2); }
+        .dock i { font-size: 24px; opacity: 0.3; transition: 0.3s; cursor: pointer; }
+        .dock i.active { opacity: 1; color: var(--accent); transform: scale(1.15); }
 
-        #ctx { position: fixed; background: #0d1117; border: 1px solid var(--border); border-radius: 15px; display: none; flex-direction: column; z-index: 2000; width: 150px; }
-        .ctx-item { padding: 15px; font-size: 14px; border-bottom: 1px solid var(--border); }
+        /* КОНТЕКСТНОЕ МЕНЮ */
+        #ctx { position: fixed; background: #0d1117; border: 1px solid var(--border); border-radius: 15px; display: none; flex-direction: column; z-index: 2000; width: 160px; overflow: hidden; backdrop-filter: blur(10px); }
+        .ctx-item { padding: 15px; font-size: 14px; border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
+        .ctx-item:hover { background: rgba(0,242,255,0.1); }
+        .ctx-item:last-child { border: none; color: #ff4d4d; }
     </style>
 </head>
 <body>
 
     <div id="universe"></div>
+    
     <div id="ctx">
         <div class="ctx-item" id="ctx-reply">Ответить</div>
-        <div class="ctx-item" style="color:red" id="ctx-del">Удалить</div>
+        <div class="ctx-item" id="ctx-del">Удалить сигнал</div>
     </div>
 
     <section id="view-auth" class="view">
         <div class="card" style="margin: auto; width: 100%; text-align: center;">
-            <h1 class="glitch" style="font-size:40px; font-weight:900;">Speeky</h1>
-            <input type="text" id="reg-name" placeholder="Ник" style="margin-top:20px;">
-            <input type="email" id="reg-email" placeholder="Email" style="margin-top:10px;">
-            <button onclick="auth()" style="width:100%; padding:18px; background:var(--accent); border:none; border-radius:20px; font-weight:900; margin-top:15px;">ВОЙТИ</button>
+            <h1 style="font-size:45px; font-weight:900; letter-spacing:-2px; margin-bottom:10px;">Speeky</h1>
+            <p style="opacity:0.3; font-size:12px; margin-bottom:30px;">Elite Messenger v9.5</p>
+            <input type="text" id="reg-name" placeholder="Твой позывной">
+            <input type="email" id="reg-email" placeholder="Канал связи (email)" style="margin-top:10px;">
+            <button onclick="auth()" style="width:100%; padding:20px; background:var(--accent); color:#000; border:none; border-radius:20px; font-weight:900; margin-top:20px; cursor:pointer;">ИНИЦИАЛИЗИРОВАТЬ</button>
         </div>
     </section>
 
     <section id="view-chats" class="view">
-        <div style="display:flex; justify-content:space-between; margin-bottom:30px;">
-            <h1 style="font-size:35px; font-weight:900;">Связи</h1>
-            <div onclick="add()" style="color:var(--accent); font-weight:900;">+ ПОИСК</div>
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:30px;">
+            <h1 style="font-size:40px; font-weight:900;">Связи</h1>
+            <div onclick="add()" style="color:var(--accent); font-weight:900; cursor:pointer;">+ ПОИСК</div>
         </div>
         <div id="chats-list"></div>
     </section>
 
     <section id="view-room" class="view">
-        <div style="display:flex; align-items:center; gap:15px; margin-bottom:15px;">
-            <div onclick="nav('chats')" style="font-size:25px;">←</div>
-            <h2 id="p-title">@...</h2>
+        <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+            <div onclick="nav('chats')" style="font-size:28px; cursor:pointer;">←</div>
+            <h2 id="p-title" style="font-weight:900;">@...</h2>
         </div>
         <div id="flow"></div>
-        <div style="display:flex; gap:10px; margin-top:10px;">
-            <input type="text" id="m-in" placeholder="Сигнал...">
-            <button onclick="send()" style="width:55px; height:55px; background:var(--accent); border:none; border-radius:50%; font-size:20px;">➔</button>
+        <div style="display:flex; gap:10px; margin-top:10px; background:rgba(255,255,255,0.03); padding:10px; border-radius:30px; border:1px solid var(--border);">
+            <input type="text" id="m-in" placeholder="Введите сигнал..." style="background:none; border:none; margin:0;">
+            <button onclick="send()" style="width:55px; height:55px; background:var(--accent); border:none; border-radius:50%; cursor:pointer;">➔</button>
         </div>
     </section>
 
     <section id="view-sets" class="view">
-        <h1 style="font-size:35px; font-weight:900; margin-bottom:30px;">Ядро</h1>
+        <h1 style="font-size:40px; font-weight:900; margin-bottom:30px;">Ядро</h1>
         <div class="card" style="text-align: center;">
-            <div id="qrcode" style="background:#fff; padding:10px; border-radius:15px; display:inline-block; margin-bottom:15px;"></div>
-            <h2 id="my-nick" style="color:var(--accent)">@...</h2>
-            <p id="my-email" style="opacity:0.4"></p>
-            <button onclick="logout()" style="margin-top:30px; color:red; background:none; border:none; font-weight:900;">ВЫХОД</button>
+            <div id="qrcode" style="background:#fff; padding:15px; border-radius:20px; display:inline-block; margin-bottom:20px;"></div>
+            <h2 id="my-nick" style="color:var(--accent); font-size:32px; font-weight:900;">@...</h2>
+            <p id="my-email" style="opacity:0.4; font-size:14px;"></p>
+            <button onclick="logout()" style="margin-top:40px; color:#ff4d4d; background:none; border:none; font-weight:900; cursor:pointer;">ДЕАКТИВАЦИЯ АККАУНТА</button>
         </div>
     </section>
 
@@ -110,11 +107,11 @@
 
     <script>
         const API = 'https://my-chat-itp3.onrender.com/messages';
-        const KEY = 'SPEEKY_MOBILE_V1';
+        const KEY = 'SPEEKY_ABSOLUTE_V1';
         let user = JSON.parse(localStorage.getItem(KEY));
-        let peer = null, selectedMsg = null;
+        let peer = null, selectedMsgWrap = null;
 
-        // ЛЕГКИЙ ФОН
+        // ЛЕГКИЙ ОПТИМИЗИРОВАННЫЙ ФОН
         for(let i=0; i<3; i++) {
             const n = document.createElement('div'); n.className = 'nebula';
             n.style.width = n.style.height = '300px'; n.style.background = 'rgba(0,242,255,0.1)';
@@ -123,6 +120,7 @@
         }
 
         function nav(page) {
+            // ФАТАЛЬНОЕ СКРЫТИЕ ВСЕХ СЛОЕВ (РЕШЕНИЕ СНИМКА 121)
             document.querySelectorAll('.view').forEach(v => {
                 if(v.classList.contains('active')) {
                     gsap.to(v, { opacity:0, scale:0.95, duration:0.3, onComplete:()=>v.style.display='none' });
@@ -131,7 +129,7 @@
             });
             const t = document.getElementById('view-'+page);
             t.style.display = 'flex';
-            gsap.fromTo(t, { opacity:0, scale:1.05 }, { opacity:1, scale:1, duration:0.3 });
+            gsap.fromTo(t, { opacity:0, scale:1.05 }, { opacity:1, scale:1, duration:0.3, delay:0.1 });
             t.classList.add('active');
 
             document.getElementById('dock').style.display = user ? 'flex' : 'none';
@@ -161,8 +159,8 @@
                 const chats = [...new Set(d.map(m => m.from === user.name ? m.to : (m.to === user.name ? m.from : null)))].filter(Boolean);
                 const list = document.getElementById('chats-list'); list.innerHTML = '';
                 chats.forEach(c => {
-                    const n = document.createElement('div'); n.className = 'card'; n.style.marginBottom = '10px';
-                    n.innerHTML = `<b>@${c}</b>`;
+                    const n = document.createElement('div'); n.className = 'card'; n.style.marginBottom = '10px'; n.style.padding = '20px';
+                    n.innerHTML = `<b style="color:var(--accent); font-size:18px;">@${c}</b>`;
                     n.onclick = () => { peer = c; document.getElementById('p-title').innerText = '@'+c; nav('room'); sync(); };
                     list.appendChild(n);
                 });
@@ -170,15 +168,28 @@
         }
 
         function openCtx(e, el) {
-            selectedMsg = el;
+            selectedMsgWrap = el;
             const c = document.getElementById('ctx'); c.style.display = 'flex';
             c.style.left = e.pageX + 'px'; c.style.top = e.pageY + 'px';
+            gsap.from(c, { scale:0.8, opacity:0, duration:0.2 });
         }
 
+        // ЧИСТАЯ АННИГИЛЯЦИЯ (БЕЗ ГЛИТЧА)
         document.getElementById('ctx-del').onclick = () => {
-            const el = selectedMsg;
-            el.classList.add('glitch'); // Эффект помех перед удалением
-            gsap.to(el, { opacity:0, x:100, filter:"blur(20px)", duration:0.4, onComplete:()=>el.remove() });
+            const el = selectedMsgWrap;
+            for(let i=0; i<30; i++) {
+                const p = document.createElement('div');
+                p.style.cssText = `position:fixed; width:3px; height:3px; background:var(--accent); border-radius:50%; z-index:10000; left:${el.getBoundingClientRect().left+20}px; top:${el.getBoundingClientRect().top+20}px; box-shadow:0 0 10px var(--accent);`;
+                document.body.appendChild(p);
+                gsap.to(p, { x: "random(-250, 250)", y: "random(-250, 250)", opacity:0, duration:1.2, delay: "random(0, 0.2)", onComplete:()=>p.remove() });
+            }
+            gsap.to(el, { opacity:0, scale:0.5, filter:"blur(20px)", duration:0.5, onComplete:()=>el.remove() });
+            document.getElementById('ctx').style.display = 'none';
+        };
+
+        document.getElementById('ctx-reply').onclick = () => {
+            // Реализация ответа...
+            document.getElementById('ctx').style.display = 'none';
         };
 
         async function send() {
@@ -188,20 +199,20 @@
         }
 
         function auth() {
-            const n = document.getElementById('reg-name').value;
-            const e = document.getElementById('reg-email').value;
+            const n = document.getElementById('reg-name').value.trim();
+            const e = document.getElementById('reg-email').value.trim();
             if(n && e) { localStorage.setItem(KEY, JSON.stringify({name:n, email:e})); location.reload(); }
         }
 
         function logout() { localStorage.removeItem(KEY); location.reload(); }
-        function add() { const n = prompt("Ник:"); if(n) { peer=n; nav('room'); } }
+        function add() { const n = prompt("Никнейм в пустоте:"); if(n) { peer=n.replace('@',''); document.getElementById('p-title').innerText = '@'+peer; nav('room'); sync(); } }
         window.onclick = () => document.getElementById('ctx').style.display = 'none';
 
         window.onload = () => {
             if(user) {
                 document.getElementById('my-nick').innerText = '@' + user.name;
                 document.getElementById('my-email').innerText = user.email;
-                new QRCode(document.getElementById("qrcode"), { text: user.name, width: 120, height: 120 });
+                new QRCode(document.getElementById("qrcode"), { text: user.name, width: 140, height: 140 });
                 nav('chats'); setInterval(sync, 4000); sync();
             } else { nav('auth'); }
         };
