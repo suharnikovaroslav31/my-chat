@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Speeky | Elite Evolution</title>
+    <title>Speeky | Absolute Core v13</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&display=swap" rel="stylesheet">
@@ -12,112 +12,119 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; position: fixed; width: 100%; }
 
-        /* ФОН (БЕЗ ЛАГОВ) */
+        /* ФОН */
         #universe { position: fixed; inset: 0; z-index: -1; background: radial-gradient(circle at 50% 50%, #05080c 0%, #000 100%); }
-        .fluid { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.1; will-change: transform; }
+        .fluid { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.1; will-change: transform; }
 
-        /* СИСТЕМА СЛОЕВ */
-        .view { position: absolute; inset: 0; display: none; flex-direction: column; padding: 20px; overflow-y: auto; background: var(--bg); padding-bottom: 100px; }
+        /* КОНТЕЙНЕРЫ */
+        .view { position: absolute; inset: 0; display: none; flex-direction: column; background: var(--bg); padding-bottom: 100px; }
         .view.active { display: flex; z-index: 10; }
+        .content-scroll { flex: 1; overflow-y: auto; padding: 20px; }
 
-        /* HEADER */
-        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding-top: 5px; }
-        .back-btn { font-size: 26px; color: var(--accent); cursor: pointer; padding-right: 10px; }
-        h1 { font-size: 24px; font-weight: 900; }
+        /* СПИСОК ЧАТОВ */
+        .chat-item { display: flex; align-items: center; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 22px; margin-bottom: 10px; cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
+        .chat-item:active { transform: scale(0.98); background: rgba(0,242,255,0.05); border-color: var(--border); }
+        .chat-avatar { width: 55px; height: 55px; border-radius: 50%; background: var(--accent); margin-right: 15px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #000; font-size: 20px; }
+        .chat-info { flex: 1; }
+        .chat-top { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .chat-name { font-weight: 700; font-size: 16px; }
+        .chat-time { font-size: 12px; opacity: 0.4; }
+        .chat-msg { font-size: 14px; opacity: 0.5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
 
-        /* СТИЛЬ ТЕЛЕГРАМА (ПЛОТНОЕ ЗАПОЛНЕНИЕ) */
-        .section-label { font-size: 13px; color: var(--accent); font-weight: 700; text-transform: uppercase; margin: 25px 0 10px 10px; letter-spacing: 0.5px; opacity: 0.8; }
-        .group { background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 10px; }
-        .row { display: flex; align-items: center; padding: 16px 18px; border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
+        /* НАВИГАЦИЯ (DOCK) */
+        .dock { position: fixed; bottom: 25px; left: 20px; right: 20px; height: 70px; background: rgba(15,18,25,0.9); border: 1px solid var(--border); border-radius: 30px; display: flex; align-items: center; justify-content: space-around; backdrop-filter: blur(20px); z-index: 1000; }
+        .nav-btn { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; opacity: 0.3; transition: 0.3s; }
+        .nav-btn.active { opacity: 1; color: var(--accent); }
+        .nav-btn span { font-size: 10px; font-weight: 700; text-transform: uppercase; }
+
+        /* ГРУППЫ НАСТРОЕК (TG STYLE) */
+        .section-label { font-size: 13px; color: var(--accent); font-weight: 700; text-transform: uppercase; margin: 25px 0 10px 10px; letter-spacing: 0.5px; }
+        .group { background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid var(--border); }
+        .row { display: flex; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border); cursor: pointer; }
         .row:last-child { border-bottom: none; }
-        .row:active { background: rgba(255,255,255,0.05); }
         
-        .ico { width: 32px; height: 32px; background: rgba(0,242,255,0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 15px; color: var(--accent); font-size: 16px; }
-        .txt-box { flex: 1; }
-        .title { font-size: 15px; font-weight: 500; }
-        .sub { font-size: 12px; opacity: 0.4; margin-top: 2px; }
-        .val { font-size: 14px; color: var(--accent); font-weight: 600; }
-
-        /* INPUTS ДЛЯ РЕГИ */
-        .auth-card { margin: auto; width: 100%; text-align: center; }
-        input { width: 100%; background: #0d1117; border: 1px solid var(--border); padding: 18px; border-radius: 15px; color: #fff; font-size: 16px; margin-bottom: 12px; }
-        .main-btn { width: 100%; padding: 18px; background: var(--accent); border: none; border-radius: 15px; font-weight: 900; color: #000; cursor: pointer; }
-
-        /* QR ЭКРАН */
-        .qr-area { text-align: center; padding: 30px 10px; }
-        #qrcode { background: #fff; padding: 10px; border-radius: 15px; display: inline-block; margin-bottom: 20px; }
+        /* AUTH */
+        .auth-view { display: flex; align-items: center; justify-content: center; padding: 40px; }
+        input { width: 100%; background: #0d1117; border: 1px solid var(--border); padding: 18px; border-radius: 15px; color: #fff; margin-bottom: 12px; }
     </style>
 </head>
 <body>
 
     <div id="universe"></div>
 
-    <section id="view-auth" class="view">
-        <div class="auth-card">
+    <section id="view-auth" class="view auth-view">
+        <div style="width:100%; text-align:center;">
             <h1 style="font-size:45px; margin-bottom:10px;">Speeky</h1>
-            <p style="opacity:0.4; margin-bottom:30px;">Elite Network Access</p>
-            <input type="text" id="reg-name" placeholder="Username">
-            <input type="email" id="reg-email" placeholder="Email Address">
-            <button class="main-btn" onclick="register()">ИНИЦИАЛИЗИРОВАТЬ</button>
+            <p style="opacity:0.4; margin-bottom:40px;">Вход в систему</p>
+            <input type="text" id="reg-name" placeholder="Никнейм">
+            <input type="email" id="reg-email" placeholder="Email (реальный)">
+            <button onclick="register()" style="width:100%; padding:20px; background:var(--accent); border:none; border-radius:15px; font-weight:900; color:#000;">ИНИЦИАЛИЗИРОВАТЬ</button>
+        </div>
+    </section>
+
+    <section id="view-chats" class="view">
+        <div class="content-scroll">
+            <h1 style="margin-bottom:25px;">Связи</h1>
+            <div id="chat-list-container">
+                <div class="chat-item">
+                    <div class="chat-avatar" style="background:#ff00f2">М</div>
+                    <div class="chat-info">
+                        <div class="chat-top"><span class="chat-name">Максим</span><span class="chat-time">14:05</span></div>
+                        <div class="chat-msg">Бро, когда допилим облако?</div>
+                    </div>
+                </div>
+                <div class="chat-item">
+                    <div class="chat-avatar" style="background:#00ff88">A</div>
+                    <div class="chat-info">
+                        <div class="chat-top"><span class="chat-name">Анна (Дизайн)</span><span class="chat-time">12:40</span></div>
+                        <div class="chat-msg">Скинула новые иконки для настроек</div>
+                    </div>
+                </div>
+                <div class="chat-item">
+                    <div class="chat-avatar">S</div>
+                    <div class="chat-info">
+                        <div class="chat-top"><span class="chat-name">Speeky Bot</span><span class="chat-time">Вчера</span></div>
+                        <div class="chat-msg">Добро пожаловать в Core v13!</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
     <section id="view-sets" class="view">
-        <div class="qr-area">
-            <div id="qrcode"></div>
-            <h2 id="u-nick" style="font-size:28px;">@...</h2>
-            <p id="u-mail" style="opacity:0.4; font-size:14px;"></p>
-        </div>
-
-        <div class="group">
-            <div class="row" onclick="nav('set-acc')"><div class="ico">👤</div><div class="txt-box"><div class="title">Аккаунт</div><div class="sub">Ник, почта, био</div></div><div class="val">➔</div></div>
-            <div class="row" onclick="nav('set-chats')"><div class="ico">💬</div><div class="txt-box"><div class="title">Настройки чатов</div><div class="sub">Обои, текст, фильтры</div></div><div class="val">➔</div></div>
-            <div class="row" onclick="nav('set-data')"><div class="ico">💾</div><div class="txt-box"><div class="title">Данные и память</div><div class="sub">Кэш: 124 МБ</div></div><div class="val">➔</div></div>
-            <div class="row" onclick="nav('set-dev')"><div class="ico">📱</div><div class="txt-box"><div class="title">Устройства</div><div class="sub">2 активные сессии</div></div><div class="val">➔</div></div>
-            <div class="row" onclick="nav('set-lang')"><div class="ico">🌐</div><div class="txt-box"><div class="title">Язык</div><div class="sub">Русский</div></div><div class="val">RU</div></div>
-        </div>
-    </section>
-
-    <section id="view-set-dev" class="view">
-        <div class="header"><span class="back-btn" onclick="nav('sets')">←</span><h1>Устройства</h1></div>
-        <div class="section-label">Текущий сеанс</div>
-        <div class="group">
-            <div class="row">
-                <div class="ico">📱</div>
-                <div class="txt-box"><div class="title" id="dev-this">Загрузка...</div><div class="sub">Speeky v12.0 • Online</div></div>
+        <div class="content-scroll">
+            <div style="text-align:center; padding:30px 0;">
+                <div id="qrcode" style="background:#fff; padding:10px; border-radius:15px; display:inline-block; margin-bottom:15px;"></div>
+                <h2 id="u-nick" style="color:var(--accent)">@...</h2>
             </div>
+            
+            <div class="section-label">Настройки</div>
+            <div class="group">
+                <div class="row" onclick="alert('Ник: ' + user.name)">👤 Аккаунт <span style="margin-left:auto; opacity:0.3;">➔</span></div>
+                <div class="row">💾 Данные и память <span style="margin-left:auto; opacity:0.3;">➔</span></div>
+                <div class="row">📱 Устройства <span style="margin-left:auto; opacity:0.3;">➔</span></div>
+            </div>
+            <div class="row" style="color:#ff4d4d; justify-content:center; margin-top:20px;" onclick="logout()">ДЕАКТИВИРОВАТЬ СЕССИЮ</div>
         </div>
-        <div class="section-label">Другие устройства</div>
-        <div class="group">
-            <div class="row"><div class="ico" style="opacity:0.4">💻</div><div class="txt-box"><div class="title">Desktop Windows</div><div class="sub">Chrome • Москва • Вчера</div></div></div>
-            <div class="row"><div class="ico" style="opacity:0.4">📱</div><div class="txt-box"><div class="title">iPhone 15 Pro</div><div class="sub">Safari • Казань • 20 фев</div></div></div>
-        </div>
-        <div class="row" style="color:#ff4d4d; justify-content:center; font-weight:700;">Завершить все другие сеансы</div>
     </section>
 
-    <section id="view-set-data" class="view">
-        <div class="header"><span class="back-btn" onclick="nav('sets')">←</span><h1>Данные и память</h1></div>
-        <div class="section-label">Использование диска</div>
-        <div class="group">
-            <div class="row"><div class="txt-box"><div class="title">База данных</div></div><div class="val">1.2 MB</div></div>
-            <div class="row"><div class="txt-box"><div class="title">Медиа-кэш</div></div><div class="val">123.3 MB</div></div>
+    <nav class="dock" id="dock" style="display:none;">
+        <div class="nav-btn active" id="btn-chats" onclick="nav('chats')">
+            <span style="font-size:24px;">📡</span><span>Связи</span>
         </div>
-        <div class="section-label">Автозагрузка</div>
-        <div class="group">
-            <div class="row"><div class="txt-box"><div class="title">Через мобильную сеть</div></div><div class="val">ВКЛ</div></div>
-            <div class="row"><div class="txt-box"><div class="title">Через Wi-Fi</div></div><div class="val">ВКЛ</div></div>
+        <div class="nav-btn" id="btn-sets" onclick="nav('sets')">
+            <span style="font-size:24px;">💎</span><span>Ядро</span>
         </div>
-        <div class="row" style="color:var(--accent); justify-content:center;" onclick="alert('Кэш очищен')">Очистить весь кэш</div>
-    </section>
+    </nav>
 
     <script>
-        const KEY = 'SPEEKY_ULTRA_V12';
+        const KEY = 'SPEEKY_ULTRA_CORE_V13';
         let user = JSON.parse(localStorage.getItem(KEY));
 
         // ФОН
         for(let i=0; i<4; i++) {
             const f = document.createElement('div'); f.className = 'fluid';
-            f.style.width = f.style.height = '400px'; f.style.background = 'rgba(0,242,255,0.08)';
+            f.style.width = f.style.height = '400px'; f.style.background = 'rgba(0,242,255,0.06)';
             f.style.left = Math.random()*100+'%'; f.style.top = Math.random()*100+'%';
             document.getElementById('universe').appendChild(f);
             gsap.to(f, { x: "random(-100, 100)", y: "random(-100, 100)", duration: 15, repeat: -1, yoyo: true });
@@ -126,34 +133,40 @@
         function nav(page) {
             document.querySelectorAll('.view').forEach(v => {
                 if(v.classList.contains('active')) {
-                    gsap.to(v, { opacity:0, x:-20, duration:0.2, onComplete:()=>v.style.display='none' });
+                    gsap.to(v, { opacity:0, duration:0.2, onComplete:()=>v.style.display='none' });
                     v.classList.remove('active');
                 }
             });
             const t = document.getElementById('view-'+page);
             t.style.display = 'flex';
-            gsap.fromTo(t, { opacity:0, x:20 }, { opacity:1, x:0, duration:0.2 });
+            gsap.fromTo(t, { opacity:0 }, { opacity:1, duration:0.2 });
             t.classList.add('active');
+
+            // Кнопки дока
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            const activeBtn = document.getElementById('btn-'+page);
+            if(activeBtn) activeBtn.classList.add('active');
         }
 
         function register() {
             const n = document.getElementById('reg-name').value;
             const e = document.getElementById('reg-email').value;
             if(n && e) {
-                localStorage.setItem(KEY, JSON.stringify({name:n, email:e, date: new Date().toLocaleDateString()}));
+                localStorage.setItem(KEY, JSON.stringify({name:n, email:e}));
                 location.reload();
             }
         }
 
+        function logout() { localStorage.removeItem(KEY); location.reload(); }
+
         window.onload = () => {
             if (!user) {
-                nav('auth'); // ЕСЛИ НЕТ ЮЗЕРА - СРАЗУ НА РЕГУ (ФИКС ЧЕРНОГО ЭКРАНА)
+                nav('auth');
             } else {
+                document.getElementById('dock').style.display = 'flex';
                 document.getElementById('u-nick').innerText = '@' + user.name;
-                document.getElementById('u-mail').innerText = user.email;
-                document.getElementById('dev-this').innerText = navigator.platform + " Browser";
                 new QRCode(document.getElementById("qrcode"), { text: user.name, width: 130, height: 130 });
-                nav('sets');
+                nav('chats');
             }
         };
     </script>
